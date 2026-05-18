@@ -1,1 +1,151 @@
+import streamlit as st
+import sqlite3
+import pandas as pd
+
+# إعدادات الصفحة لتناسب شاشات الموبايل
+st.set_page_config(page_title="نظام إدارة العيادة", layout="centered")
+
+# الاتصال بقاعدة البيانات وإنشاء الجداول لو مش موجودة
+def init_db():
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    # جدول المرضى
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS patients (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            phone TEXT
+        )
+    ''')
+    # جدول الزيارات والخدمات المالية
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS visits (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            patient_id INTEGER,
+            service TEXT,
+            paid REAL,
+            remaining REAL,
+            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(patient_id) REFERENCES patients(id)
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# دالة للاتصال بالقاعدة
+def get_db_connection():
+    return sqlite3.connect('database.db')
+
+# --- واجهة التطبيق ---
+st.title("🏥 نظام إدارة العيادة الذكي")
+
+# القائمة الجانبية للتنقل
+menu = ["إضافة مريض جديد", "تسجيل زيارة / خدمة", "سجل المرضى والبحث"]
+choice = st.sidebar.selectbox("القائمة الرئيسية", menu)
+
+# 1. قسم إضافة مريض جديد
+if choice == "إضافة مريض جديد":
+    st.header("👤 إضافة مريض جديد")
+    with st.form("add_patient_form", clear_on_submit=True):
+        name = st.text_input("اسم المريض بالكامل:")
+        phone = st.text_input("رقم الهاتف:")
+        submit = st.form_submit_button("حفظ المريض")
+        
+        if submit:
+            if name:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO patients (name, phone) VALUES (?, ?)", (name, phone))
+                conn.commit()
+                conn.close()
+                st.success(f"تم تسجيل المريض {name} بنجاح!")
+            else:
+                st.error("برجاء إدخال اسم المريض.")
+
+# 2. قسم تسجيل زيارة وخدمة مالية
+elif choice == "تسجيل زيارة / خدمة":
+    st.header("📝 تسجيل خدمة جديدة")
+    
+    conn = get_db_connection()
+    patients_df = pd.read_sql_query("SELECT id, name FROM patients", conn)
+    conn.close()
+    
+    if patients_df.empty:
+        st.warning("لا يوجد مرضى مسجلين حالياً. يرجى إضافة مريض أولاً.")
+    else:
+        # قائمة اختيار المريض
+        patient_options = {row['name']: row['id'] for index, row in patients_df.iterrows()}
+        selected_patient_name = st.selectbox("اختر المريض:", list(patient_options.keys()))
+        patient_id = patient_options[selected_patient_name]
+        
+        with st.form("visit_form", clear_on_submit=True):
+            service = st.text_input("الخدمة / الإجراء الطبي:")
+            paid = st.number_input("المبلغ المدفوع:", min_value=0.0, step=50.0)
+            remaining = st.number_input("المبلغ المتبقي:", min_value=0.0, step=50.0)
+            
+            submit_visit = st.form_submit_button("تسجيل الزيارة")
+            
+            if submit_visit:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO visits (patient_id, service, paid, remaining) VALUES (?, ?, ?, ?)",
+                    (patient_id, service, paid, remaining)
+                )
+                conn.commit()
+                conn.close()
+                st.success(f"تم تسجيل الخدمة للمريض {selected_patient_name} بنجاح!")
+
+# 3. قسم سجل المرضى والبحث والبيانات التفصيلية
+elif choice == "سجل المرضى والبحث":
+    st.header("🔍 سجل المرضى")
+    
+    conn = get_db_connection()
+    patients_df = pd.read_sql_query("SELECT id, name AS 'اسم المريض', phone AS 'رقم الهاتف' FROM patients", conn)
+    conn.close()
+    
+    if patients_df.empty:
+        st.warning("لا توجد بيانات لعرضها.")
+    else:
+        # البحث عن مريض
+        search_query = st.text_input("ابحث عن مريض بالاسم:")
+        if search_query:
+            filtered_df = patients_df[patients_df['اسم المريض'].str.contains(search_query, case=False, na=False)]
+        else:
+            filtered_df = patients_df
+            
+        st.write("اضغط على المريض من القائمة بالأسفل لرؤية تفاصيله وباقي حسابه:")
+        
+        # اختيار المريض لعرض تفاصيله بالكامل (الملف الفني والمالي)
+        patient_names = filtered_df['اسم المريض'].tolist()
+        selected_p = st.selectbox("اختر اسم المريض لفتح ملفه:", ["-- اختر مريضاً --"] + patient_names)
+        
+        if selected_p != "-- اختر مريضاً --":
+            # جلب معرف المريض المختار
+            p_id = patients_df[patients_df['اسم المريض'] == selected_p]['id'].values[0]
+            
+            conn = get_db_connection()
+            # جلب الزيارات الخاصة به
+            visits_df = pd.read_sql_query(
+                f"SELECT service AS 'الخدمة', paid AS 'المدفوع', remaining AS 'المتبقي', date AS 'التاريخ' FROM visits WHERE patient_id = {p_id} ORDER BY date DESC", 
+                conn
+            )
+            conn.close()
+            
+            st.markdown(f"### 📂 ملف المريض: {selected_p}")
+            
+            if visits_df.empty:
+                st.info("لا توجد زيارات مسجلة لهذا المريض بعد.")
+            else:
+                # حساب إجمالي المتبقي عليه
+                total_remaining = visits_df['المتبقي'].sum()
+                if total_remaining > 0:
+                    st.error(f"⚠️ إجمالي المبالغ المتبقية غير المدفوعة: {total_remaining} جنيه")
+                else:
+                    st.success("✅ الحساب خالص بالكامل")
+                
+                # عرض جدول الزيارات
+                st.dataframe(visits_df, use_container_width=True)
 
