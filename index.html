@@ -1,150 +1,447 @@
-import streamlit as st
-import sqlite3
-import pandas as pd
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة العيادة الذكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0078d4;
+            --secondary-color: #f3f2f1;
+            --success-color: #107c41;
+            --danger-color: #a80000;
+            --text-color: #323130;
+        }
 
-# إعدادات الصفحة لتناسب شاشات الموبايل
-st.set_page_config(page_title="نظام إدارة العيادة", layout="centered")
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f8f9fa;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
 
-# الاتصال بقاعدة البيانات وإنشاء الجداول لو مش موجودة
-def init_db():
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    # جدول المرضى
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS patients (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            phone TEXT
-        )
-    ''')
-    # جدول الزيارات والخدمات المالية
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS visits (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            patient_id INTEGER,
-            service TEXT,
-            paid REAL,
-            remaining REAL,
-            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(patient_id) REFERENCES patients(id)
-        )
-    ''')
-    conn.commit()
-    conn.close()
+        /* القائمة العلوية */
+        .navbar {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
 
-init_db()
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+        }
 
-# دالة للاتصال بالقاعدة
-def get_db_connection():
-    return sqlite3.connect('database.db')
+        /* الكروت والتبويب */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
 
-# --- واجهة التطبيق ---
-st.title("🏥 نظام إدارة العيادة الذكي")
+        h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 8px;
+        }
 
-# القائمة الجانبية للتنقل
-menu = ["إضافة مريض جديد", "تسجيل زيارة / خدمة", "سجل المرضى والبحث"]
-choice = st.sidebar.selectbox("القائمة الرئيسية", menu)
+        /* عناصر الإدخال */
+        .form-group {
+            margin-bottom: 15px;
+        }
 
-# 1. قسم إضافة مريض جديد
-if choice == "إضافة مريض جديد":
-    st.header("👤 إضافة مريض جديد")
-    with st.form("add_patient_form", clear_on_submit=True):
-        name = st.text_input("اسم المريض بالكامل:")
-        phone = st.text_input("رقم الهاتف:")
-        submit = st.form_submit_button("حفظ المريض")
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #005a9e;
+        }
+
+        /* أزرار التنقل السريع للموبايل */
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            flex: 1;
+            background-color: #e1dfdd;
+            color: var(--text-color);
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* قوائم العرض والجداول */
+        .patient-item {
+            background: var(--secondary-color);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .patient-item:hover {
+            background-color: #edebe9;
+        }
+
+        .badge-danger {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .badge-success {
+            background-color: var(--success-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .visit-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .visit-table th, .visit-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .visit-table th {
+            background-color: var(--secondary-color);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .back-btn {
+            background-color: #605e5c;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">🏥 نظام إدارة العيادة المبسط</div>
+
+    <div class="container">
         
-        if submit:
-            if name:
-                conn = get_db_connection()
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO patients (name, phone) VALUES (?, ?)", (name, phone))
-                conn.commit()
-                conn.close()
-                st.success(f"تم تسجيل المريض {name} بنجاح!")
-            else:
-                st.error("برجاء إدخال اسم المريض.")
+        <div class="nav-buttons">
+            <div class="nav-btn active" id="btn-add" onclick="switchTab('add')">إضافة مريض</div>
+            <div class="nav-btn" id="btn-visit" onclick="switchTab('visit')">تسجيل زيارة</div>
+            <div class="nav-btn" id="btn-search" onclick="switchTab('search')">السجل والبحث</div>
+        </div>
 
-# 2. قسم تسجيل زيارة وخدمة مالية
-elif choice == "تسجيل زيارة / خدمة":
-    st.header("📝 تسجيل خدمة جديدة")
-    
-    conn = get_db_connection()
-    patients_df = pd.read_sql_query("SELECT id, name FROM patients", conn)
-    conn.close()
-    
-    if patients_df.empty:
-        st.warning("لا يوجد مرضى مسجلين حالياً. يرجى إضافة مريض أولاً.")
-    else:
-        # قائمة اختيار المريض
-        patient_options = {row['name']: row['id'] for index, row in patients_df.iterrows()}
-        selected_patient_name = st.selectbox("اختر المريض:", list(patient_options.keys()))
-        patient_id = patient_options[selected_patient_name]
-        
-        with st.form("visit_form", clear_on_submit=True):
-            service = st.text_input("الخدمة / الإجراء الطبي:")
-            paid = st.number_input("المبلغ المدفوع:", min_value=0.0, step=50.0)
-            remaining = st.number_input("المبلغ المتبقي:", min_value=0.0, step=50.0)
-            
-            submit_visit = st.form_submit_button("تسجيل الزيارة")
-            
-            if submit_visit:
-                conn = get_db_connection()
-                cursor = conn.cursor()
-                cursor.execute(
-                    "INSERT INTO visits (patient_id, service, paid, remaining) VALUES (?, ?, ?, ?)",
-                    (patient_id, service, paid, remaining)
-                )
-                conn.commit()
-                conn.close()
-                st.success(f"تم تسجيل الخدمة للمريض {selected_patient_name} بنجاح!")
+        <div id="tab-add" class="card">
+            <h3>👤 إضافة مريض جديد</h3>
+            <div class="form-group">
+                <label>اسم المريض بالكامل:</label>
+                <input type="text" id="p-name" placeholder="أدخل اسم المريض">
+            </div>
+            <div class="form-group">
+                <label>رقم الهاتف:</label>
+                <input type="text" id="p-phone" placeholder="أدخل رقم الهاتف">
+            </div>
+            <button onclick="addPatient()">حفظ المريض</button>
+        </div>
 
-# 3. قسم سجل المرضى والبحث والبيانات التفصيلية
-elif choice == "سجل المرضى والبحث":
-    st.header("🔍 سجل المرضى")
-    
-    conn = get_db_connection()
-    patients_df = pd.read_sql_query("SELECT id, name AS 'اسم المريض', phone AS 'رقم الهاتف' FROM patients", conn)
-    conn.close()
-    
-    if patients_df.empty:
-        st.warning("لا توجد بيانات لعرضها.")
-    else:
-        # البحث عن مريض
-        search_query = st.text_input("ابحث عن مريض بالاسم:")
-        if search_query:
-            filtered_df = patients_df[patients_df['اسم المريض'].str.contains(search_query, case=False, na=False)]
-        else:
-            filtered_df = patients_df
-            
-        st.write("اضغط على المريض من القائمة بالأسفل لرؤية تفاصيله وباقي حسابه:")
-        
-        # اختيار المريض لعرض تفاصيله بالكامل (الملف الفني والمالي)
-        patient_names = filtered_df['اسم المريض'].tolist()
-        selected_p = st.selectbox("اختر اسم المريض لفتح ملفه:", ["-- اختر مريضاً --"] + patient_names)
-        
-        if selected_p != "-- اختر مريضاً --":
-            # جلب معرف المريض المختار
-            p_id = patients_df[patients_df['اسم المريض'] == selected_p]['id'].values[0]
-            
-            conn = get_db_connection()
-            # جلب الزيارات الخاصة به
-            visits_df = pd.read_sql_query(
-                f"SELECT service AS 'الخدمة', paid AS 'المدفوع', remaining AS 'المتبقي', date AS 'التاريخ' FROM visits WHERE patient_id = {p_id} ORDER BY date DESC", 
-                conn
-            )
-            conn.close()
-            
-            st.markdown(f"### 📂 ملف المريض: {selected_p}")
-            
-            if visits_df.empty:
-                st.info("لا توجد زيارات مسجلة لهذا المريض بعد.")
-            else:
-                # حساب إجمالي المتبقي عليه
-                total_remaining = visits_df['المتبقي'].sum()
-                if total_remaining > 0:
-                    st.error(f"⚠️ إجمالي المبالغ المتبقية غير المدفوعة: {total_remaining} جنيه")
-                else:
-                    st.success("✅ الحساب خالص بالكامل")
+        <div id="tab-visit" class="card hidden">
+            <h3>📝 تسجيل خدمة / زيارة جديدة</h3>
+            <div class="form-group">
+                <label>اختر المريض:</label>
+                <select id="visit-patient-select">
+                    </select>
+            </div>
+            <div class="form-group">
+                <label>الخدمة / الإجراء الطبي:</label>
+                <input type="text" id="v-service" placeholder="مثال: حشو، كشف...">
+            </div>
+            <div class="form-group">
+                <label>المبلغ المدفوع:</label>
+                <input type="number" id="v-paid" value="0">
+            </div>
+            <div class="form-group">
+                <label>المبلغ المتبقي:</label>
+                <input type="number" id="v-remaining" value="0">
+            </div>
+            <button onclick="addVisit()">تسجيل الزيارة</button>
+        </div>
+
+        <div id="tab-search" class="card hidden">
+            <div id="search-main-view">
+                <h3>🔍 سجل المرضى</h3>
+                <div class="form-group">
+                    <input type="text" id="search-input" oninput="renderPatientsList()" placeholder="ابحث باسم المريض...">
+                </div>
+                <div id="patients-list">
+                    </div>
+            </div>
+
+            <div id="patient-detail-view" class="hidden">
+                <button class="back-btn" onclick="closePatientDetail()">⬅️ عودة للقائمة</button>
+                <h3 id="detail-title">ملف المريض: </h3>
+                <p id="detail-phone">الرقم: </p>
+                <div id="detail-balance"></div>
                 
-                # عرض جدول الزيارات
-                st.dataframe(visits_df, use_container_width=True)
+                <h4>⏱️ سجل الزيارات السابقة:</h4>
+                <table class="visit-table">
+                    <thead>
+                        <tr>
+                            <th>الخدمة</th>
+                            <th>المدفوع</th>
+                            <th>المتبقي</th>
+                        </tr>
+                    </thead>
+                    <tbody id="visits-rows">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // تحميل البيانات من الذاكرة المحلية أو بدء مصفوفة فارغة
+        let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
+
+        // دالة حفظ البيانات في المتصفح
+        function saveToStorage() {
+            localStorage.setItem('clinic_patients', JSON.stringify(patients));
+            updatePatientSelect();
+        }
+
+        // التنقل بين التبويبات
+        function switchTab(tabName) {
+            document.getElementById('tab-add').classList.add('hidden');
+            document.getElementById('tab-visit').classList.add('hidden');
+            document.getElementById('tab-search').classList.add('hidden');
+            
+            document.getElementById('btn-add').classList.remove('active');
+            document.getElementById('btn-visit').classList.remove('active');
+            document.getElementById('btn-search').classList.remove('active');
+
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+            document.getElementById('btn-' + tabName).classList.add('active');
+
+            if(tabName === 'search') {
+                closePatientDetail();
+                renderPatientsList();
+            }
+        }
+
+        // إضافة مريض جديد
+        function addPatient() {
+            const name = document.getElementById('p-name').value.trim();
+            const phone = document.getElementById('p-phone').value.trim();
+
+            if (!name) {
+                alert('برجاء إدخال اسم المريض');
+                return;
+            }
+
+            const newPatient = {
+                id: Date.now(),
+                name: name,
+                phone: phone || 'غير مسجل',
+                visits: []
+            };
+
+            patients.push(newPatient);
+            saveToStorage();
+
+            alert(`تم تسجيل المريض ${name} بنجاح!`);
+            document.getElementById('p-name').value = '';
+            document.getElementById('p-phone').value = '';
+        }
+
+        // تحديث قائمة الاختيار في صفحة الزيارات
+        function updatePatientSelect() {
+            const select = document.getElementById('visit-patient-select');
+            select.innerHTML = '';
+            if (patients.length === 0) {
+                select.innerHTML = '<option value="">لا يوجد مرضى مسجلين</option>';
+                return;
+            }
+            patients.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.name;
+                select.appendChild(opt);
+            });
+        }
+
+        // تسجيل زيارة جديدة
+        function addVisit() {
+            const pId = document.getElementById('visit-patient-select').value;
+            const service = document.getElementById('v-service').value.trim();
+            const paid = parseFloat(document.getElementById('v-paid').value) || 0;
+            const remaining = parseFloat(document.getElementById('v-remaining').value) || 0;
+
+            if (!pId) {
+                alert('يرجى اختيار مريض أو إضافة مريض أولاً');
+                return;
+            }
+            if (!service) {
+                alert('يرجى إدخال الخدمة المقدمة');
+                return;
+            }
+
+            const patient = patients.find(p => p.id == pId);
+            if (patient) {
+                patient.visits.push({
+                    service: service,
+                    paid: paid,
+                    remaining: remaining
+                });
+                saveToStorage();
+                alert(`تم تسجيل الزيارة بنجاح للمريض: ${patient.name}`);
+                document.getElementById('v-service').value = '';
+                document.getElementById('v-paid').value = '0';
+                document.getElementById('v-remaining').value = '0';
+            }
+        }
+
+        // عرض قائمة المرضى مع ميزة البحث حساب إجمالي الدين
+        function renderPatientsList() {
+            const query = document.getElementById('search-input').value.trim().toLowerCase();
+            const listDiv = document.getElementById('patients-list');
+            listDiv.innerHTML = '';
+
+            const filtered = patients.filter(p => p.name.toLowerCase().includes(query));
+
+            if (filtered.length === 0) {
+                listDiv.innerHTML = '<p style="text-align:center; color:#888;">لا يوجد نتائج</p>';
+                return;
+            }
+
+            filtered.forEach(p => {
+                // حساب المتبقي عليه بالكامل
+                const totalDebt = p.visits.reduce((sum, v) => sum + v.remaining, 0);
+
+                const item = document.createElement('div');
+                item.className = 'patient-item';
+                item.onclick = () => openPatientDetail(p.id);
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = p.name;
+
+                const badge = document.createElement('span');
+                if (totalDebt > 0) {
+                    badge.className = 'badge-danger';
+                    badge.textContent = `متبقي: ${totalDebt} جنيه`;
+                } else {
+                    badge.className = 'badge-success';
+                    badge.textContent = 'خالص';
+                }
+
+                item.appendChild(nameSpan);
+                item.appendChild(badge);
+                listDiv.appendChild(item);
+            });
+        }
+
+        // فتح الملف المالي والطبي التفصيلي للمريض بمجرد الضغط عليه
+        function openPatientDetail(pId) {
+            const patient = patients.find(p => p.id == pId);
+            if (!patient) return;
+
+            document.getElementById('search-main-view').classList.add('hidden');
+            document.getElementById('patient-detail-view').classList.remove('hidden');
+
+            document.getElementById('detail-title').textContent = `📂 ملف المريض: ${patient.name}`;
+            document.getElementById('detail-phone').textContent = `📞 رقم الهاتف: ${patient.phone}`;
+
+            const totalDebt = patient.visits.reduce((sum, v) => sum + v.remaining, 0);
+            const balanceDiv = document.getElementById('detail-balance');
+            if (totalDebt > 0) {
+                balanceDiv.innerHTML = `<h3 style="color:var(--danger-color); border:none; margin:10px 0;">⚠️ إجمالي الحساب المتبقي عليه: ${totalDebt} جنيه</h3>`;
+            } else {
+                balanceDiv.innerHTML = `<h3 style="color:var(--success-color); border:none; margin:10px 0;">✅ الحساب خالص بالكامل</h3>`;
+            }
+
+            const rowsTbody = document.getElementById('visits-rows');
+            rowsTbody.innerHTML = '';
+
+            if (patient.visits.length === 0) {
+                rowsTbody.innerHTML = '<tr><td colspan="3" style="color:#888;">لا توجد زيارات مسجلة</td></tr>';
+                return;
+            }
+
+            patient.visits.forEach(v => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${v.service}</td>
+                    <td style="color:var(--success-color); font-weight:bold;">${v.paid}</td>
+                    <td style="${v.remaining > 0 ? 'color:var(--danger-color); font-weight:bold;' : ''}">${v.remaining}</td>
+                `;
+                rowsTbody.appendChild(tr);
+            });
+        }
+
+        function closePatientDetail() {
+            document.getElementById('patient-detail-view').classList.add('hidden');
+            document.getElementById('search-main-view').classList.remove('hidden');
+        }
+
+        // تشغيل مبدئي لتحديث القوائم عند فتح الصفحة لأول مرة
+        updatePatientSelect();
+    </script>
+</body>
+</html>
