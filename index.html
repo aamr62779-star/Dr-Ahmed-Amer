@@ -3,58 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>برنامج العيادة الذكي</title>
+    <title>عيادة دكتور أحمد حسن عامر</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 20px; }
         .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
-        .table-responsive { border-radius: 8px; }
         .btn-success { background-color: #11caa0; border: none; }
         .btn-success:hover { background-color: #0ea885; }
+        .login-container { max-width: 400px; margin: 100px auto; }
+        #appContent { display: none; } /* إخفاء البرنامج حتى كتابة الباسورد */
     </style>
 </head>
 <body class="container">
 
-    <div class="text-center mb-4">
-        <h2 class="text-primary fw-bold">نظام إدارة العيادة الذكي</h2>
-        <p class="text-muted">نسخة الموبايل السريعة</p>
-    </div>
-    
-    <div class="card p-3 mb-4">
-        <h5 class="mb-3 text-secondary">إضافة مريض جديد</h5>
-        <form id="patientForm" class="row g-2">
-            <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض" required></div>
-            <div class="col-12"><input type="text" id="service" class="form-control" placeholder="الخدمة (حشو، تركيبة، خلع...)"></div>
-            <div class="col-6"><input type="number" id="paid" class="form-control" placeholder="المبلغ المدفوع" oninput="calculateRemaining()"></div>
-            <div class="col-6"><input type="number" id="total" class="form-control" placeholder="الإجمالي" oninput="calculateRemaining()"></div>
-            <div class="col-12"><input type="number" id="remaining" class="form-control" placeholder="المتبقي تلقائياً" readonly style="background-color: #e9ecef;"></div>
-            <div class="col-12"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض في السجل</button></div>
-        </form>
+    <div id="loginScreen" class="card p-4 text-center login-container">
+        <h4 class="text-primary fw-bold mb-3">عيادة دكتور أحمد حسن عامر</h4>
+        <p class="text-muted small">يرجى إدخال الرقم السري لدخول النظام</p>
+        <div class="mb-3">
+            <input type="password" id="passwordInput" class="form-control text-center" placeholder="••••" style="font-size: 24px; letter-spacing: 5px;">
+        </div>
+        <button onclick="checkPassword()" class="btn btn-primary w-100 fw-bold">دخول</button>
+        <div id="loginError" class="text-danger small mt-2" style="display: none;">الرقم السري غير صحيح!</div>
     </div>
 
-    <div class="mb-3">
-        <input type="text" id="searchBar" class="form-control" placeholder="🔍 ابحث باسم المريض هنا..." oninput="displayPatients()">
-    </div>
+    <div id="appContent">
+        <div class="text-center mb-4">
+            <h2 class="text-primary fw-bold">عيادة دكتور أحمد حسن عامر</h2>
+            <p class="text-muted">نظام إدارة العيادة والتحصيل الذكي</p>
+        </div>
+        
+        <div class="card p-3 mb-4">
+            <h5 class="mb-3 text-secondary">إضافة مريض جديد</h5>
+            <form id="patientForm" class="row g-2">
+                <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض" required></div>
+                <div class="col-12"><input type="text" id="service" class="form-control" placeholder="الخدمة (حشو، تركيبة، خلع...)"></div>
+                <div class="col-6"><input type="number" id="paid" class="form-control" placeholder="المبلغ المدفوع" oninput="calculateRemaining()"></div>
+                <div class="col-6"><input type="number" id="total" class="form-control" placeholder="الإجمالي" oninput="calculateRemaining()"></div>
+                <div class="col-12"><input type="number" id="remaining" class="form-control" placeholder="المتبقي تلقائياً" readonly style="background-color: #e9ecef;"></div>
+                <div class="col-12"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض في السجل</button></div>
+            </form>
+        </div>
 
-    <div class="card p-2">
-        <div class="table-responsive">
-            <table class="table table-striped align-middle mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th>الاسم</th>
-                        <th>الخدمة</th>
-                        <th>المدفوع</th>
-                        <th>المتبقي</th>
-                        <th>تحكم</th>
-                    </tr>
-                </thead>
-                <tbody id="patientTable">
-                    </tbody>
-            </table>
+        <div class="mb-3">
+            <input type="text" id="searchBar" class="form-control" placeholder="🔍 ابحث باسم المريض هنا..." oninput="displayPatients()">
+        </div>
+
+        <div class="card p-2">
+            <div class="table-responsive">
+                <table class="table table-striped align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>الاسم</th>
+                            <th>الخدمة</th>
+                            <th>المدفوع</th>
+                            <th>المتبقي</th>
+                            <th>تحكم</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientTable"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
+        // دالة التحقق من الرقم السري
+        function checkPassword() {
+            const correctPassword = "1234"; // 👈 غير الرقم السري من هنا لو حابب
+            const input = document.getElementById('passwordInput').value;
+            const error = document.getElementById('loginError');
+
+            if (input === correctPassword) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContent').style.display = 'block';
+                displayPatients(); // عرض الجدول
+            } else {
+                error.style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
         // حساب المتبقي تلقائياً
         function calculateRemaining() {
             let total = parseFloat(document.getElementById('total').value) || 0;
@@ -62,7 +90,7 @@
             document.getElementById('remaining').value = total - paid;
         }
 
-        // جلب البيانات المخزنة أو بدء سجل فارغ
+        // جلب البيانات المخزنة
         let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
 
         // حفظ مريض جديد
@@ -114,9 +142,6 @@
                 displayPatients();
             }
         }
-
-        // تشغيل العرض تلقائياً عند فتح الصفحة
-        displayPatients();
     </script>
 </body>
 </html>
