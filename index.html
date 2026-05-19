@@ -3,445 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة العيادة الذكي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>برنامج العيادة الذكي</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #0078d4;
-            --secondary-color: #f3f2f1;
-            --success-color: #107c41;
-            --danger-color: #a80000;
-            --text-color: #323130;
-        }
-
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: #f8f9fa;
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-        }
-
-        /* القائمة العلوية */
-        .navbar {
-            background-color: var(--primary-color);
-            color: white;
-            text-align: center;
-            padding: 15px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 15px;
-        }
-
-        /* الكروت والتبويب */
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-
-        h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--secondary-color);
-            padding-bottom: 8px;
-        }
-
-        /* عناصر الإدخال */
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        button {
-            width: 100%;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        button:hover {
-            background-color: #005a9e;
-        }
-
-        /* أزرار التنقل السريع للموبايل */
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .nav-btn {
-            flex: 1;
-            background-color: #e1dfdd;
-            color: var(--text-color);
-            text-align: center;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .nav-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        /* قوائم العرض والجداول */
-        .patient-item {
-            background: var(--secondary-color);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 500;
-        }
-
-        .patient-item:hover {
-            background-color: #edebe9;
-        }
-
-        .badge-danger {
-            background-color: var(--danger-color);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-        }
-
-        .badge-success {
-            background-color: var(--success-color);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-        }
-
-        .visit-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 0.9rem;
-        }
-
-        .visit-table th, .visit-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-        }
-
-        .visit-table th {
-            background-color: var(--secondary-color);
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .back-btn {
-            background-color: #605e5c;
-            margin-bottom: 15px;
-        }
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 20px; }
+        .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
+        .table-responsive { border-radius: 8px; }
+        .btn-success { background-color: #11caa0; border: none; }
+        .btn-success:hover { background-color: #0ea885; }
     </style>
 </head>
-<body>
+<body class="container">
 
-    <div class="navbar">🏥 نظام إدارة العيادة المبسط</div>
+    <div class="text-center mb-4">
+        <h2 class="text-primary fw-bold">نظام إدارة العيادة الذكي</h2>
+        <p class="text-muted">نسخة الموبايل السريعة</p>
+    </div>
+    
+    <div class="card p-3 mb-4">
+        <h5 class="mb-3 text-secondary">إضافة مريض جديد</h5>
+        <form id="patientForm" class="row g-2">
+            <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض" required></div>
+            <div class="col-12"><input type="text" id="service" class="form-control" placeholder="الخدمة (حشو، تركيبة، خلع...)"></div>
+            <div class="col-6"><input type="number" id="paid" class="form-control" placeholder="المبلغ المدفوع" oninput="calculateRemaining()"></div>
+            <div class="col-6"><input type="number" id="total" class="form-control" placeholder="الإجمالي" oninput="calculateRemaining()"></div>
+            <div class="col-12"><input type="number" id="remaining" class="form-control" placeholder="المتبقي تلقائياً" readonly style="background-color: #e9ecef;"></div>
+            <div class="col-12"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض في السجل</button></div>
+        </form>
+    </div>
 
-    <div class="container">
-        
-        <div class="nav-buttons">
-            <div class="nav-btn active" id="btn-add" onclick="switchTab('add')">إضافة مريض</div>
-            <div class="nav-btn" id="btn-visit" onclick="switchTab('visit')">تسجيل زيارة</div>
-            <div class="nav-btn" id="btn-search" onclick="switchTab('search')">السجل والبحث</div>
+    <div class="mb-3">
+        <input type="text" id="searchBar" class="form-control" placeholder="🔍 ابحث باسم المريض هنا..." oninput="displayPatients()">
+    </div>
+
+    <div class="card p-2">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>الاسم</th>
+                        <th>الخدمة</th>
+                        <th>المدفوع</th>
+                        <th>المتبقي</th>
+                        <th>تحكم</th>
+                    </tr>
+                </thead>
+                <tbody id="patientTable">
+                    </tbody>
+            </table>
         </div>
-
-        <div id="tab-add" class="card">
-            <h3>👤 إضافة مريض جديد</h3>
-            <div class="form-group">
-                <label>اسم المريض بالكامل:</label>
-                <input type="text" id="p-name" placeholder="أدخل اسم المريض">
-            </div>
-            <div class="form-group">
-                <label>رقم الهاتف:</label>
-                <input type="text" id="p-phone" placeholder="أدخل رقم الهاتف">
-            </div>
-            <button onclick="addPatient()">حفظ المريض</button>
-        </div>
-
-        <div id="tab-visit" class="card hidden">
-            <h3>📝 تسجيل خدمة / زيارة جديدة</h3>
-            <div class="form-group">
-                <label>اختر المريض:</label>
-                <select id="visit-patient-select">
-                    </select>
-            </div>
-            <div class="form-group">
-                <label>الخدمة / الإجراء الطبي:</label>
-                <input type="text" id="v-service" placeholder="مثال: حشو، كشف...">
-            </div>
-            <div class="form-group">
-                <label>المبلغ المدفوع:</label>
-                <input type="number" id="v-paid" value="0">
-            </div>
-            <div class="form-group">
-                <label>المبلغ المتبقي:</label>
-                <input type="number" id="v-remaining" value="0">
-            </div>
-            <button onclick="addVisit()">تسجيل الزيارة</button>
-        </div>
-
-        <div id="tab-search" class="card hidden">
-            <div id="search-main-view">
-                <h3>🔍 سجل المرضى</h3>
-                <div class="form-group">
-                    <input type="text" id="search-input" oninput="renderPatientsList()" placeholder="ابحث باسم المريض...">
-                </div>
-                <div id="patients-list">
-                    </div>
-            </div>
-
-            <div id="patient-detail-view" class="hidden">
-                <button class="back-btn" onclick="closePatientDetail()">⬅️ عودة للقائمة</button>
-                <h3 id="detail-title">ملف المريض: </h3>
-                <p id="detail-phone">الرقم: </p>
-                <div id="detail-balance"></div>
-                
-                <h4>⏱️ سجل الزيارات السابقة:</h4>
-                <table class="visit-table">
-                    <thead>
-                        <tr>
-                            <th>الخدمة</th>
-                            <th>المدفوع</th>
-                            <th>المتبقي</th>
-                        </tr>
-                    </thead>
-                    <tbody id="visits-rows">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-
     </div>
 
     <script>
-        // تحميل البيانات من الذاكرة المحلية أو بدء مصفوفة فارغة
+        // حساب المتبقي تلقائياً
+        function calculateRemaining() {
+            let total = parseFloat(document.getElementById('total').value) || 0;
+            let paid = parseFloat(document.getElementById('paid').value) || 0;
+            document.getElementById('remaining').value = total - paid;
+        }
+
+        // جلب البيانات المخزنة أو بدء سجل فارغ
         let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
 
-        // دالة حفظ البيانات في المتصفح
-        function saveToStorage() {
+        // حفظ مريض جديد
+        document.getElementById('patientForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let name = document.getElementById('name').value;
+            let service = document.getElementById('service').value;
+            let paid = document.getElementById('paid').value || 0;
+            let remaining = document.getElementById('remaining').value || 0;
+
+            patients.unshift({ name, service, paid, remaining });
             localStorage.setItem('clinic_patients', JSON.stringify(patients));
-            updatePatientSelect();
-        }
-
-        // التنقل بين التبويبات
-        function switchTab(tabName) {
-            document.getElementById('tab-add').classList.add('hidden');
-            document.getElementById('tab-visit').classList.add('hidden');
-            document.getElementById('tab-search').classList.add('hidden');
             
-            document.getElementById('btn-add').classList.remove('active');
-            document.getElementById('btn-visit').classList.remove('active');
-            document.getElementById('btn-search').classList.remove('active');
+            document.getElementById('patientForm').reset();
+            displayPatients();
+        });
 
-            document.getElementById('tab-' + tabName).classList.remove('hidden');
-            document.getElementById('btn-' + tabName).classList.add('active');
+        // عرض البيانات والبحث
+        function displayPatients() {
+            let searchTerm = document.getElementById('searchBar').value.toLowerCase();
+            let tableBody = document.getElementById('patientTable');
+            tableBody.innerHTML = '';
 
-            if(tabName === 'search') {
-                closePatientDetail();
-                renderPatientsList();
-            }
-        }
+            let filtered = patients.filter(p => p.name.toLowerCase().includes(searchTerm));
 
-        // إضافة مريض جديد
-        function addPatient() {
-            const name = document.getElementById('p-name').value.trim();
-            const phone = document.getElementById('p-phone').value.trim();
-
-            if (!name) {
-                alert('برجاء إدخال اسم المريض');
+            if(filtered.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">لا يوجد مرضى مسجلين بهذا الاسم</td></tr>`;
                 return;
             }
 
-            const newPatient = {
-                id: Date.now(),
-                name: name,
-                phone: phone || 'غير مسجل',
-                visits: []
-            };
-
-            patients.push(newPatient);
-            saveToStorage();
-
-            alert(`تم تسجيل المريض ${name} بنجاح!`);
-            document.getElementById('p-name').value = '';
-            document.getElementById('p-phone').value = '';
-        }
-
-        // تحديث قائمة الاختيار في صفحة الزيارات
-        function updatePatientSelect() {
-            const select = document.getElementById('visit-patient-select');
-            select.innerHTML = '';
-            if (patients.length === 0) {
-                select.innerHTML = '<option value="">لا يوجد مرضى مسجلين</option>';
-                return;
-            }
-            patients.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.textContent = p.name;
-                select.appendChild(opt);
-            });
-        }
-
-        // تسجيل زيارة جديدة
-        function addVisit() {
-            const pId = document.getElementById('visit-patient-select').value;
-            const service = document.getElementById('v-service').value.trim();
-            const paid = parseFloat(document.getElementById('v-paid').value) || 0;
-            const remaining = parseFloat(document.getElementById('v-remaining').value) || 0;
-
-            if (!pId) {
-                alert('يرجى اختيار مريض أو إضافة مريض أولاً');
-                return;
-            }
-            if (!service) {
-                alert('يرجى إدخال الخدمة المقدمة');
-                return;
-            }
-
-            const patient = patients.find(p => p.id == pId);
-            if (patient) {
-                patient.visits.push({
-                    service: service,
-                    paid: paid,
-                    remaining: remaining
-                });
-                saveToStorage();
-                alert(`تم تسجيل الزيارة بنجاح للمريض: ${patient.name}`);
-                document.getElementById('v-service').value = '';
-                document.getElementById('v-paid').value = '0';
-                document.getElementById('v-remaining').value = '0';
-            }
-        }
-
-        // عرض قائمة المرضى مع ميزة البحث حساب إجمالي الدين
-        function renderPatientsList() {
-            const query = document.getElementById('search-input').value.trim().toLowerCase();
-            const listDiv = document.getElementById('patients-list');
-            listDiv.innerHTML = '';
-
-            const filtered = patients.filter(p => p.name.toLowerCase().includes(query));
-
-            if (filtered.length === 0) {
-                listDiv.innerHTML = '<p style="text-align:center; color:#888;">لا يوجد نتائج</p>';
-                return;
-            }
-
-            filtered.forEach(p => {
-                // حساب المتبقي عليه بالكامل
-                const totalDebt = p.visits.reduce((sum, v) => sum + v.remaining, 0);
-
-                const item = document.createElement('div');
-                item.className = 'patient-item';
-                item.onclick = () => openPatientDetail(p.id);
-
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = p.name;
-
-                const badge = document.createElement('span');
-                if (totalDebt > 0) {
-                    badge.className = 'badge-danger';
-                    badge.textContent = `متبقي: ${totalDebt} جنيه`;
-                } else {
-                    badge.className = 'badge-success';
-                    badge.textContent = 'خالص';
-                }
-
-                item.appendChild(nameSpan);
-                item.appendChild(badge);
-                listDiv.appendChild(item);
-            });
-        }
-
-        // فتح الملف المالي والطبي التفصيلي للمريض بمجرد الضغط عليه
-        function openPatientDetail(pId) {
-            const patient = patients.find(p => p.id == pId);
-            if (!patient) return;
-
-            document.getElementById('search-main-view').classList.add('hidden');
-            document.getElementById('patient-detail-view').classList.remove('hidden');
-
-            document.getElementById('detail-title').textContent = `📂 ملف المريض: ${patient.name}`;
-            document.getElementById('detail-phone').textContent = `📞 رقم الهاتف: ${patient.phone}`;
-
-            const totalDebt = patient.visits.reduce((sum, v) => sum + v.remaining, 0);
-            const balanceDiv = document.getElementById('detail-balance');
-            if (totalDebt > 0) {
-                balanceDiv.innerHTML = `<h3 style="color:var(--danger-color); border:none; margin:10px 0;">⚠️ إجمالي الحساب المتبقي عليه: ${totalDebt} جنيه</h3>`;
-            } else {
-                balanceDiv.innerHTML = `<h3 style="color:var(--success-color); border:none; margin:10px 0;">✅ الحساب خالص بالكامل</h3>`;
-            }
-
-            const rowsTbody = document.getElementById('visits-rows');
-            rowsTbody.innerHTML = '';
-
-            if (patient.visits.length === 0) {
-                rowsTbody.innerHTML = '<tr><td colspan="3" style="color:#888;">لا توجد زيارات مسجلة</td></tr>';
-                return;
-            }
-
-            patient.visits.forEach(v => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${v.service}</td>
-                    <td style="color:var(--success-color); font-weight:bold;">${v.paid}</td>
-                    <td style="${v.remaining > 0 ? 'color:var(--danger-color); font-weight:bold;' : ''}">${v.remaining}</td>
+            filtered.forEach((p, index) => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td><strong>${p.name}</strong></td>
+                        <td><span class="badge bg-secondary">${p.service || 'غير محدد'}</span></td>
+                        <td class="text-success">${p.paid} ج.م</td>
+                        <td class="text-danger fw-bold">${p.remaining} ج.م</td>
+                        <td><button class="btn btn-sm btn-danger" onclick="deletePatient(${index})">حذف</button></td>
+                    </tr>
                 `;
-                rowsTbody.appendChild(tr);
             });
         }
 
-        function closePatientDetail() {
-            document.getElementById('patient-detail-view').classList.add('hidden');
-            document.getElementById('search-main-view').classList.remove('hidden');
+        // حذف مريض
+        function deletePatient(index) {
+            if(confirm('هل تريد حذف هذا المريض من السجل؟')) {
+                patients.splice(index, 1);
+                localStorage.setItem('clinic_patients', JSON.stringify(patients));
+                displayPatients();
+            }
         }
 
-        // تشغيل مبدئي لتحديث القوائم عند فتح الصفحة لأول مرة
-        updatePatientSelect();
+        // تشغيل العرض تلقائياً عند فتح الصفحة
+        displayPatients();
     </script>
 </body>
 </html>
