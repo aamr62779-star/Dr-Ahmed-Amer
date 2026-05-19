@@ -40,8 +40,8 @@
     <div id="appContent">
         
         <div class="text-center mb-3">
-            <h3 class="text-primary fw-bold" id="mainAppTitle">عيادة دكتور أحمد حسن عامر</h3>
-            <p class="text-muted small id='subAppTitle'">نظام الإدارة الشامل</p>
+            <h3 class="text-primary fw-bold">عيادة دكتور أحمد حسن عامر</h3>
+            <p class="text-muted small">نظام الإدارة الشامل</p>
         </div>
 
         <div id="page-patients">
@@ -81,7 +81,7 @@
                 <h5 class="mb-3 text-secondary fw-bold">تسجيل طلبية معمل جديدة</h5>
                 <form id="labForm" class="row g-2">
                     <div class="col-12"><input type="text" id="labName" class="form-control" placeholder="اسم المعمل" required></div>
-                    <div class="col-12"><input type="text" id="labCase" class="form-control" placeholder="نوع الحالة / التركيبة (مثال: زيركون مريض فلان)"></div>
+                    <div class="col-12"><input type="text" id="labCase" class="form-control" placeholder="نوع الحالة / التركيبة"></div>
                     <div class="col-6"><input type="number" id="labTotal" class="form-control" placeholder="الحساب الإجمالي" oninput="calculateLabRemaining()"></div>
                     <div class="col-6"><input type="number" id="labPaid" class="form-control" placeholder="المبلغ المدفوع له" oninput="calculateLabRemaining()"></div>
                     <div class="col-12"><input type="number" id="labRemaining" class="form-control" placeholder="المتبقي للمعمل" readonly style="background-color: #e9ecef;"></div>
@@ -109,7 +109,7 @@
             <div class="card p-3 mb-4">
                 <h5 class="mb-3 text-secondary fw-bold">تسجيل مصروفات العيادة</h5>
                 <form id="expenseForm" class="row g-2">
-                    <div class="col-12"><input type="text" id="expReason" class="form-control" placeholder="بند الصرف (إيجار، خامات، كهرباء...)" required></div>
+                    <div class="col-12"><input type="text" id="expReason" class="form-control" placeholder="بند الصرف (إيجار، خامات...)" required></div>
                     <div class="col-8"><input type="number" id="expAmount" class="form-control" placeholder="المبلغ المصروف" required></div>
                     <div class="col-4"><button type="submit" class="btn btn-danger w-100 fw-bold">إضافة</button></div>
                 </form>
@@ -137,7 +137,6 @@
         <div id="page-share">
             <div class="card p-4 text-center mb-3 bg-white">
                 <h5 class="text-muted mb-3">ملخص أرباح وحساب نسب العيادة</h5>
-                
                 <div class="row g-3">
                     <div class="col-6">
                         <div class="p-2 border rounded bg-light">
@@ -152,19 +151,14 @@
                         </div>
                     </div>
                 </div>
-
                 <hr class="my-4">
-
                 <div class="p-3 border rounded mb-3 bg-gradient" style="background-color: #e6f9f5;">
                     <span class="badge bg-success mb-2" style="font-size: 14px;">نسبة دكتور أحمد (70%)</span>
                     <h2 class="text-success fw-bold m-0" id="doctorShareLabel">0 ج.م</h2>
-                    <small class="text-muted">صافي ربحك الشخصي جاهز للاستلام</small>
                 </div>
-
                 <div class="p-3 border rounded bg-gradient" style="background-color: #f0f4fc;">
                     <span class="badge bg-primary mb-2" style="font-size: 14px;">نسبة العيادة (30%)</span>
                     <h3 class="text-primary fw-bold m-0" id="clinicShareLabel">0 ج.م</h3>
-                    <small class="text-muted">ميزانية خامات وتطوير العيادة</small>
                 </div>
             </div>
         </div>
@@ -191,7 +185,22 @@
         
         <form id="editForm" class="row g-3">
             <input type="hidden" id="editIndex">
+            
             <div class="col-12"><label class="form-label fw-bold">اسم المريض</label><input type="text" id="editName" class="form-control" required></div>
+            
+            <div class="col-12">
+                <label class="form-label fw-bold text-dark">📞 رقم الموبايل</label>
+                <div class="input-group">
+                    <input type="tel" id="editPhone" class="form-control" placeholder="010xxxxxxx">
+                    <a id="phoneCallBtn" href="#" class="btn btn-primary"><i class="bi bi-telephone-fill"></i> اتصال سريع</a>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-bold text-primary">📅 موعد الزيارة القادمة (المتابعة)</label>
+                <input type="datetime-local" id="editNextVisit" class="form-control">
+            </div>
+
             <div class="col-12"><label class="form-label fw-bold">الخدمة الحالية</label><input type="text" id="editService" class="form-control"></div>
             <div class="col-6"><label class="form-label fw-bold text-success">المدفوع (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
             <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
@@ -210,7 +219,6 @@
     </div>
 
     <script>
-        // قواعد الباسوورد والصفحات
         function checkPassword() {
             const input = document.getElementById('passwordInput').value;
             if (input === "1234") {
@@ -224,18 +232,15 @@
         }
 
         function switchPage(pageName) {
-            // إخفاء كل الصفحات أولاً
             document.getElementById('page-patients').style.display = 'none';
             document.getElementById('page-labs').style.display = 'none';
             document.getElementById('page-expenses').style.display = 'none';
             document.getElementById('page-share').style.display = 'none';
             document.getElementById('patientProfile').style.display = 'none';
 
-            // إزالة نشاط الأزرار
             let buttons = document.querySelectorAll('.nav-item-btn');
             buttons.forEach(b => b.classList.remove('active'));
 
-            // إظهار الصفحة المحددة وضبط الزر
             if(pageName === 'patients') {
                 document.getElementById('page-patients').style.display = 'block';
                 buttons[0].classList.add('active');
@@ -255,7 +260,6 @@
             }
         }
 
-        // ================= كود صفحة المرضى الأساسية =================
         let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
 
         function calculateRemaining() {
@@ -272,8 +276,10 @@
             let remaining = parseFloat(document.getElementById('remaining').value) || 0;
             let total = paid + remaining;
             let xrays = [];
+            let phone = '';
+            let nextVisit = '';
 
-            patients.unshift({ name, service, paid, remaining, total, xrays });
+            patients.unshift({ name, service, paid, remaining, total, xrays, phone, nextVisit });
             localStorage.setItem('clinic_patients', JSON.stringify(patients));
             document.getElementById('patientForm').reset();
             openPatientProfile(0);
@@ -295,7 +301,7 @@
                     tableBody.innerHTML += `
                         <tr>
                             <td><strong>${p.name}</strong></td>
-                            <td><span class="badge bg-secondary">${p.service || 'خلع/حشو'}</span></td>
+                            <td><span class="badge bg-secondary">${p.service || 'فحص'}</span></td>
                             <td class="text-danger fw-bold">${p.remaining} ج.م</td>
                             <td><button class="btn btn-sm btn-primary fw-bold" onclick="openPatientProfile(${index})">👁️ ملف</button></td>
                         </tr>
@@ -308,11 +314,27 @@
             document.getElementById('page-patients').style.display = 'none';
             document.getElementById('patientProfile').style.display = 'block';
             let p = patients[index];
+            
             document.getElementById('profileTitle').innerText = `الملف الرقمي: ${p.name}`;
             document.getElementById('editIndex').value = index;
             document.getElementById('editName').value = p.name;
             document.getElementById('editService').value = p.service || '';
             document.getElementById('editPaid').value = p.paid;
+            
+            // جلب الهاتف والزيارة القادمة وإدراجهم بالخانات
+            document.getElementById('editPhone').value = p.phone || '';
+            document.getElementById('editNextVisit').value = p.nextVisit || '';
+            
+            // تحديث زر الاتصال السريع
+            let callBtn = document.getElementById('phoneCallBtn');
+            if(p.phone) {
+                callBtn.href = "tel:" + p.phone;
+                callBtn.classList.remove('disabled');
+            } else {
+                callBtn.href = "#";
+                callBtn.classList.add('disabled');
+            }
+
             let total = p.total || (parseFloat(p.paid) + parseFloat(p.remaining)) || 0;
             document.getElementById('editRemaining').value = total - p.paid;
             displayXrays(index);
@@ -323,6 +345,22 @@
             let currentPaid = parseFloat(document.getElementById('editPaid').value) || 0;
             let originalTotal = patients[index].total || (parseFloat(patients[index].paid) + parseFloat(patients[index].remaining)) || 0;
             document.getElementById('editRemaining').value = originalTotal - currentPaid;
+        }
+
+        function savePatientChanges() {
+            let index = document.getElementById('editIndex').value;
+            patients[index].name = document.getElementById('editName').value;
+            patients[index].service = document.getElementById('editService').value;
+            patients[index].paid = parseFloat(document.getElementById('editPaid').value) || 0;
+            patients[index].remaining = parseFloat(document.getElementById('editRemaining').value) || 0;
+            patients[index].total = patients[index].paid + patients[index].remaining;
+            
+            // حفظ الهاتف وموعد الزيارة القادمة الجديد
+            patients[index].phone = document.getElementById('editPhone').value;
+            patients[index].nextVisit = document.getElementById('editNextVisit').value;
+
+            localStorage.setItem('clinic_patients', JSON.stringify(patients));
+            backToMain();
         }
 
         function uploadXray() {
@@ -345,7 +383,7 @@
             gallery.innerHTML = '';
             let xrays = patients[index].xrays || [];
             if(xrays.length === 0) {
-                gallery.innerHTML = '<span class="text-muted small p-2">لا توجد أشعات</span>';
+                gallery.innerHTML = '<span class="text-muted small p-2">لا توجد أشعات مسجلة</span>';
                 return;
             }
             xrays.forEach((imgSrc, imgIndex) => {
@@ -366,17 +404,6 @@
             }
         }
 
-        function savePatientChanges() {
-            let index = document.getElementById('editIndex').value;
-            patients[index].name = document.getElementById('editName').value;
-            patients[index].service = document.getElementById('editService').value;
-            patients[index].paid = parseFloat(document.getElementById('editPaid').value) || 0;
-            patients[index].remaining = parseFloat(document.getElementById('editRemaining').value) || 0;
-            patients[index].total = patients[index].paid + patients[index].remaining;
-            localStorage.setItem('clinic_patients', JSON.stringify(patients));
-            backToMain();
-        }
-
         function deletePatientRecord() {
             if(confirm('حذف المريض نهائياً؟')) {
                 let index = document.getElementById('editIndex').value;
@@ -390,15 +417,13 @@
             switchPage('patients');
         }
 
-        // ================= كود صفحة حسابات المعمل =================
+        // ================= كود صفحة المعمل =================
         let labs = JSON.parse(localStorage.getItem('clinic_labs')) || [];
-        
         function calculateLabRemaining() {
             let total = parseFloat(document.getElementById('labTotal').value) || 0;
             let paid = parseFloat(document.getElementById('labPaid').value) || 0;
             document.getElementById('labRemaining').value = total - paid;
         }
-
         document.getElementById('labForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let name = document.getElementById('labName').value;
@@ -406,101 +431,60 @@
             let total = parseFloat(document.getElementById('labTotal').value) || 0;
             let paid = parseFloat(document.getElementById('labPaid').value) || 0;
             let remaining = total - paid;
-
             labs.unshift({ name, caseDesc, total, paid, remaining });
             localStorage.setItem('clinic_labs', JSON.stringify(labs));
             document.getElementById('labForm').reset();
             displayLabs();
         });
-
         function displayLabs() {
             let tbody = document.getElementById('labTable');
             tbody.innerHTML = '';
             if(labs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد طلبيات معامل مسجلة</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد طلبيات معامل</td></tr>';
                 return;
             }
             labs.forEach((l, i) => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${l.name}</strong></td>
-                        <td><small class="text-muted">${l.caseDesc || 'تركيبة'}</small></td>
-                        <td class="text-danger fw-bold">${l.remaining} ج.م</td>
-                        <td><button class="btn btn-sm btn-outline-danger" onclick="deleteLab(${i})">حذف</button></td>
-                    </tr>
-                `;
+                tbody.innerHTML += `<tr><td><strong>${l.name}</strong></td><td><small>${l.caseDesc || ''}</small></td><td class="text-danger fw-bold">${l.remaining} ج.م</td><td><button class="btn btn-sm btn-outline-danger" onclick="deleteLab(${i})">حذف</button></td></tr>`;
             });
         }
-
         function deleteLab(i) {
-            if(confirm('هل تريد مسح هذا الحساب للمعمل؟')) {
-                labs.splice(i, 1);
-                localStorage.setItem('clinic_labs', JSON.stringify(labs));
-                displayLabs();
-            }
+            if(confirm('مسح المعمل؟')) { labs.splice(i, 1); localStorage.setItem('clinic_labs', JSON.stringify(labs)); displayLabs(); }
         }
 
-        // ================= كود صفحة مصاريف العيادة =================
+        // ================= كود صفحة المصاريف =================
         let expenses = JSON.parse(localStorage.getItem('clinic_expenses')) || [];
-
         document.getElementById('expenseForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let reason = document.getElementById('expReason').value;
             let amount = parseFloat(document.getElementById('expAmount').value) || 0;
-
             expenses.unshift({ reason, amount });
             localStorage.setItem('clinic_expenses', JSON.stringify(expenses));
             document.getElementById('expenseForm').reset();
             displayExpenses();
         });
-
         function displayExpenses() {
             let tbody = document.getElementById('expenseTable');
             tbody.innerHTML = '';
             let totalExp = 0;
-
             expenses.forEach((e, i) => {
                 totalExp += e.amount;
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${e.reason}</td>
-                        <td class="text-danger">${e.amount} ج.م</td>
-                        <td><button class="btn btn-sm text-danger" onclick="deleteExpense(${i})"><i class="bi bi-trash"></i></button></td>
-                    </tr>
-                `;
+                tbody.innerHTML += `<tr><td>${e.reason}</td><td class="text-danger">${e.amount} ج.م</td><td><button class="btn btn-sm text-danger" onclick="deleteExpense(${i})"><i class="bi bi-trash"></i></button></td></tr>`;
             });
-
-            if(expenses.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">لم يتم تسجيل أي مصروفات اليوم</td></tr>';
-            }
+            if(expenses.length === 0) tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">لا توجد مصروفات</td></tr>';
             document.getElementById('totalExpensesLabel').innerText = totalExp + " ج.م";
         }
-
         function deleteExpense(i) {
-            if(confirm('مسح هذا البند من المصاريف؟')) {
-                expenses.splice(i, 1);
-                localStorage.setItem('clinic_expenses', JSON.stringify(expenses));
-                displayExpenses();
-            }
+            if(confirm('مسح بند الصرف؟')) { expenses.splice(i, 1); localStorage.setItem('clinic_expenses', JSON.stringify(expenses)); displayExpenses(); }
         }
 
-        // ================= كود حساب النسب الذكي (70% - 30%) =================
+        // ================= كود حساب النسب (70% - 30%) =================
         function calculateShares() {
-            // 1. جمع إجمالي دخل العيادة الفعلي من المدفوعات الحالية للمرضى
             let totalIncome = patients.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
-            
-            // 2. جمع إجمالي المصروفات
             let totalExp = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-
-            // 3. صافي الدخل المتبقي للتقسيم
             let netIncome = totalIncome - totalExp;
-            if(netIncome < 0) netIncome = 0; // حماية في حالة كانت المصاريف أعلى
-
-            // 4. حساب النسب
+            if(netIncome < 0) netIncome = 0;
             let doctorShare = netIncome * 0.70;
             let clinicShare = netIncome * 0.30;
-
-            // 5. طباعة الأرقام في الشاشة فخمة
             document.getElementById('shareTotalIncome').innerText = totalIncome + " ج.م";
             document.getElementById('shareTotalExpenses').innerText = totalExp + " ج.م";
             document.getElementById('doctorShareLabel').innerText = doctorShare.toFixed(2) + " ج.م";
