@@ -5,14 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>عيادة دكتور أحمد حسن عامر</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 20px; }
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 10px; padding-bottom: 80px; }
         .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
         .btn-success { background-color: #11caa0; border: none; }
         .btn-success:hover { background-color: #0ea885; }
         .login-container { max-width: 400px; margin: 100px auto; }
-        #appContent, #patientProfile { display: none; }
+        
+        /* إخفاء الصفحات افتراضياً */
+        #appContent, #page-patients, #page-labs, #page-expenses, #page-share, #patientProfile { display: none; }
+        
         .xray-thumb { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin: 5px; cursor: pointer; border: 2px solid #ddd; }
+        
+        /* شريط التنقل السفلي للموبايل */
+        .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background-color: #ffffff; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 1000; display: flex; justify-content: space-around; padding: 10px 0; }
+        .nav-item-btn { background: none; border: none; color: #6c757d; font-size: 12px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 25%; }
+        .nav-item-btn i { font-size: 22px; margin-bottom: 2px; }
+        .nav-item-btn.active { color: #0d6efd; }
     </style>
 </head>
 <body class="container">
@@ -28,97 +38,231 @@
     </div>
 
     <div id="appContent">
-        <div class="text-center mb-4">
-            <h2 class="text-primary fw-bold">عيادة دكتور أحمد حسن عامر</h2>
-            <p class="text-muted">نظام إدارة العيادة والملفات الرقمية</p>
-        </div>
         
-        <div class="card p-3 mb-4">
-            <h5 class="mb-3 text-secondary">إضافة مريض جديد</h5>
-            <form id="patientForm" class="row g-2">
-                <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض" required></div>
-                <div class="col-12"><input type="text" id="service" class="form-control" placeholder="الخدمة (حشو، تركيبة، خلع...)"></div>
-                <div class="col-6"><input type="number" id="paid" class="form-control" placeholder="المبلغ المدفوع" oninput="calculateRemaining()"></div>
-                <div class="col-6"><input type="number" id="total" class="form-control" placeholder="الإجمالي" oninput="calculateRemaining()"></div>
-                <div class="col-12"><input type="number" id="remaining" class="form-control" placeholder="المتبقي تلقائياً" readonly style="background-color: #e9ecef;"></div>
-                <div class="col-12"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض وفتح ملفه</button></div>
-            </form>
+        <div class="text-center mb-3">
+            <h3 class="text-primary fw-bold" id="mainAppTitle">عيادة دكتور أحمد حسن عامر</h3>
+            <p class="text-muted small id='subAppTitle'">نظام الإدارة الشامل</p>
         </div>
 
-        <div class="mb-3">
-            <input type="text" id="searchBar" class="form-control" placeholder="🔍 ابحث باسم المريض لفتح ملفه أو تعديله..." oninput="displayPatients()">
-        </div>
-
-        <div class="card p-2">
-            <div class="table-responsive">
-                <table class="table table-striped align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>الاسم</th>
-                            <th>الخدمة</th>
-                            <th>المتبقي</th>
-                            <th>الملف الرقمي</th>
-                        </tr>
-                    </thead>
-                    <tbody id="patientTable"></tbody>
-                </table>
+        <div id="page-patients">
+            <div class="card p-3 mb-4">
+                <h5 class="mb-3 text-secondary fw-bold">إضافة مريض جديد</h5>
+                <form id="patientForm" class="row g-2">
+                    <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض" required></div>
+                    <div class="col-12"><input type="text" id="service" class="form-control" placeholder="الخدمة (حشو، تركيبة، خلع...)"></div>
+                    <div class="col-6"><input type="number" id="paid" class="form-control" placeholder="المبلغ المدفوع" oninput="calculateRemaining()"></div>
+                    <div class="col-6"><input type="number" id="total" class="form-control" placeholder="الإجمالي" oninput="calculateRemaining()"></div>
+                    <div class="col-12"><input type="number" id="remaining" class="form-control" placeholder="المتبقي تلقائياً" readonly style="background-color: #e9ecef;"></div>
+                    <div class="col-12"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض وفتح ملفه</button></div>
+                </form>
             </div>
+            <div class="mb-3">
+                <input type="text" id="searchBar" class="form-control" placeholder="🔍 ابحث باسم المريض لفتح ملفه..." oninput="displayPatients()">
+            </div>
+            <div class="card p-2">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>الاسم</th>
+                                <th>الخدمة</th>
+                                <th>المتبقي</th>
+                                <th>الملف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-labs">
+            <div class="card p-3 mb-4">
+                <h5 class="mb-3 text-secondary fw-bold">تسجيل طلبية معمل جديدة</h5>
+                <form id="labForm" class="row g-2">
+                    <div class="col-12"><input type="text" id="labName" class="form-control" placeholder="اسم المعمل" required></div>
+                    <div class="col-12"><input type="text" id="labCase" class="form-control" placeholder="نوع الحالة / التركيبة (مثال: زيركون مريض فلان)"></div>
+                    <div class="col-6"><input type="number" id="labTotal" class="form-control" placeholder="الحساب الإجمالي" oninput="calculateLabRemaining()"></div>
+                    <div class="col-6"><input type="number" id="labPaid" class="form-control" placeholder="المبلغ المدفوع له" oninput="calculateLabRemaining()"></div>
+                    <div class="col-12"><input type="number" id="labRemaining" class="form-control" placeholder="المتبقي للمعمل" readonly style="background-color: #e9ecef;"></div>
+                    <div class="col-12"><button type="submit" class="btn btn-primary w-100 fw-bold">حفظ حـساب المعمل</button></div>
+                </form>
+            </div>
+            <div class="card p-2">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>المعمل</th>
+                                <th>الحالة</th>
+                                <th>المتبقي له</th>
+                                <th>تحكم</th>
+                            </tr>
+                        </thead>
+                        <tbody id="labTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-expenses">
+            <div class="card p-3 mb-4">
+                <h5 class="mb-3 text-secondary fw-bold">تسجيل مصروفات العيادة</h5>
+                <form id="expenseForm" class="row g-2">
+                    <div class="col-12"><input type="text" id="expReason" class="form-control" placeholder="بند الصرف (إيجار، خامات، كهرباء...)" required></div>
+                    <div class="col-8"><input type="number" id="expAmount" class="form-control" placeholder="المبلغ المصروف" required></div>
+                    <div class="col-4"><button type="submit" class="btn btn-danger w-100 fw-bold">إضافة</button></div>
+                </form>
+            </div>
+            <div class="card p-3 mb-3 bg-light text-center">
+                <h6 class="text-muted mb-1">إجمالي مصروفات العيادة الحالية</h6>
+                <h4 class="text-danger fw-bold" id="totalExpensesLabel">0 ج.م</h4>
+            </div>
+            <div class="card p-2">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>البند</th>
+                                <th>المبلغ</th>
+                                <th>مسح</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenseTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-share">
+            <div class="card p-4 text-center mb-3 bg-white">
+                <h5 class="text-muted mb-3">ملخص أرباح وحساب نسب العيادة</h5>
+                
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="p-2 border rounded bg-light">
+                            <small class="text-success fw-bold">إجمالي دخل المرضى</small>
+                            <h5 class="mt-1 fw-bold text-dark" id="shareTotalIncome">0 ج.م</h5>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 border rounded bg-light">
+                            <small class="text-danger fw-bold">إجمالي المصاريف</small>
+                            <h5 class="mt-1 fw-bold text-dark" id="shareTotalExpenses">0 ج.م</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="p-3 border rounded mb-3 bg-gradient" style="background-color: #e6f9f5;">
+                    <span class="badge bg-success mb-2" style="font-size: 14px;">نسبة دكتور أحمد (70%)</span>
+                    <h2 class="text-success fw-bold m-0" id="doctorShareLabel">0 ج.م</h2>
+                    <small class="text-muted">صافي ربحك الشخصي جاهز للاستلام</small>
+                </div>
+
+                <div class="p-3 border rounded bg-gradient" style="background-color: #f0f4fc;">
+                    <span class="badge bg-primary mb-2" style="font-size: 14px;">نسبة العيادة (30%)</span>
+                    <h3 class="text-primary fw-bold m-0" id="clinicShareLabel">0 ج.م</h3>
+                    <small class="text-muted">ميزانية خامات وتطوير العيادة</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-bottom">
+            <button class="nav-item-btn active" onclick="switchPage('patients')">
+                <i class="bi bi-people-fill"></i>المرضى
+            </button>
+            <button class="nav-item-btn" onclick="switchPage('labs')">
+                <i class="bi bi-box-seam-fill"></i>المعمل
+            </button>
+            <button class="nav-item-btn" onclick="switchPage('expenses')">
+                <i class="bi bi-credit-card-fill"></i>المصاريف
+            </button>
+            <button class="nav-item-btn" onclick="switchPage('share')">
+                <i class="bi bi-calculator-fill"></i>حساب النسب
+            </button>
         </div>
     </div>
 
     <div id="patientProfile" class="card p-4 mb-4">
-        <button onclick="backToMain()" class="btn btn-secondary btn-sm mb-3" style="max-width: 100px;">← رجوع للرئيسية</button>
+        <button onclick="backToMain()" class="btn btn-secondary btn-sm mb-3" style="max-width: 100px;">← رجوع</button>
         <h4 class="text-primary fw-bold mb-3" id="profileTitle">ملف المريض</h4>
         
         <form id="editForm" class="row g-3">
             <input type="hidden" id="editIndex">
-            <div class="col-md-6 col-12"><label class="form-label fw-bold">اسم المريض</label><input type="text" id="editName" class="form-control" required></div>
-            <div class="col-md-6 col-12"><label class="form-label fw-bold">الخدمة الحالية</label><input type="text" id="editService" class="form-control"></div>
+            <div class="col-12"><label class="form-label fw-bold">اسم المريض</label><input type="text" id="editName" class="form-control" required></div>
+            <div class="col-12"><label class="form-label fw-bold">الخدمة الحالية</label><input type="text" id="editService" class="form-control"></div>
             <div class="col-6"><label class="form-label fw-bold text-success">المدفوع (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
             <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
             
-            <div class="col-12 mt-4">
+            <div class="col-12 mt-3">
                 <label class="form-label fw-bold text-primary">📸 صور الأشعة والملفات الكلينيكية</label>
                 <input type="file" id="xrayInput" class="form-control" accept="image/*" multiple onchange="uploadXray()">
-                <div id="xrayGallery" class="mt-3 d-flex flex-wrap bg-light p-2 border rounded"></div>
+                <div id="xrayGallery" class="mt-2 d-flex flex-wrap bg-light p-2 border rounded"></div>
             </div>
 
-            <div class="col-12 d-flex gap-2 mt-4">
-                <button type="button" onclick="savePatientChanges()" class="btn btn-success flex-grow-1 fw-bold">حفظ التعديلات في الملف</button>
-                <button type="button" onclick="deletePatientRecord()" class="btn btn-danger fw-bold">حذف الملف بالكامل</button>
+            <div class="col-12 d-flex gap-2 mt-3">
+                <button type="button" onclick="savePatientChanges()" class="btn btn-success flex-grow-1 fw-bold">حفظ التعديل</button>
+                <button type="button" onclick="deletePatientRecord()" class="btn btn-danger fw-bold">حذف</button>
             </div>
         </form>
     </div>
 
     <script>
+        // قواعد الباسوورد والصفحات
         function checkPassword() {
-            const correctPassword = "1234";
             const input = document.getElementById('passwordInput').value;
-            if (input === correctPassword) {
+            if (input === "1234") {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
-                displayPatients();
+                switchPage('patients'); 
             } else {
                 document.getElementById('loginError').style.display = 'block';
                 document.getElementById('passwordInput').value = '';
             }
         }
 
+        function switchPage(pageName) {
+            // إخفاء كل الصفحات أولاً
+            document.getElementById('page-patients').style.display = 'none';
+            document.getElementById('page-labs').style.display = 'none';
+            document.getElementById('page-expenses').style.display = 'none';
+            document.getElementById('page-share').style.display = 'none';
+            document.getElementById('patientProfile').style.display = 'none';
+
+            // إزالة نشاط الأزرار
+            let buttons = document.querySelectorAll('.nav-item-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+
+            // إظهار الصفحة المحددة وضبط الزر
+            if(pageName === 'patients') {
+                document.getElementById('page-patients').style.display = 'block';
+                buttons[0].classList.add('active');
+                displayPatients();
+            } else if(pageName === 'labs') {
+                document.getElementById('page-labs').style.display = 'block';
+                buttons[1].classList.add('active');
+                displayLabs();
+            } else if(pageName === 'expenses') {
+                document.getElementById('page-expenses').style.display = 'block';
+                buttons[2].classList.add('active');
+                displayExpenses();
+            } else if(pageName === 'share') {
+                document.getElementById('page-share').style.display = 'block';
+                buttons[3].classList.add('active');
+                calculateShares();
+            }
+        }
+
+        // ================= كود صفحة المرضى الأساسية =================
+        let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
+
         function calculateRemaining() {
             let total = parseFloat(document.getElementById('total').value) || 0;
             let paid = parseFloat(document.getElementById('paid').value) || 0;
             document.getElementById('remaining').value = total - paid;
         }
-
-        function calculateEditRemaining() {
-            // حساب المتبقي أثناء التعديل بناءً على القيم القديمة
-            let index = document.getElementById('editIndex').value;
-            let currentPaid = parseFloat(document.getElementById('editPaid').value) || 0;
-            let originalTotal = patients[index].total || (parseFloat(patients[index].paid) + parseFloat(patients[index].remaining)) || 0;
-            document.getElementById('editRemaining').value = originalTotal - currentPaid;
-        }
-
-        let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
 
         document.getElementById('patientForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -131,17 +275,16 @@
 
             patients.unshift({ name, service, paid, remaining, total, xrays });
             localStorage.setItem('clinic_patients', JSON.stringify(patients));
-            
             document.getElementById('patientForm').reset();
-            openPatientProfile(0); // يفتح ملف المريض الجديد فوراً لرفع الأشعة
+            openPatientProfile(0);
         });
 
         function displayPatients() {
             let searchTerm = document.getElementById('searchBar').value.toLowerCase();
             let tableBody = document.getElementById('patientTable');
             tableBody.innerHTML = '';
+            
             let filtered = patients.filter(p => p.name.toLowerCase().includes(searchTerm));
-
             if(filtered.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">لا يوجد مرضى مسجلين</td></tr>`;
                 return;
@@ -152,41 +295,40 @@
                     tableBody.innerHTML += `
                         <tr>
                             <td><strong>${p.name}</strong></td>
-                            <td><span class="badge bg-secondary">${p.service || 'بدون خدمة'}</span></td>
+                            <td><span class="badge bg-secondary">${p.service || 'خلع/حشو'}</span></td>
                             <td class="text-danger fw-bold">${p.remaining} ج.م</td>
-                            <td><button class="btn btn-sm btn-primary fw-bold" onclick="openPatientProfile(${index})">👁️ فتح الملف / تعديل</button></td>
+                            <td><button class="btn btn-sm btn-primary fw-bold" onclick="openPatientProfile(${index})">👁️ ملف</button></td>
                         </tr>
                     `;
                 }
             });
         }
 
-        // فتح ملف المريض المنفصل
         function openPatientProfile(index) {
-            document.getElementById('appContent').style.display = 'none';
+            document.getElementById('page-patients').style.display = 'none';
             document.getElementById('patientProfile').style.display = 'block';
-            
             let p = patients[index];
             document.getElementById('profileTitle').innerText = `الملف الرقمي: ${p.name}`;
             document.getElementById('editIndex').value = index;
             document.getElementById('editName').value = p.name;
             document.getElementById('editService').value = p.service || '';
             document.getElementById('editPaid').value = p.paid;
-            
-            // حساب الإجمالي المسجل لحساب المتبقي بدقة
             let total = p.total || (parseFloat(p.paid) + parseFloat(p.remaining)) || 0;
             document.getElementById('editRemaining').value = total - p.paid;
-
             displayXrays(index);
         }
 
-        // رفع الأشعة وتحويلها لنص لحفظها في الموبايل فوراً
+        function calculateEditRemaining() {
+            let index = document.getElementById('editIndex').value;
+            let currentPaid = parseFloat(document.getElementById('editPaid').value) || 0;
+            let originalTotal = patients[index].total || (parseFloat(patients[index].paid) + parseFloat(patients[index].remaining)) || 0;
+            document.getElementById('editRemaining').value = originalTotal - currentPaid;
+        }
+
         function uploadXray() {
             let index = document.getElementById('editIndex').value;
             let files = document.getElementById('xrayInput').files;
-            
             if(!patients[index].xrays) patients[index].xrays = [];
-
             for(let file of files) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
@@ -198,36 +340,32 @@
             }
         }
 
-        // عرض الأشعات جوه الملف
         function displayXrays(index) {
             let gallery = document.getElementById('xrayGallery');
             gallery.innerHTML = '';
             let xrays = patients[index].xrays || [];
-            
             if(xrays.length === 0) {
-                gallery.innerHTML = '<span class="text-muted small p-2">لا توجد أشعات مرفوعة لهذا الملف حتى الآن</span>';
+                gallery.innerHTML = '<span class="text-muted small p-2">لا توجد أشعات</span>';
                 return;
             }
-
             xrays.forEach((imgSrc, imgIndex) => {
                 gallery.innerHTML += `
                     <div class="position-relative d-inline-block">
                         <img src="${imgSrc}" class="xray-thumb" onclick="window.open('${imgSrc}')">
-                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 start-0 m-1" style="padding: 2px 6px; font-size:10px;" onclick="deleteXray(${index}, ${imgIndex})">X</button>
+                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 start-0 m-1" style="padding: 1px 5px; font-size:10px;" onclick="deleteXray(${index}, ${imgIndex})">X</button>
                     </div>
                 `;
             });
         }
 
         function deleteXray(pIndex, imgIndex) {
-            if(confirm('هل تريد حذف صورة الأشعة هذه؟')) {
+            if(confirm('حذف الأشعة؟')) {
                 patients[pIndex].xrays.splice(imgIndex, 1);
                 localStorage.setItem('clinic_patients', JSON.stringify(patients));
                 displayXrays(pIndex);
             }
         }
 
-        // حفظ التعديلات الكلية
         function savePatientChanges() {
             let index = document.getElementById('editIndex').value;
             patients[index].name = document.getElementById('editName').value;
@@ -235,14 +373,12 @@
             patients[index].paid = parseFloat(document.getElementById('editPaid').value) || 0;
             patients[index].remaining = parseFloat(document.getElementById('editRemaining').value) || 0;
             patients[index].total = patients[index].paid + patients[index].remaining;
-
             localStorage.setItem('clinic_patients', JSON.stringify(patients));
-            alert('تم تحديث ملف المريض بنجاح!');
             backToMain();
         }
 
         function deletePatientRecord() {
-            if(confirm('تحذير: هل أنت متأكد من حذف ملف هذا المريض نهائياً بكل ما فيه من أشعات؟')) {
+            if(confirm('حذف المريض نهائياً؟')) {
                 let index = document.getElementById('editIndex').value;
                 patients.splice(index, 1);
                 localStorage.setItem('clinic_patients', JSON.stringify(patients));
@@ -251,9 +387,124 @@
         }
 
         function backToMain() {
-            document.getElementById('patientProfile').style.display = 'none';
-            document.getElementById('appContent').style.display = 'block';
-            displayPatients();
+            switchPage('patients');
+        }
+
+        // ================= كود صفحة حسابات المعمل =================
+        let labs = JSON.parse(localStorage.getItem('clinic_labs')) || [];
+        
+        function calculateLabRemaining() {
+            let total = parseFloat(document.getElementById('labTotal').value) || 0;
+            let paid = parseFloat(document.getElementById('labPaid').value) || 0;
+            document.getElementById('labRemaining').value = total - paid;
+        }
+
+        document.getElementById('labForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let name = document.getElementById('labName').value;
+            let caseDesc = document.getElementById('labCase').value;
+            let total = parseFloat(document.getElementById('labTotal').value) || 0;
+            let paid = parseFloat(document.getElementById('labPaid').value) || 0;
+            let remaining = total - paid;
+
+            labs.unshift({ name, caseDesc, total, paid, remaining });
+            localStorage.setItem('clinic_labs', JSON.stringify(labs));
+            document.getElementById('labForm').reset();
+            displayLabs();
+        });
+
+        function displayLabs() {
+            let tbody = document.getElementById('labTable');
+            tbody.innerHTML = '';
+            if(labs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد طلبيات معامل مسجلة</td></tr>';
+                return;
+            }
+            labs.forEach((l, i) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${l.name}</strong></td>
+                        <td><small class="text-muted">${l.caseDesc || 'تركيبة'}</small></td>
+                        <td class="text-danger fw-bold">${l.remaining} ج.م</td>
+                        <td><button class="btn btn-sm btn-outline-danger" onclick="deleteLab(${i})">حذف</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteLab(i) {
+            if(confirm('هل تريد مسح هذا الحساب للمعمل؟')) {
+                labs.splice(i, 1);
+                localStorage.setItem('clinic_labs', JSON.stringify(labs));
+                displayLabs();
+            }
+        }
+
+        // ================= كود صفحة مصاريف العيادة =================
+        let expenses = JSON.parse(localStorage.getItem('clinic_expenses')) || [];
+
+        document.getElementById('expenseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let reason = document.getElementById('expReason').value;
+            let amount = parseFloat(document.getElementById('expAmount').value) || 0;
+
+            expenses.unshift({ reason, amount });
+            localStorage.setItem('clinic_expenses', JSON.stringify(expenses));
+            document.getElementById('expenseForm').reset();
+            displayExpenses();
+        });
+
+        function displayExpenses() {
+            let tbody = document.getElementById('expenseTable');
+            tbody.innerHTML = '';
+            let totalExp = 0;
+
+            expenses.forEach((e, i) => {
+                totalExp += e.amount;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${e.reason}</td>
+                        <td class="text-danger">${e.amount} ج.م</td>
+                        <td><button class="btn btn-sm text-danger" onclick="deleteExpense(${i})"><i class="bi bi-trash"></i></button></td>
+                    </tr>
+                `;
+            });
+
+            if(expenses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">لم يتم تسجيل أي مصروفات اليوم</td></tr>';
+            }
+            document.getElementById('totalExpensesLabel').innerText = totalExp + " ج.م";
+        }
+
+        function deleteExpense(i) {
+            if(confirm('مسح هذا البند من المصاريف؟')) {
+                expenses.splice(i, 1);
+                localStorage.setItem('clinic_expenses', JSON.stringify(expenses));
+                displayExpenses();
+            }
+        }
+
+        // ================= كود حساب النسب الذكي (70% - 30%) =================
+        function calculateShares() {
+            // 1. جمع إجمالي دخل العيادة الفعلي من المدفوعات الحالية للمرضى
+            let totalIncome = patients.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
+            
+            // 2. جمع إجمالي المصروفات
+            let totalExp = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+
+            // 3. صافي الدخل المتبقي للتقسيم
+            let netIncome = totalIncome - totalExp;
+            if(netIncome < 0) netIncome = 0; // حماية في حالة كانت المصاريف أعلى
+
+            // 4. حساب النسب
+            let doctorShare = netIncome * 0.70;
+            let clinicShare = netIncome * 0.30;
+
+            // 5. طباعة الأرقام في الشاشة فخمة
+            document.getElementById('shareTotalIncome').innerText = totalIncome + " ج.م";
+            document.getElementById('shareTotalExpenses').innerText = totalExp + " ج.م";
+            document.getElementById('doctorShareLabel').innerText = doctorShare.toFixed(2) + " ج.م";
+            document.getElementById('clinicShareLabel').innerText = clinicShare.toFixed(2) + " ج.م";
         }
     </script>
 </body>
