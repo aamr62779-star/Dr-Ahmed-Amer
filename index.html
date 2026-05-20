@@ -220,7 +220,7 @@
                 </div>
                 <div class="p-2 border rounded text-center" style="background-color: #f0f4fc;">
                     <small class="text-primary fw-bold d-block">🏢 صافي نسبة العيادة اليوم (30%)</small>
-                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.m</h5>
+                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.م</h5>
                 </div>
             </div>
 
@@ -298,11 +298,19 @@
         let labs = {};
         let expenses = {};
         
-        // متغيرات تتبع حالة التاريخ التلقائي لمنع تداخل الاختيار اليدوي
         let lastSystemDateStr = "";
         let isUserViewingCustomDate = false;
 
         const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+
+        // دالة جديدة لاستخراج تاريخ اليوم بتوقيت جهازك المحلي الفعلي YYYY-MM-DD
+        function getLocalDateString() {
+            let now = new Date();
+            let year = now.getFullYear();
+            let month = String(now.getMonth() + 1).padStart(2, '0');
+            let day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
         function getArabicDayName(dateString) {
             if(!dateString) return "غير محدد";
@@ -328,8 +336,8 @@
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
                 
-                // إعداد التواريخ الافتراضية لأول مرة عند الدخول
-                let todayStr = new Date().toISOString().split('T')[0];
+                // الاعتماد الفوري التام على التوقيت المحلي للموبايل/الكمبيوتر
+                let todayStr = getLocalDateString();
                 lastSystemDateStr = todayStr;
                 document.getElementById('appointmentFilterDate').value = todayStr;
                 document.getElementById('customPatientDate').value = todayStr;
@@ -337,7 +345,7 @@
                 showLoading(true, "جاري فتح الملفات السحابية...");
                 syncDataFromServer();
 
-                // تفعيل نظام الرصد والمتابعة التلقائي للوقت بعد الساعة 12
+                // بدء تشغيل دالة المراقبة اللحظية
                 startMidnightClockChecker();
             } else {
                 document.getElementById('loginError').style.display = 'block';
@@ -345,18 +353,15 @@
             }
         }
 
-        // ================= دالة التحديث الذاتي للمتابعات بعد الساعة 12 =================
+        // تعديل دالة الرصد لتعمل بالتوقيت المحلي لجمهورية مصر العربية
         function startMidnightClockChecker() {
             setInterval(() => {
-                let currentTodayStr = new Date().toISOString().split('T')[0];
-                // إذا تغير تاريخ اليوم الفعلي في جهازك (دخلنا بعد 12 بالليل) والمستخدم مش باصص على تاريخ قديم يدوياً
+                let currentTodayStr = getLocalDateString(); // قراءة الوقت المحلي الفعلي الحالي
                 if (currentTodayStr !== lastSystemDateStr) {
                     lastSystemDateStr = currentTodayStr;
                     
-                    // تحديث تاريخ شاشة إضافة المريض الافتراضي
                     document.getElementById('customPatientDate').value = currentTodayStr;
                     
-                    // إذا كان دكتور أحمد مش عارض ميعاد قديم بشكل يدوي، حدّث الشاشة حالاً لليوم الجديد تلقائياً
                     if (!isUserViewingCustomDate) {
                         document.getElementById('appointmentFilterDate').value = currentTodayStr;
                         if (document.getElementById('page-appointments').style.display === 'block') {
@@ -364,15 +369,13 @@
                         }
                     }
                 }
-            }, 60000); // بتشيّك كل دقيقة في الخلفية بدون أي تأثير على الأداء
+            }, 30000); // تسريع الفحص كل 30 ثانية لضمان الدقة الكاملة عند خط منتصف الليل
         }
 
-        // دالة للتحكم في حالة اختيار التاريخ يدوياً من الأجندة
         function handleAppointmentDateChange() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
-            let currentTodayStr = new Date().toISOString().split('T')[0];
+            let currentTodayStr = getLocalDateString();
             
-            // لو الدكتور اختار تاريخ مختلف عن النهارده، بنفهم إنو بيتصفح داتا تانية فبنوقف التحديث التلقائي مؤقتاً
             if (selectedDate !== currentTodayStr) {
                 isUserViewingCustomDate = true;
             } else {
@@ -432,9 +435,8 @@
             } else if(pageName === 'appointments') {
                 document.getElementById('page-appointments').style.display = 'block';
                 buttons[1].classList.add('active');
-                // في كل مرة يفتح صفحة المتابعات، لو مش باصص يدوياً على تاريخ قديم يعرض التلقائي المحدث
                 if (!isUserViewingCustomDate) {
-                    document.getElementById('appointmentFilterDate').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('appointmentFilterDate').value = getLocalDateString();
                 }
                 displayDailyAppointments();
             } else if(pageName === 'bookings') {
@@ -452,7 +454,7 @@
             } else if(pageName === 'share') {
                 document.getElementById('page-share').style.display = 'block';
                 buttons[5].classList.add('active');
-                document.getElementById('shareFilterDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('shareFilterDate').value = getLocalDateString();
                 calculateDailyShares();
             }
         }
@@ -474,12 +476,12 @@
             let total = paid + remaining;
             
             let dateStr = document.getElementById('customPatientDate').value; 
-            if(!dateStr) dateStr = new Date().toISOString().split('T')[0];
+            if(!dateStr) dateStr = getLocalDateString();
 
             patients[id] = { id, name, service, paid, remaining, total, xrays: [], phone: '', nextVisit: '', dateCreated: dateStr };
             pushToServer('patients', patients, () => {
                 document.getElementById('patientForm').reset();
-                document.getElementById('customPatientDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('customPatientDate').value = getLocalDateString();
                 openPatientProfile(id);
             });
         });
@@ -557,13 +559,12 @@
             patients[id].nextVisit = document.getElementById('editNextVisit').value;
 
             if(!patients[id].dateCreated) {
-                patients[id].dateCreated = new Date().toISOString().split('T')[0];
+                patients[id].dateCreated = getLocalDateString();
             }
 
             pushToServer('patients', patients, () => { backToMain(); });
         }
 
-        // ================= تكنولوجيا الضغط المطور لحماية المساحة =================
         function uploadXray() {
             let id = document.getElementById('editId').value;
             let files = document.getElementById('xrayInput').files;
@@ -680,7 +681,7 @@
             let b = bookings[id];
             if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى؟`)) {
                 let pId = "p_" + Date.now();
-                let todayStr = new Date().toISOString().split('T')[0];
+                let todayStr = getLocalDateString();
 
                 patients[pId] = { id: pId, name: b.name, phone: b.phone, service: 'حجز مسبق تم الحضور', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', dateCreated: todayStr };
                 delete bookings[id];
@@ -757,7 +758,7 @@
             let id = "exp_" + Date.now();
             let reason = document.getElementById('expReason').value;
             let amount = parseFloat(document.getElementById('expAmount').value) || 0;
-            let dateStr = new Date().toISOString().split('T')[0];
+            let dateStr = getLocalDateString();
 
             expenses[id] = { id, reason, amount, dateCreated: dateStr };
             pushToServer('expenses', expenses, () => { document.getElementById('expenseForm').reset(); displayExpenses(); });
@@ -774,7 +775,7 @@
             document.getElementById('totalExpensesLabel').innerText = totalExp + " ج.م";
         }
 
-        function deleteExpense(id) { if(confirm('مسح المصروف؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
+        function deleteExpense(id) { if(confirm('مسح المصروف?')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
 
         // ================= النظام المالي ونسب الشركاء الأونلاين =================
         function calculateDailyShares() {
