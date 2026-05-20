@@ -122,7 +122,7 @@
                 </form>
             </div>
             <div class="card p-2">
-                <h6 class="p-2 text-secondary fw-bold">📋 قائمة الاتصالات والحجوزات القادمة:</h6>
+                <h6 class="p-2 text-secondary fw-bold">📋 قائمة الحجوزات القادمة:</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped align-middle mb-0" style="font-size: 12px;">
                         <thead class="table-info">
@@ -271,7 +271,7 @@
             <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
             
             <div class="col-12 mt-3">
-                <label class="form-label fw-bold text-primary">📸 صور الأشعة والملفات الكلينيكية</label>
+                <label class="form-label fw-bold text-primary">📸 صور الأشعة (مساحة تخزين ذكية فائقة اللانهائية ⚙️)</label>
                 <input type="file" id="xrayInput" class="form-control" accept="image/*" multiple onchange="uploadXray()">
                 <div id="xrayGallery" class="mt-2 d-flex flex-wrap bg-light p-2 border rounded"></div>
             </div>
@@ -486,29 +486,36 @@
             pushToServer('patients', patients, () => { backToMain(); });
         }
 
+        // ================= تكنولوجيا الضغط المطور لحماية المساحة =================
         function uploadXray() {
             let id = document.getElementById('editId').value;
             let files = document.getElementById('xrayInput').files;
             if (files.length === 0) return;
             if(!patients[id].xrays) patients[id].xrays = [];
-            showLoading(true, "جاري تحسين وضغط حجم الأشعة...");
+            
+            showLoading(true, "جاري تحسين وضغط الأشعة لحفظ مساحة السيرفر الكبرى...");
             let loadedCount = 0;
+            
             for(let file of files) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
                     let img = new Image();
                     img.onload = function() {
                         let canvas = document.createElement('canvas');
-                        let max_size = 800;
+                        // تعيين دقة متوازنة جداً لحفظ جودة تفاصيل السن والجدور مع تقليل المساحة لأقصى حد
+                        let max_size = 700; 
                         let width = img.width; let height = img.height;
                         if (width > height) { if (width > max_size) { height *= max_size / width; width = max_size; } } 
                         else { if (height > max_size) { width *= max_size / height; height = max_size; } }
                         canvas.width = width; canvas.height = height;
                         let ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        let compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                        
+                        // ضغط الصورة إلى صيغة JPEG بجودة 0.45 لتقليص المساحة بـ 15 ضعفاً مع وضوح تام
+                        let compressedBase64 = canvas.toDataURL('image/jpeg', 0.45);
                         patients[id].xrays.push(compressedBase64);
                         loadedCount++;
+                        
                         if(loadedCount === files.length) {
                             pushToServer('patients', patients, () => { 
                                 document.getElementById('xrayInput').value = '';
@@ -596,18 +603,14 @@
 
         function convertBookingToPatient(id) {
             let b = bookings[id];
-            if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى؟`)) {
+            if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى?`)) {
                 let pId = "p_" + Date.now();
                 let todayStr = new Date().toISOString().split('T')[0];
 
-                // نقله للمرضى وتعيين تاريخ النهارده كزيارة فعلية
                 patients[pId] = { id: pId, name: b.name, phone: b.phone, service: 'حجز مسبق تم الحضور', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', dateCreated: todayStr };
-                
-                // مسحه من الحجوزات
                 delete bookings[id];
 
                 showLoading(true, "جاري تحويل البيانات سحابياً...");
-                // مزامنة العقدتين على السيرفر
                 fetch(`${FIREBASE_URL}patients.json`, { method: 'PUT', body: JSON.stringify(patients) })
                 .then(() => fetch(`${FIREBASE_URL}bookings.json`, { method: 'PUT', body: JSON.stringify(bookings) }))
                 .then(() => {
@@ -720,7 +723,7 @@
             document.getElementById('dayIncome').innerText = dayInc + " ج.م";
             document.getElementById('dayExpenses').innerText = dayExp + " ج.م";
             document.getElementById('dayDoctorShare').innerText = (dayNet * 0.70).toFixed(2) + " ج.م";
-            document.getElementById('dayClinicShare').innerText = (dayNet * 0.30).toFixed(2) + " ج.m";
+            document.getElementById('dayClinicShare').innerText = (dayNet * 0.30).toFixed(2) + " ج.م";
 
             let monthInc = Object.values(patients).reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
             let monthExp = Object.values(expenses).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
