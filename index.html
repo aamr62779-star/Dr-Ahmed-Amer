@@ -6,6 +6,10 @@
     <title>عيادة دكتور أحمد حسن عامر</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
+
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 10px; padding-bottom: 90px; }
         .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
@@ -26,6 +30,9 @@
         .clickable-name:hover { transform: scale(1.03); text-decoration: underline; }
         .patient-debt { color: #dc3545 !important; } 
         .patient-clear { color: #198754 !important; } 
+        
+        /* تحسينات مخصصة لشاشات الموبايل والتقويم العربي */
+        .flatpickr-calendar { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
     </style>
 </head>
 <body class="container">
@@ -280,8 +287,8 @@
             </div>
             
             <div class="col-12">
-                <label class="form-label fw-bold text-primary" id="editNextVisitLabel">📅 موعد الزيارة القادمة (المتابعة):</label>
-                <input type="datetime-local" id="editNextVisit" class="form-control fw-bold text-primary" style="font-size: 16px;" onchange="updateNextVisitDayLabel()">
+                <label class="form-label fw-bold text-primary mb-1" id="editNextVisitLabel">📅 موعد الزيارة القادمة (المتابعة):</label>
+                <input type="text" id="editNextVisit" class="form-control fw-bold text-primary bg-white" placeholder="اضغط لاختيار اليوم والتاريخ والوقت..." style="font-size: 15px;">
             </div>
 
             <div class="col-12"><label class="form-label fw-bold">الخدمة / الشغل المطلوب في الزيارة القادمة</label><input type="text" id="editService" class="form-control"></div>
@@ -289,7 +296,7 @@
             <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
             
             <div class="col-12 mt-3">
-                <label class="form-label fw-bold text-primary">📸 صور الأشعة</label>
+                <label class="form-label fw-bold text-primary">📸 صور الأشعة (مساحة تخزين ذكية فائقة اللانهاية ⚙️)</label>
                 <input type="file" id="xrayInput" class="form-control" accept="image/*" multiple onchange="uploadXray()">
                 <div id="xrayGallery" class="mt-2 d-flex flex-wrap bg-light p-2 border rounded"></div>
             </div>
@@ -300,6 +307,9 @@
             </div>
         </form>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
         const FIREBASE_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com/";
@@ -312,8 +322,24 @@
         let lastSystemDateStr = "";
         let isUserViewingCustomDate = false;
         let currentActiveTab = "patients"; 
+        let fpInstance = null; // متغير لحفظ تحكم التقويم
 
         const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+
+        // تهيئة التقويم المطور بمجرد تحميل الصفحة
+        document.addEventListener("DOMContentLoaded", function() {
+            fpInstance = flatpickr("#editNextVisit", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                altInput: true,
+                altFormat: "Y-m-d h:i K",
+                locale: "ar", // تحويل النتيجة بالكامل للغة العربية والأيام العربية
+                time_24hr: false,
+                onChange: function(selectedDates, dateStr, instance) {
+                    updateNextVisitDayLabel(dateStr);
+                }
+            });
+        });
 
         function getLocalDateString() {
             let now = new Date();
@@ -325,32 +351,30 @@
 
         function getArabicDayName(dateString) {
             if(!dateString) return "";
-            let datePart = dateString.split('T')[0];
+            let datePart = dateString.split(' ')[0].split('T')[0];
             let d = new Date(datePart);
-            return arabicDays[d.getDay()];
+            return isNaN(d.getTime()) ? "" : arabicDays[d.getDay()];
         }
 
-        // دالة التحديث المبتكرة لعرض اسم اليوم مباشرة مدمجاً داخل العنوان بأناقة وسهولة
-        function updateNextVisitDayLabel() {
-            let val = document.getElementById('editNextVisit').value;
+        // دالة المزامنة اللحظية لعرض اليوم بمجرد الاختيار فوق الخانة مباشرة
+        function updateNextVisitDayLabel(val) {
             let label = document.getElementById('editNextVisitLabel');
             if(val) {
                 let dayName = getArabicDayName(val);
-                let datePart = val.split('T')[0];
-                let timePart = val.split('T')[1] || '';
+                let datePart = val.split(' ')[0].split('T')[0];
+                let timePart = val.split(' ')[1] || val.split('T')[1] || '';
                 
-                // تحويل الوقت لصيغة 12 ساعة صباحاً/مساءً لسهولة النطق للمريض
-                if(timePart) {
+                if(timePart && !timePart.includes('صباحاً') && !timePart.includes('مساءً')) {
                     let parts = timePart.split(':');
                     let hours = parseInt(parts[0]);
-                    let minutes = parts[1];
+                    let minutes = parts[1] ? parts[1].substring(0,2) : '00';
                     let ampm = hours >= 12 ? 'مساءً' : 'صباحاً';
                     hours = hours % 12;
                     hours = hours ? hours : 12; 
                     timePart = `${hours}:${minutes} ${ampm}`;
                 }
 
-                label.innerHTML = `📅 ميعاد الزيارة القادمة: <span class="badge bg-primary fs-6 fw-bold text-white px-2 py-1">${dayName} - ${datePart} (${timePart})</span>`;
+                label.innerHTML = `📅 ميعاد الزيارة القادمة: <span class="badge bg-primary fs-6 fw-bold text-white px-2 py-1">${dayName} - ${datePart} ${timePart ? '('+timePart+')' : ''}</span>`;
             } else {
                 label.innerHTML = `📅 موعد الزيارة القادمة (المتابعة):`;
             }
@@ -548,10 +572,18 @@
             document.getElementById('editService').value = p.service || '';
             document.getElementById('editPaid').value = p.paid;
             document.getElementById('editPhone').value = p.phone || '';
-            document.getElementById('editNextVisit').value = p.nextVisit || '';
             
-            // تشغيل دالة التحديث فور فتح الملف ليعرض التسمية الجديدة لليوم فوراً
-            updateNextVisitDayLabel();
+            // تحديث قيمة حقل التقويم الذكي Flatpickr بأمان
+            if (fpInstance) {
+                if (p.nextVisit) {
+                    let standardDate = p.nextVisit.replace('T', ' ');
+                    fpInstance.setDate(standardDate, false);
+                    updateNextVisitDayLabel(standardDate);
+                } else {
+                    fpInstance.clear();
+                    updateNextVisitDayLabel('');
+                }
+            }
 
             let remainingMoney = (p.total || 0) - p.paid;
             let statusBadge = document.getElementById('financialStatusBadge');
@@ -590,7 +622,14 @@
             patients[id].remaining = parseFloat(document.getElementById('editRemaining').value) || 0;
             patients[id].total = patients[id].paid + patients[id].remaining;
             patients[id].phone = document.getElementById('editPhone').value;
-            patients[id].nextVisit = document.getElementById('editNextVisit').value;
+            
+            // حفظ القيمة السحابية في صيغة معيارية لضمان عمل الأجندة والمتابعات
+            let rawTime = document.getElementById('editNextVisit').value;
+            if(rawTime) {
+                patients[id].nextVisit = rawTime.replace(' ', 'T');
+            } else {
+                patients[id].nextVisit = '';
+            }
 
             if(!patients[id].dateCreated) {
                 patients[id].dateCreated = getLocalDateString();
@@ -712,7 +751,7 @@
 
         function convertBookingToPatient(id) {
             let b = bookings[id];
-            if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى/`)) {
+            if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى؟`)) {
                 let pId = "p_" + Date.now();
                 let todayStr = getLocalDateString();
 
@@ -893,7 +932,7 @@
 
             document.getElementById('monthTotalIncome').innerText = monthInc + " ج.م";
             document.getElementById('monthTotalExpenses').innerText = monthExp + " ج.م";
-            document.getElementById('monthNetProfit').innerText = monthNet + " ج.m";
+            document.getElementById('monthNetProfit').innerText = monthNet + " ج.م";
         }
     </script>
 </body>
