@@ -90,7 +90,7 @@
                 <h5 class="text-primary fw-bold mb-2">📅 أجندة المتابعات والزيارات اليومية</h5>
                 <div class="row g-2 justify-content-center">
                     <div class="col-md-6 col-12">
-                        <input type="date" id="appointmentFilterDate" class="form-control text-center fw-bold" onchange="displayDailyAppointments()">
+                        <input type="date" id="appointmentFilterDate" class="form-control text-center fw-bold" onchange="handleAppointmentDateChange()">
                     </div>
                 </div>
             </div>
@@ -220,7 +220,7 @@
                 </div>
                 <div class="p-2 border rounded text-center" style="background-color: #f0f4fc;">
                     <small class="text-primary fw-bold d-block">🏢 صافي نسبة العيادة اليوم (30%)</small>
-                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.م</h5>
+                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.m</h5>
                 </div>
             </div>
 
@@ -297,18 +297,20 @@
         let bookings = {};
         let labs = {};
         let expenses = {};
+        
+        // متغيرات تتبع حالة التاريخ التلقائي لمنع تداخل الاختيار اليدوي
+        let lastSystemDateStr = "";
+        let isUserViewingCustomDate = false;
 
         const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
         function getArabicDayName(dateString) {
             if(!dateString) return "غير محدد";
-            // معالجة صيغة السلسلة النصية للتاريخ العادي أو الكامل الخاص بالـ datetime-local
             let datePart = dateString.split('T')[0];
             let d = new Date(datePart);
             return arabicDays[d.getDay()];
         }
 
-        // دالة لتحديث واجهة اسم اليوم في المتابعة القادمة للمريض فوراً أثناء الاختيار
         function updateNextVisitDayLabel() {
             let val = document.getElementById('editNextVisit').value;
             let label = document.getElementById('nextVisitDayLabel');
@@ -325,15 +327,58 @@
             if (document.getElementById('passwordInput').value === "1234") {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
-                document.getElementById('appointmentFilterDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('customPatientDate').value = new Date().toISOString().split('T')[0];
+                
+                // إعداد التواريخ الافتراضية لأول مرة عند الدخول
+                let todayStr = new Date().toISOString().split('T')[0];
+                lastSystemDateStr = todayStr;
+                document.getElementById('appointmentFilterDate').value = todayStr;
+                document.getElementById('customPatientDate').value = todayStr;
                 
                 showLoading(true, "جاري فتح الملفات السحابية...");
                 syncDataFromServer();
+
+                // تفعيل نظام الرصد والمتابعة التلقائي للوقت بعد الساعة 12
+                startMidnightClockChecker();
             } else {
                 document.getElementById('loginError').style.display = 'block';
                 document.getElementById('passwordInput').value = '';
             }
+        }
+
+        // ================= دالة التحديث الذاتي للمتابعات بعد الساعة 12 =================
+        function startMidnightClockChecker() {
+            setInterval(() => {
+                let currentTodayStr = new Date().toISOString().split('T')[0];
+                // إذا تغير تاريخ اليوم الفعلي في جهازك (دخلنا بعد 12 بالليل) والمستخدم مش باصص على تاريخ قديم يدوياً
+                if (currentTodayStr !== lastSystemDateStr) {
+                    lastSystemDateStr = currentTodayStr;
+                    
+                    // تحديث تاريخ شاشة إضافة المريض الافتراضي
+                    document.getElementById('customPatientDate').value = currentTodayStr;
+                    
+                    // إذا كان دكتور أحمد مش عارض ميعاد قديم بشكل يدوي، حدّث الشاشة حالاً لليوم الجديد تلقائياً
+                    if (!isUserViewingCustomDate) {
+                        document.getElementById('appointmentFilterDate').value = currentTodayStr;
+                        if (document.getElementById('page-appointments').style.display === 'block') {
+                            displayDailyAppointments();
+                        }
+                    }
+                }
+            }, 60000); // بتشيّك كل دقيقة في الخلفية بدون أي تأثير على الأداء
+        }
+
+        // دالة للتحكم في حالة اختيار التاريخ يدوياً من الأجندة
+        function handleAppointmentDateChange() {
+            let selectedDate = document.getElementById('appointmentFilterDate').value;
+            let currentTodayStr = new Date().toISOString().split('T')[0];
+            
+            // لو الدكتور اختار تاريخ مختلف عن النهارده، بنفهم إنو بيتصفح داتا تانية فبنوقف التحديث التلقائي مؤقتاً
+            if (selectedDate !== currentTodayStr) {
+                isUserViewingCustomDate = true;
+            } else {
+                isUserViewingCustomDate = false;
+            }
+            displayDailyAppointments();
         }
 
         function showLoading(status, text = "جاري التحديث السحابي...") {
@@ -387,6 +432,10 @@
             } else if(pageName === 'appointments') {
                 document.getElementById('page-appointments').style.display = 'block';
                 buttons[1].classList.add('active');
+                // في كل مرة يفتح صفحة المتابعات، لو مش باصص يدوياً على تاريخ قديم يعرض التلقائي المحدث
+                if (!isUserViewingCustomDate) {
+                    document.getElementById('appointmentFilterDate').value = new Date().toISOString().split('T')[0];
+                }
                 displayDailyAppointments();
             } else if(pageName === 'bookings') {
                 document.getElementById('page-bookings').style.display = 'block';
@@ -424,7 +473,6 @@
             let remaining = parseFloat(document.getElementById('remaining').value) || 0;
             let total = paid + remaining;
             
-            // قراءة التاريخ المخصص المختار (سواء كان تاريخ قديم أو ميعاد النهارده)
             let dateStr = document.getElementById('customPatientDate').value; 
             if(!dateStr) dateStr = new Date().toISOString().split('T')[0];
 
@@ -477,7 +525,6 @@
             document.getElementById('editPhone').value = p.phone || '';
             document.getElementById('editNextVisit').value = p.nextVisit || '';
             
-            // تحديث سطر الأسبوع المساعد تحت الخانة فور فتح الملف
             updateNextVisitDayLabel();
             
             let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
