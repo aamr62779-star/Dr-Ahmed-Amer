@@ -50,9 +50,13 @@
 
         <div id="page-patients">
             <div class="card p-3 mb-4">
-                <h5 class="mb-3 text-secondary fw-bold">إضافة مريض جديد مباشرة</h5>
+                <h5 class="mb-3 text-secondary fw-bold">إضافة مريض جديد مباشر</h5>
                 <form id="patientForm" class="row g-2">
                     <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض" required></div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted mb-1">تاريخ الكشف / الزيارة (يمكنك اختيار تاريخ قديم):</label>
+                        <input type="date" id="customPatientDate" class="form-control text-center fw-bold" required>
+                    </div>
                     <div class="col-12"><input type="text" id="service" class="form-control" placeholder="الخدمة الحالية"></div>
                     <div class="col-6"><input type="number" id="paid" class="form-control" placeholder="المبلغ المدفوع" oninput="calculateRemaining()"></div>
                     <div class="col-6"><input type="number" id="total" class="form-control" placeholder="الإجمالي" oninput="calculateRemaining()"></div>
@@ -262,10 +266,13 @@
                     <a id="phoneCallBtn" href="#" class="btn btn-primary"><i class="bi bi-telephone-fill"></i> اتصال سريع</a>
                 </div>
             </div>
+            
             <div class="col-12">
                 <label class="form-label fw-bold text-primary">📅 موعد الزيارة القادمة (المتابعة)</label>
-                <input type="datetime-local" id="editNextVisit" class="form-control">
+                <input type="datetime-local" id="editNextVisit" class="form-control" onchange="updateNextVisitDayLabel()">
+                <div id="nextVisitDayLabel" class="text-primary fw-bold small mt-1 bg-light p-2 rounded border" style="display:none;"></div>
             </div>
+
             <div class="col-12"><label class="form-label fw-bold">الخدمة / الشغل المطلوب في الزيارة القادمة</label><input type="text" id="editService" class="form-control"></div>
             <div class="col-6"><label class="form-label fw-bold text-success">المدفوع الحالي (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
             <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
@@ -295,8 +302,23 @@
 
         function getArabicDayName(dateString) {
             if(!dateString) return "غير محدد";
-            let d = new Date(dateString);
+            // معالجة صيغة السلسلة النصية للتاريخ العادي أو الكامل الخاص بالـ datetime-local
+            let datePart = dateString.split('T')[0];
+            let d = new Date(datePart);
             return arabicDays[d.getDay()];
+        }
+
+        // دالة لتحديث واجهة اسم اليوم في المتابعة القادمة للمريض فوراً أثناء الاختيار
+        function updateNextVisitDayLabel() {
+            let val = document.getElementById('editNextVisit').value;
+            let label = document.getElementById('nextVisitDayLabel');
+            if(val) {
+                let dayName = getArabicDayName(val);
+                label.innerHTML = `<i class="bi bi-clock-history"></i> ميعاد الزيارة القادم يوافق يوم: <strong class="text-danger">${dayName}</strong> بتاريخ (${val.split('T')[0]}) الساعة (${val.split('T')[1] || ''})`;
+                label.style.display = 'block';
+            } else {
+                label.style.display = 'none';
+            }
         }
 
         function checkPassword() {
@@ -304,6 +326,7 @@
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
                 document.getElementById('appointmentFilterDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('customPatientDate').value = new Date().toISOString().split('T')[0];
                 
                 showLoading(true, "جاري فتح الملفات السحابية...");
                 syncDataFromServer();
@@ -400,11 +423,15 @@
             let paid = parseFloat(document.getElementById('paid').value) || 0;
             let remaining = parseFloat(document.getElementById('remaining').value) || 0;
             let total = paid + remaining;
-            let dateStr = new Date().toISOString().split('T')[0];
+            
+            // قراءة التاريخ المخصص المختار (سواء كان تاريخ قديم أو ميعاد النهارده)
+            let dateStr = document.getElementById('customPatientDate').value; 
+            if(!dateStr) dateStr = new Date().toISOString().split('T')[0];
 
             patients[id] = { id, name, service, paid, remaining, total, xrays: [], phone: '', nextVisit: '', dateCreated: dateStr };
             pushToServer('patients', patients, () => {
                 document.getElementById('patientForm').reset();
+                document.getElementById('customPatientDate').value = new Date().toISOString().split('T')[0];
                 openPatientProfile(id);
             });
         });
@@ -427,7 +454,7 @@
                     tableBody.innerHTML += `
                         <tr>
                             <td><strong>${p.name}</strong></td>
-                            <td class="text-muted" style="font-size:11px;">${dayName}<br>${pDate}</td>
+                            <td class="text-muted" style="font-size:11px;"><strong>${dayName}</strong><br>${pDate}</td>
                             <td class="text-success fw-bold">${p.paid || 0}</td>
                             <td class="text-danger fw-bold">${p.remaining || 0}</td>
                             <td><button type="button" class="btn btn-sm btn-primary fw-bold" style="font-size:11px; padding: 2px 6px;" onclick="openPatientProfile('${id}')">👁️ ملف</button></td>
@@ -449,6 +476,9 @@
             document.getElementById('editPaid').value = p.paid;
             document.getElementById('editPhone').value = p.phone || '';
             document.getElementById('editNextVisit').value = p.nextVisit || '';
+            
+            // تحديث سطر الأسبوع المساعد تحت الخانة فور فتح الملف
+            updateNextVisitDayLabel();
             
             let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
             let dayName = getArabicDayName(pDate);
@@ -502,7 +532,6 @@
                     let img = new Image();
                     img.onload = function() {
                         let canvas = document.createElement('canvas');
-                        // تعيين دقة متوازنة جداً لحفظ جودة تفاصيل السن والجدور مع تقليل المساحة لأقصى حد
                         let max_size = 700; 
                         let width = img.width; let height = img.height;
                         if (width > height) { if (width > max_size) { height *= max_size / width; width = max_size; } } 
@@ -511,7 +540,6 @@
                         let ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // ضغط الصورة إلى صيغة JPEG بجودة 0.45 لتقليص المساحة بـ 15 ضعفاً مع وضوح تام
                         let compressedBase64 = canvas.toDataURL('image/jpeg', 0.45);
                         patients[id].xrays.push(compressedBase64);
                         loadedCount++;
@@ -563,7 +591,7 @@
 
         function backToMain() { switchPage('patients'); }
 
-        // ================= كود صفحة الحجوزات التليفونية المستقلة =================
+        // ================= كود صفحة الحجوزات التليفونية =================
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "book_" + Date.now();
@@ -603,7 +631,7 @@
 
         function convertBookingToPatient(id) {
             let b = bookings[id];
-            if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى?`)) {
+            if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى؟`)) {
                 let pId = "p_" + Date.now();
                 let todayStr = new Date().toISOString().split('T')[0];
 
@@ -628,11 +656,14 @@
             }
         }
 
-        // ================= كود المتابعات الأونلاين =================
+        // ================= كود المتابعات الأونلاين اليومية =================
         function displayDailyAppointments() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
             let tbody = document.getElementById('dailyAppointmentsTable'); tbody.innerHTML = '';
-            document.getElementById('appointmentDayLabel').innerText = `متابعات وزيارات يوم (${selectedDate}):`;
+            
+            let currentDayName = getArabicDayName(selectedDate);
+            document.getElementById('appointmentDayLabel').innerText = `متابعات وزيارات يوم ${currentDayName} (${selectedDate}):`;
+            
             let list = Object.values(patients).filter(p => p.nextVisit && p.nextVisit.split('T')[0] === selectedDate);
             if(list.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">لا توجد حالات مسجلة لهذا اليوم</td></tr>`; return; }
             list.sort((a, b) => a.nextVisit.localeCompare(b.nextVisit));
@@ -698,7 +729,7 @@
 
         function deleteExpense(id) { if(confirm('مسح المصروف؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
 
-        // ================= النظام المالي المطور =================
+        // ================= النظام المالي ونسب الشركاء الأونلاين =================
         function calculateDailyShares() {
             let selectedDate = document.getElementById('shareFilterDate').value;
             if(!selectedDate) return;
