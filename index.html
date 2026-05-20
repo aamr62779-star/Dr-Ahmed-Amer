@@ -8,18 +8,18 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
     <style>
-        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 10px; padding-bottom: 90px; }
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 10px; padding-bottom: 95px; }
         .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
         .btn-success { background-color: #11caa0; border: none; }
         .btn-success:hover { background-color: #0ea885; }
         .login-container { max-width: 400px; margin: 100px auto; }
         
-        #appContent, #page-patients, #page-appointments, #page-bookings, #page-labs, #page-expenses, #page-share, #patientProfile { display: none; }
+        #appContent, #page-patients, #page-appointments, #page-bookings, #page-labs, #page-expenses, #page-share, #page-monthly-archive, #patientProfile { display: none; }
         .xray-thumb { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin: 5px; cursor: pointer; border: 2px solid #ddd; }
         
         .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background-color: #ffffff; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 1000; display: flex; justify-content: space-around; padding: 10px 0; }
-        .nav-item-btn { background: none; border: none; color: #6c757d; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 16%; }
-        .nav-item-btn i { font-size: 18px; margin-bottom: 2px; }
+        .nav-item-btn { background: none; border: none; color: #6c757d; font-size: 9px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 14%; }
+        .nav-item-btn i { font-size: 17px; margin-bottom: 2px; }
         .nav-item-btn.active { color: #0d6efd; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; font-weight: bold; }
         
@@ -235,7 +235,7 @@
             </div>
 
             <div class="card p-3 mb-3 text-center bg-dark text-white">
-                <h5 class="fw-bold text-warning mb-3">📈 تقرير الدخل الصافي والتقفيل الشهري</h5>
+                <h5 class="fw-bold text-warning mb-3">📈 تقرير الدخل الصافي والتقفيل الشهري الحالي</h5>
                 <div class="row g-2 mb-2">
                     <div class="col-6 border-end border-secondary"><small class="text-light">إجمالي الإيرادات</small><h6 class="text-success fw-bold" id="monthTotalIncome">0 ج.م</h6></div>
                     <div class="col-6"><small class="text-light">إجمالي المصروفات</small><h6 class="text-danger fw-bold" id="monthTotalExpenses">0 ج.م</h6></div>
@@ -248,13 +248,38 @@
             </div>
         </div>
 
+        <div id="page-monthly-archive">
+            <div class="card p-3 mb-3 text-center bg-white border-bottom border-primary border-3">
+                <h5 class="text-primary fw-bold m-0"><i class="bi bi-bar-chart-line-fill"></i> أرشيف الدخل والأرباح الشهرية الكلية</h5>
+                <p class="text-muted small m-0 mt-1">تقرير مقارنة مالي تلقائي لكل الشهور المسجلة</p>
+            </div>
+            
+            <div class="card p-2">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered align-middle mb-0 text-center" style="font-size: 13px;">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>الشهر / السنة</th>
+                                <th class="text-success">إجمالي الدخل</th>
+                                <th class="text-danger">المصروفات</th>
+                                <th class="table-primary text-dark">صافي الأرباح</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthlyArchiveTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div class="nav-bottom">
             <button class="nav-item-btn active" onclick="switchPage('patients')"><i class="bi bi-people-fill"></i>المرضى</button>
             <button class="nav-item-btn" onclick="switchPage('appointments')"><i class="bi bi-calendar-event-fill"></i>المتابعات</button>
             <button class="nav-item-btn" onclick="switchPage('bookings')"><i class="bi bi-telephone-inbound-fill text-primary"></i>الحجوزات</button>
-            <button class="nav-item-btn" onclick="switchPage('labs')"><i class="bi bi-box-seam-fill"></i>الممعل</button>
+            <button class="nav-item-btn" onclick="switchPage('labs')"><i class="bi bi-box-seam-fill"></i>المعمل</button>
             <button class="nav-item-btn" onclick="switchPage('expenses')"><i class="bi bi-credit-card-fill"></i>المصاريف</button>
             <button class="nav-item-btn" onclick="switchPage('share')"><i class="bi bi-calculator-fill"></i>النسب</button>
+            <button class="nav-item-btn" onclick="switchPage('monthly-archive')"><i class="bi bi-journal-bookmark-fill text-danger"></i>الشهور</button>
         </div>
     </div>
 
@@ -314,6 +339,7 @@
         let currentActiveTab = "patients"; 
 
         const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+        const arabicMonths = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
         function getLocalDateString() {
             let now = new Date();
@@ -329,7 +355,6 @@
             return isNaN(d.getTime()) ? "" : arabicDays[d.getDay()];
         }
 
-        // دالة المزامنة اللحظية لكتابة اسم اليوم فوق الخانة فور اختيار التاريخ من النتيجة
         function updateNextVisitDayLabel(val) {
             let label = document.getElementById('editNextVisitLabel');
             if(val) {
@@ -424,6 +449,7 @@
             document.getElementById('page-labs').style.display = 'none';
             document.getElementById('page-expenses').style.display = 'none';
             document.getElementById('page-share').style.display = 'none';
+            document.getElementById('page-monthly-archive').style.display = 'none';
             document.getElementById('patientProfile').style.display = 'none';
 
             let buttons = document.querySelectorAll('.nav-item-btn');
@@ -457,6 +483,10 @@
                 buttons[5].classList.add('active');
                 document.getElementById('shareFilterDate').value = getLocalDateString();
                 calculateDailyShares();
+            } else if(pageName === 'monthly-archive') {
+                document.getElementById('page-monthly-archive').style.display = 'block';
+                buttons[6].classList.add('active');
+                buildMonthlyArchiveReport();
             }
         }
 
@@ -522,6 +552,7 @@
             document.getElementById('page-patients').style.display = 'none';
             document.getElementById('page-appointments').style.display = 'none';
             document.getElementById('page-share').style.display = 'none';
+            document.getElementById('page-monthly-archive').style.display = 'none';
             document.getElementById('patientProfile').style.display = 'block';
             
             let p = patients[id];
@@ -533,7 +564,6 @@
             document.getElementById('editPaid').value = p.paid;
             document.getElementById('editPhone').value = p.phone || '';
             
-            // قراءة الميعاد وعرضه داخل خانة التاريخ مباشرة
             let nextVisitField = document.getElementById('editNextVisit');
             if (p.nextVisit) {
                 let cleanDate = p.nextVisit.split('T')[0];
@@ -861,18 +891,94 @@
 
             let dayNet = Math.max(0, dayInc - dayExp);
 
-            document.getElementById('dayIncome').innerText = dayInc + " ج.م";
-            document.getElementById('dayExpenses').innerText = dayExp + " ج.م";
+            document.getElementById('dayIncome').innerText = dayInc + " ج.m";
+            document.getElementById('dayExpenses').innerText = dayExp + " ج.m";
             document.getElementById('dayDoctorShare').innerText = (dayNet * 0.70).toFixed(2) + " ج.م";
             document.getElementById('dayClinicShare').innerText = (dayNet * 0.30).toFixed(2) + " ج.م";
 
-            let monthInc = Object.values(patients).reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
-            let monthExp = Object.values(expenses).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+            let todayStr = getLocalDateString();
+            let currentMonthKey = todayStr.substring(0, 7); // YYYY-MM
+            
+            let monthInc = 0;
+            Object.values(patients).forEach(p => {
+                let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
+                if(pDate && pDate.substring(0, 7) === currentMonthKey) {
+                    monthInc += (parseFloat(p.paid) || 0);
+                }
+            });
+
+            let monthExp = 0;
+            Object.values(expenses).forEach(e => {
+                let eDate = e.dateCreated || new Date(parseInt(e.id.split('_')[1])).toISOString().split('T')[0];
+                if(eDate && eDate.substring(0, 7) === currentMonthKey) {
+                    monthExp += (parseFloat(e.amount) || 0);
+                }
+            });
+
             let monthNet = Math.max(0, monthInc - monthExp);
 
             document.getElementById('monthTotalIncome').innerText = monthInc + " ج.م";
             document.getElementById('monthTotalExpenses').innerText = monthExp + " ج.م";
             document.getElementById('monthNetProfit').innerText = monthNet + " ج.م";
+        }
+
+        // 🌟 دالة بناء الأرشيف التاريخي لكل الشهور تلقائياً 🌟
+        function buildMonthlyArchiveReport() {
+            let archiveMap = {};
+
+            // 1. حساب دخل المرضى لكل شهر وسنة
+            Object.values(patients).forEach(p => {
+                let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
+                if(pDate && pDate.length >= 7) {
+                    let monthKey = pDate.substring(0, 7); // تفصل مثل "2026-05"
+                    if(!archiveMap[monthKey]) {
+                        archiveMap[monthKey] = { income: 0, expenses: 0 };
+                    }
+                    archiveMap[monthKey].income += (parseFloat(p.paid) || 0);
+                }
+            });
+
+            // 2. حساب مصروفات العيادة لكل شهر وسنة
+            Object.values(expenses).forEach(e => {
+                let eDate = e.dateCreated || new Date(parseInt(e.id.split('_')[1])).toISOString().split('T')[0];
+                if(eDate && eDate.length >= 7) {
+                    let monthKey = eDate.substring(0, 7);
+                    if(!archiveMap[monthKey]) {
+                        archiveMap[monthKey] = { income: 0, expenses: 0 };
+                    }
+                    archiveMap[monthKey].expenses += (parseFloat(e.amount) || 0);
+                }
+            });
+
+            let tbody = document.getElementById('monthlyArchiveTableBody');
+            tbody.innerHTML = '';
+
+            // ترتب الشهور تنازلياً (الشهر الأحدث يظهر أولاً)
+            let sortedMonths = Object.keys(archiveMap).sort().reverse();
+
+            if(sortedMonths.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">لا توجد بيانات مسجلة لشهور سابقة بعد</td></tr>`;
+                return;
+            }
+
+            sortedMonths.forEach(key => {
+                let data = archiveMap[key];
+                let parts = key.split('-');
+                let year = parts[0];
+                let monthIndex = parseInt(parts[1]) - 1;
+                let monthName = arabicMonths[monthIndex] || parts[1];
+
+                let netProfit = Math.max(0, data.income - data.expenses);
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold text-dark">${monthName} ${year}</td>
+                        <td class="text-success fw-bold">${data.income.toFixed(0)} ج.م</td>
+                        <td class="text-danger">${data.expenses.toFixed(0)} ج.م</td>
+                        <td class="table-primary fw-bold text-primary">${netProfit.toFixed(0)} ج.م</td>
+                    </tr>
+                `;
+            });
         }
     </script>
 </body>
