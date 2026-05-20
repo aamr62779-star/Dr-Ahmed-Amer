@@ -7,21 +7,21 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 10px; padding-bottom: 80px; }
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 10px; padding-bottom: 90px; }
         .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
         .btn-success { background-color: #11caa0; border: none; }
         .btn-success:hover { background-color: #0ea885; }
         .login-container { max-width: 400px; margin: 100px auto; }
         
         /* إخفاء الصفحات افتراضياً */
-        #appContent, #page-patients, #page-labs, #page-expenses, #page-share, #patientProfile { display: none; }
+        #appContent, #page-patients, #page-labs, #page-expenses, #page-share, #page-appointments, #patientProfile { display: none; }
         
         .xray-thumb { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin: 5px; cursor: pointer; border: 2px solid #ddd; }
         
-        /* شريط التنقل السفلي للموبايل */
+        /* شريط التنقل السفلي المطور لـ 5 أزرار */
         .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background-color: #ffffff; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 1000; display: flex; justify-content: space-around; padding: 10px 0; }
-        .nav-item-btn { background: none; border: none; color: #6c757d; font-size: 12px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 25%; }
-        .nav-item-btn i { font-size: 22px; margin-bottom: 2px; }
+        .nav-item-btn { background: none; border: none; color: #6c757d; font-size: 11px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 20%; }
+        .nav-item-btn i { font-size: 20px; margin-bottom: 2px; }
         .nav-item-btn.active { color: #0d6efd; }
     </style>
 </head>
@@ -41,7 +41,7 @@
         
         <div class="text-center mb-3">
             <h3 class="text-primary fw-bold">عيادة دكتور أحمد حسن عامر</h3>
-            <p class="text-muted small">نظام الإدارة الشامل</p>
+            <p class="text-muted small">نظام الإدارة والجدولة الذكي</p>
         </div>
 
         <div id="page-patients">
@@ -71,6 +71,36 @@
                             </tr>
                         </thead>
                         <tbody id="patientTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-appointments">
+            <div class="card p-3 mb-3 text-center bg-white">
+                <h5 class="text-primary fw-bold mb-2">📅 أجندة المتابعات والزيارات اليومية</h5>
+                <p class="text-muted small">البرنامج يفرز تلقائياً المواعيد بناءً على المسجل في ملفات المرضى</p>
+                <div class="row g-2 justify-content-center">
+                    <div class="col-md-6 col-12">
+                        <label class="form-label small fw-bold text-secondary">اختر التاريخ لعرض مواعيده:</label>
+                        <input type="date" id="appointmentFilterDate" class="form-control text-centerfw-bold" onchange="displayDailyAppointments()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-2">
+                <h6 class="p-2 text-secondary fw-bold" id="appointmentDayLabel">زيارات اليوم:</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle mb-0 bg-white">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>المريض</th>
+                                <th>الساعة</th>
+                                <th>الشغل المطلوب</th>
+                                <th>تواصل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dailyAppointmentsTable"></tbody>
                     </table>
                 </div>
             </div>
@@ -167,6 +197,9 @@
             <button class="nav-item-btn active" onclick="switchPage('patients')">
                 <i class="bi bi-people-fill"></i>المرضى
             </button>
+            <button class="nav-item-btn" onclick="switchPage('appointments')">
+                <i class="bi bi-calendar-event-fill"></i>المتابعات
+            </button>
             <button class="nav-item-btn" onclick="switchPage('labs')">
                 <i class="bi bi-box-seam-fill"></i>المعمل
             </button>
@@ -174,7 +207,7 @@
                 <i class="bi bi-credit-card-fill"></i>المصاريف
             </button>
             <button class="nav-item-btn" onclick="switchPage('share')">
-                <i class="bi bi-calculator-fill"></i>حساب النسب
+                <i class="bi bi-calculator-fill"></i>النسب
             </button>
         </div>
     </div>
@@ -201,9 +234,9 @@
                 <input type="datetime-local" id="editNextVisit" class="form-control">
             </div>
 
-            <div class="col-12"><label class="form-label fw-bold">الخدمة الحالية</label><input type="text" id="editService" class="form-control"></div>
-            <div class="col-6"><label class="form-label fw-bold text-success">المدفوع (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
-            <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
+            <div class="col-12"><label class="form-label fw-bold">الخدمة / الشغل المطلوب في الزيارة القادمة</label><input type="text" id="editService" class="form-control" placeholder="حشو عصب، مقاس تركيبة..."></div>
+            <div class="col-6"><label class="form-label fw-bold text-success">المدفوع الحالي (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
+            <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
             
             <div class="col-12 mt-3">
                 <label class="form-label fw-bold text-primary">📸 صور الأشعة والملفات الكلينيكية</label>
@@ -212,18 +245,24 @@
             </div>
 
             <div class="col-12 d-flex gap-2 mt-3">
-                <button type="button" onclick="savePatientChanges()" class="btn btn-success flex-grow-1 fw-bold">حفظ التعديل</button>
+                <button type="button" onclick="savePatientChanges()" class="btn btn-success flex-grow-1 fw-bold">حفظ التعديل في الملف</button>
                 <button type="button" onclick="deletePatientRecord()" class="btn btn-danger fw-bold">حذف</button>
             </div>
         </form>
     </div>
 
     <script>
+        // قواعد تسجيل الدخول والتنقل
         function checkPassword() {
             const input = document.getElementById('passwordInput').value;
             if (input === "1234") {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
+                
+                // ضبط تاريخ فلتر المتابعات لليوم تلقائياً عند الدخول
+                let today = new Date().toISOString().split('T')[0];
+                document.getElementById('appointmentFilterDate').value = today;
+
                 switchPage('patients'); 
             } else {
                 document.getElementById('loginError').style.display = 'block';
@@ -233,6 +272,7 @@
 
         function switchPage(pageName) {
             document.getElementById('page-patients').style.display = 'none';
+            document.getElementById('page-appointments').style.display = 'none';
             document.getElementById('page-labs').style.display = 'none';
             document.getElementById('page-expenses').style.display = 'none';
             document.getElementById('page-share').style.display = 'none';
@@ -245,23 +285,65 @@
                 document.getElementById('page-patients').style.display = 'block';
                 buttons[0].classList.add('active');
                 displayPatients();
+            } else if(pageName === 'appointments') {
+                document.getElementById('page-appointments').style.display = 'block';
+                buttons[1].classList.add('active');
+                displayDailyAppointments();
             } else if(pageName === 'labs') {
                 document.getElementById('page-labs').style.display = 'block';
-                buttons[1].classList.add('active');
+                buttons[2].classList.add('active');
                 displayLabs();
             } else if(pageName === 'expenses') {
                 document.getElementById('page-expenses').style.display = 'block';
-                buttons[2].classList.add('active');
+                buttons[3].classList.add('active');
                 displayExpenses();
             } else if(pageName === 'share') {
                 document.getElementById('page-share').style.display = 'block';
-                buttons[3].classList.add('active');
+                buttons[4].classList.add('active');
                 calculateShares();
             }
         }
 
         let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
 
+        // ================= كود صفحة المتابعات اليومية (الجديدة) =================
+        function displayDailyAppointments() {
+            let selectedDate = document.getElementById('appointmentFilterDate').value;
+            let tbody = document.getElementById('dailyAppointmentsTable');
+            tbody.innerHTML = '';
+            
+            document.getElementById('appointmentDayLabel').innerText = `زيارات ومتابعات يوم (${selectedDate}):`;
+
+            // تصفية المرضى الذين يوافق موعد زيارتهم التاريخ المختار
+            let dayAppointments = patients.filter(p => p.nextVisit && p.nextVisit.split('T')[0] === selectedDate);
+
+            if(dayAppointments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">لا توجد حالات أو متابعات مسجلة في هذا اليوم</td></tr>`;
+                return;
+            }
+
+            // ترتيب المواعيد حسب الساعة
+            dayAppointments.sort((a, b) => a.nextVisit.localeCompare(b.nextVisit));
+
+            dayAppointments.forEach((p) => {
+                // استخراج الساعة بشكل شيك
+                let timePart = p.nextVisit.split('T')[1] || '';
+                let formattedTime = timePart ? timePart : '--:--';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${p.name}</strong></td>
+                        <td class="text-primary fw-bold">${formattedTime}</td>
+                        <td><span class="badge bg-secondary text-wrap">${p.service || 'فحص / متابعة دورية'}</span></td>
+                        <td>
+                            ${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success"><i class="bi bi-telephone-fill"></i> اتصل</a>` : `<span class="text-muted small">لا يوجد رقم</span>`}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // ================= باقي كود النظام المستقر =================
         function calculateRemaining() {
             let total = parseFloat(document.getElementById('total').value) || 0;
             let paid = parseFloat(document.getElementById('paid').value) || 0;
@@ -320,12 +402,9 @@
             document.getElementById('editName').value = p.name;
             document.getElementById('editService').value = p.service || '';
             document.getElementById('editPaid').value = p.paid;
-            
-            // جلب الهاتف والزيارة القادمة وإدراجهم بالخانات
             document.getElementById('editPhone').value = p.phone || '';
             document.getElementById('editNextVisit').value = p.nextVisit || '';
             
-            // تحديث زر الاتصال السريع
             let callBtn = document.getElementById('phoneCallBtn');
             if(p.phone) {
                 callBtn.href = "tel:" + p.phone;
@@ -354,8 +433,6 @@
             patients[index].paid = parseFloat(document.getElementById('editPaid').value) || 0;
             patients[index].remaining = parseFloat(document.getElementById('editRemaining').value) || 0;
             patients[index].total = patients[index].paid + patients[index].remaining;
-            
-            // حفظ الهاتف وموعد الزيارة القادمة الجديد
             patients[index].phone = document.getElementById('editPhone').value;
             patients[index].nextVisit = document.getElementById('editNextVisit').value;
 
@@ -413,9 +490,7 @@
             }
         }
 
-        function backToMain() {
-            switchPage('patients');
-        }
+        function backToMain() { switchPage('patients'); }
 
         // ================= كود صفحة المعمل =================
         let labs = JSON.parse(localStorage.getItem('clinic_labs')) || [];
@@ -474,10 +549,10 @@
             document.getElementById('totalExpensesLabel').innerText = totalExp + " ج.م";
         }
         function deleteExpense(i) {
-            if(confirm('مسح بند الصرف؟')) { expenses.splice(i, 1); localStorage.setItem('clinic_expenses', JSON.stringify(expenses)); displayExpenses(); }
+            if(confirm('مسح بند الصرف?')) { expenses.splice(i, 1); localStorage.setItem('clinic_expenses', JSON.stringify(expenses)); displayExpenses(); }
         }
 
-        // ================= كود حساب النسب (70% - 30%) =================
+        // ================= كود حساب النسب =================
         function calculateShares() {
             let totalIncome = patients.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
             let totalExp = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
