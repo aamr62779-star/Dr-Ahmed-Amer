@@ -28,7 +28,7 @@
     <div id="loadingOverlay" class="loading-overlay" style="display: none;">
         <div class="text-center">
             <div class="spinner-border text-primary" role="status"></div>
-            <div class="mt-2 text-primary">جاري التحديث السحابي...</div>
+            <div class="mt-2 text-primary" id="loadingText">جاري التحديث السحابي...</div>
         </div>
     </div>
 
@@ -253,8 +253,7 @@
                 document.getElementById('appContent').style.display = 'block';
                 document.getElementById('appointmentFilterDate').value = new Date().toISOString().split('T')[0];
                 
-                // بدء سحب البيانات الحية فور دخول البرنامج
-                showLoading(true);
+                showLoading(true, "جاري فتح الملفات السحابية...");
                 syncDataFromServer();
             } else {
                 document.getElementById('loginError').style.display = 'block';
@@ -262,11 +261,11 @@
             }
         }
 
-        function showLoading(status) {
+        function showLoading(status, text = "جاري التحديث السحابي...") {
+            document.getElementById('loadingText').innerText = text;
             document.getElementById('loadingOverlay').style.display = status ? 'flex' : 'none';
         }
 
-        // دالة المزامنة وسحب البيانات أونلاين
         function syncDataFromServer() {
             fetch(`${FIREBASE_URL}.json`)
             .then(res => res.json())
@@ -283,7 +282,7 @@
         }
 
         function pushToServer(node, updatedData, callback) {
-            showLoading(true);
+            showLoading(true, "جاري المزامنة مع التيم أونلاين...");
             fetch(`${FIREBASE_URL}${node}.json`, {
                 method: 'PUT',
                 body: JSON.stringify(updatedData)
@@ -370,7 +369,7 @@
                             <td><strong>${p.name}</strong></td>
                             <td><span class="badge bg-secondary">${p.service || 'فحص'}</span></td>
                             <td class="text-danger fw-bold">${p.remaining} ج.م</td>
-                            <td><button class="btn btn-sm btn-primary fw-bold" onclick="openPatientProfile('${id}')">👁️ ملف</button></td>
+                            <td><button type="button" class="btn btn-sm btn-primary fw-bold" onclick="openPatientProfile('${id}')">👁️ ملف</button></td>
                         </tr>
                     `;
                 }
@@ -418,21 +417,55 @@
             pushToServer('patients', patients, () => { backToMain(); });
         }
 
+        // ================= 🛠️ الدالة السحرية الجديدة لرفع وضغط الصور =================
         function uploadXray() {
             let id = document.getElementById('editId').value;
             let files = document.getElementById('xrayInput').files;
-            if(!patients[id].xrays) patients[id].xrays = [];
+            if (files.length === 0) return;
             
+            if(!patients[id].xrays) patients[id].xrays = [];
+            showLoading(true, "جاري تحسين وضغط حجم الأشعة...");
+
             let loadedCount = 0;
+
             for(let file of files) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
-                    patients[id].xrays.push(e.target.result);
-                    loadedCount++;
-                    if(loadedCount === files.length) {
-                        pushToServer('patients', patients, () => { displayXrays(id); });
-                    }
-                }
+                    let img = new Image();
+                    img.onload = function() {
+                        // إعداد كانفاس لتصغير مساحة الصورة هندسياً
+                        let canvas = document.createElement('canvas');
+                        let max_size = 800; // أقصى طول أو عرض للحفاظ على سرعة الرفع والوضوح
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > max_size) { height *= max_size / width; width = max_size; }
+                        } else {
+                            if (height > max_size) { width *= max_size / height; height = max_size; }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        let ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // ضغط الجودة لـ 60% لتقليل الوزن لأقصى درجة مناسبة للسيرفر السحابي
+                        let compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                        
+                        patients[id].xrays.push(compressedBase64);
+                        loadedCount++;
+
+                        // عند انتهاء معالجة وضغط كل الصور المحددة
+                        if(loadedCount === files.length) {
+                            pushToServer('patients', patients, () => { 
+                                document.getElementById('xrayInput').value = ''; // تصفير زر الإدخال
+                                displayXrays(id); 
+                            });
+                        }
+                    };
+                    img.src = e.target.result;
+                };
                 reader.readAsDataURL(file);
             }
         }
@@ -440,24 +473,36 @@
         function displayXrays(id) {
             let gallery = document.getElementById('xrayGallery');
             gallery.innerHTML = '';
-            let xrays = patients[id].xrays || [];
+            let xrayData = patients[id].xrays;
+            
+            // معالجة مشكلة التخزين لو كان مصفوفة فارغة أو مسجل بشكل خاطئ
+            let xrays = [];
+            if (xrayData) {
+                xrays = Array.isArray(xrayData) ? xrayData : Object.values(xrayData);
+            }
+
             if(xrays.length === 0) {
                 gallery.innerHTML = '<span class="text-muted small p-2">لا توجد أشعات مسجلة</span>';
                 return;
             }
             xrays.forEach((imgSrc, imgIndex) => {
-                gallery.innerHTML += `
-                    <div class="position-relative d-inline-block">
-                        <img src="${imgSrc}" class="xray-thumb" onclick="window.open('${imgSrc}')">
-                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 start-0 m-1" style="padding: 1px 5px; font-size:10px;" onclick="deleteXray('${id}', ${imgIndex})">X</button>
-                    </div>
-                `;
+                if (imgSrc) {
+                    gallery.innerHTML += `
+                        <div class="position-relative d-inline-block">
+                            <img src="${imgSrc}" class="xray-thumb" onclick="window.open('${imgSrc}')">
+                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 start-0 m-1" style="padding: 1px 5px; font-size:10px;" onclick="deleteXray('${id}', ${imgIndex})">X</button>
+                        </div>
+                    `;
+                }
             });
         }
 
         function deleteXray(id, imgIndex) {
             if(confirm('حذف الأشعة؟')) {
-                patients[id].xrays.splice(imgIndex, 1);
+                let xrayData = patients[id].xrays;
+                let xrays = Array.isArray(xrayData) ? xrayData : Object.values(xrayData);
+                xrays.splice(imgIndex, 1);
+                patients[id].xrays = xrays;
                 pushToServer('patients', patients, () => { displayXrays(id); });
             }
         }
@@ -525,7 +570,7 @@
             tbody.innerHTML = '';
             let keys = Object.keys(labs).reverse();
             if(keys.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد معاملات معامل</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد طلبيات معامل</td></tr>';
                 return;
             }
             keys.forEach(id => {
@@ -571,7 +616,7 @@
             let totalExp = Object.values(expenses).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
             let netIncome = Math.max(0, totalIncome - totalExp);
             document.getElementById('shareTotalIncome').innerText = totalIncome + " ج.م";
-            document.getElementById('shareTotalExpenses').innerText = totalExp + " ج.m";
+            document.getElementById('shareTotalExpenses').innerText = totalExp + " ج.م";
             document.getElementById('doctorShareLabel').innerText = (netIncome * 0.70).toFixed(2) + " ج.م";
             document.getElementById('clinicShareLabel').innerText = (netIncome * 0.30).toFixed(2) + " ج.م";
         }
