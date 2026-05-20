@@ -13,12 +13,12 @@
         .btn-success:hover { background-color: #0ea885; }
         .login-container { max-width: 400px; margin: 100px auto; }
         
-        #appContent, #page-patients, #page-labs, #page-expenses, #page-share, #page-appointments, #patientProfile { display: none; }
+        #appContent, #page-patients, #page-appointments, #page-bookings, #page-labs, #page-expenses, #page-share, #patientProfile { display: none; }
         .xray-thumb { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin: 5px; cursor: pointer; border: 2px solid #ddd; }
         
         .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background-color: #ffffff; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 1000; display: flex; justify-content: space-around; padding: 10px 0; }
-        .nav-item-btn { background: none; border: none; color: #6c757d; font-size: 11px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 20%; }
-        .nav-item-btn i { font-size: 20px; margin-bottom: 2px; }
+        .nav-item-btn { background: none; border: none; color: #6c757d; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 16%; }
+        .nav-item-btn i { font-size: 18px; margin-bottom: 2px; }
         .nav-item-btn.active { color: #0d6efd; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; font-weight: bold; }
     </style>
@@ -50,7 +50,7 @@
 
         <div id="page-patients">
             <div class="card p-3 mb-4">
-                <h5 class="mb-3 text-secondary fw-bold">إضافة مريض جديد</h5>
+                <h5 class="mb-3 text-secondary fw-bold">إضافة مريض جديد مباشرة</h5>
                 <form id="patientForm" class="row g-2">
                     <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض" required></div>
                     <div class="col-12"><input type="text" id="service" class="form-control" placeholder="الخدمة الحالية"></div>
@@ -103,6 +103,36 @@
                             </tr>
                         </thead>
                         <tbody id="dailyAppointmentsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-bookings">
+            <div class="card p-3 mb-4">
+                <h5 class="mb-3 text-primary fw-bold">📞 تسجيل حجز تليفوني جديد</h5>
+                <form id="bookingForm" class="row g-2">
+                    <div class="col-12"><input type="text" id="bookName" class="form-control" placeholder="اسم المتصل / المريض" required></div>
+                    <div class="col-12"><input type="tel" id="bookPhone" class="form-control" placeholder="رقم الموبايل (010xxxxxxxx)"></div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted mb-1">اختر تاريخ الحجز المبرم:</label>
+                        <input type="date" id="bookDate" class="form-control text-center fw-bold" required>
+                    </div>
+                    <div class="col-12"><button type="submit" class="btn btn-primary w-100 fw-bold">تأكيد وتسجيل الحجز</button></div>
+                </form>
+            </div>
+            <div class="card p-2">
+                <h6 class="p-2 text-secondary fw-bold">📋 قائمة الاتصالات والحجوزات القادمة:</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle mb-0" style="font-size: 12px;">
+                        <thead class="table-info">
+                            <tr>
+                                <th>الاسم ورقم الموبايل</th>
+                                <th>يوم وتاريخ الحجز</th>
+                                <th>الإجراء والتحويل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingTable"></tbody>
                     </table>
                 </div>
             </div>
@@ -207,6 +237,7 @@
         <div class="nav-bottom">
             <button class="nav-item-btn active" onclick="switchPage('patients')"><i class="bi bi-people-fill"></i>المرضى</button>
             <button class="nav-item-btn" onclick="switchPage('appointments')"><i class="bi bi-calendar-event-fill"></i>المتابعات</button>
+            <button class="nav-item-btn" onclick="switchPage('bookings')"><i class="bi bi-telephone-inbound-fill text-primary"></i>الحجوزات</button>
             <button class="nav-item-btn" onclick="switchPage('labs')"><i class="bi bi-box-seam-fill"></i>المعمل</button>
             <button class="nav-item-btn" onclick="switchPage('expenses')"><i class="bi bi-credit-card-fill"></i>المصاريف</button>
             <button class="nav-item-btn" onclick="switchPage('share')"><i class="bi bi-calculator-fill"></i>النسب</button>
@@ -256,10 +287,10 @@
         const FIREBASE_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com/";
 
         let patients = {};
+        let bookings = {};
         let labs = {};
         let expenses = {};
 
-        // مصفوفة أسماء الأيام بالعربية
         const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
         function getArabicDayName(dateString) {
@@ -293,6 +324,7 @@
             .then(data => {
                 if(data) {
                     patients = data.patients || {};
+                    bookings = data.bookings || {};
                     labs = data.labs || {};
                     expenses = data.expenses || {};
                 }
@@ -316,6 +348,7 @@
         function switchPage(pageName) {
             document.getElementById('page-patients').style.display = 'none';
             document.getElementById('page-appointments').style.display = 'none';
+            document.getElementById('page-bookings').style.display = 'none';
             document.getElementById('page-labs').style.display = 'none';
             document.getElementById('page-expenses').style.display = 'none';
             document.getElementById('page-share').style.display = 'none';
@@ -332,17 +365,21 @@
                 document.getElementById('page-appointments').style.display = 'block';
                 buttons[1].classList.add('active');
                 displayDailyAppointments();
+            } else if(pageName === 'bookings') {
+                document.getElementById('page-bookings').style.display = 'block';
+                buttons[2].classList.add('active');
+                displayBookings();
             } else if(pageName === 'labs') {
                 document.getElementById('page-labs').style.display = 'block';
-                buttons[2].classList.add('active');
+                buttons[3].classList.add('active');
                 displayLabs();
             } else if(pageName === 'expenses') {
                 document.getElementById('page-expenses').style.display = 'block';
-                buttons[3].classList.add('active');
+                buttons[4].classList.add('active');
                 displayExpenses();
             } else if(pageName === 'share') {
                 document.getElementById('page-share').style.display = 'block';
-                buttons[4].classList.add('active');
+                buttons[5].classList.add('active');
                 document.getElementById('shareFilterDate').value = new Date().toISOString().split('T')[0];
                 calculateDailyShares();
             }
@@ -363,12 +400,9 @@
             let paid = parseFloat(document.getElementById('paid').value) || 0;
             let remaining = parseFloat(document.getElementById('remaining').value) || 0;
             let total = paid + remaining;
-            
-            // تسجيل تاريخ الإنشاء التلقائي
             let dateStr = new Date().toISOString().split('T')[0];
 
             patients[id] = { id, name, service, paid, remaining, total, xrays: [], phone: '', nextVisit: '', dateCreated: dateStr };
-            
             pushToServer('patients', patients, () => {
                 document.getElementById('patientForm').reset();
                 openPatientProfile(id);
@@ -416,7 +450,6 @@
             document.getElementById('editPhone').value = p.phone || '';
             document.getElementById('editNextVisit').value = p.nextVisit || '';
             
-            // عرض اسم اليوم والتاريخ بالتفصيل في البروفايل
             let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
             let dayName = getArabicDayName(pDate);
             document.getElementById('lblDateCreated').innerText = `يوم ${dayName} (${pDate})`;
@@ -523,6 +556,75 @@
 
         function backToMain() { switchPage('patients'); }
 
+        // ================= كود صفحة الحجوزات التليفونية المستقلة =================
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let id = "book_" + Date.now();
+            let name = document.getElementById('bookName').value;
+            let phone = document.getElementById('bookPhone').value;
+            let date = document.getElementById('bookDate').value;
+
+            bookings[id] = { id, name, phone, date };
+            pushToServer('bookings', bookings, () => {
+                document.getElementById('bookingForm').reset();
+                displayBookings();
+            });
+        });
+
+        function displayBookings() {
+            let tbody = document.getElementById('bookingTable'); tbody.innerHTML = '';
+            let keys = Object.keys(bookings).sort((a, b) => bookings[a].date.localeCompare(bookings[b].date));
+            if(keys.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted p-3">لا توجد اتصالات أو حجوزات مسجلة</td></tr>';
+                return;
+            }
+            keys.forEach(id => {
+                let b = bookings[id];
+                let dayName = getArabicDayName(b.date);
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${b.name}</strong><br><span class="text-muted">${b.phone || 'بلا رقم'}</span></td>
+                        <td class="text-primary fw-bold">${dayName}<br><small>${b.date}</small></td>
+                        <td>
+                            <button class="btn btn-sm btn-success fw-bold mb-1 w-100" style="font-size:10px;" onclick="convertBookingToPatient('${id}')">🤝 شرف (تحويل لمريض)</button>
+                            <button class="btn btn-sm btn-outline-danger w-100" style="font-size:10px;" onclick="deleteBooking('${id}')">مسح حجز</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function convertBookingToPatient(id) {
+            let b = bookings[id];
+            if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى؟`)) {
+                let pId = "p_" + Date.now();
+                let todayStr = new Date().toISOString().split('T')[0];
+
+                // نقله للمرضى وتعيين تاريخ النهارده كزيارة فعلية
+                patients[pId] = { id: pId, name: b.name, phone: b.phone, service: 'حجز مسبق تم الحضور', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', dateCreated: todayStr };
+                
+                // مسحه من الحجوزات
+                delete bookings[id];
+
+                showLoading(true, "جاري تحويل البيانات سحابياً...");
+                // مزامنة العقدتين على السيرفر
+                fetch(`${FIREBASE_URL}patients.json`, { method: 'PUT', body: JSON.stringify(patients) })
+                .then(() => fetch(`${FIREBASE_URL}bookings.json`, { method: 'PUT', body: JSON.stringify(bookings) }))
+                .then(() => {
+                    showLoading(false);
+                    switchPage('patients');
+                    openPatientProfile(pId);
+                });
+            }
+        }
+
+        function deleteBooking(id) {
+            if(confirm('إلغاء هذا الحجز التليفوني؟')) {
+                delete bookings[id];
+                pushToServer('bookings', bookings, displayBookings);
+            }
+        }
+
         // ================= كود المتابعات الأونلاين =================
         function displayDailyAppointments() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
@@ -593,7 +695,7 @@
 
         function deleteExpense(id) { if(confirm('مسح المصروف؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
 
-        // ================= النظام المالي المطور: حساب النسب باليوم والإغلاق الشهري الصافي =================
+        // ================= النظام المالي المطور =================
         function calculateDailyShares() {
             let selectedDate = document.getElementById('shareFilterDate').value;
             if(!selectedDate) return;
@@ -618,7 +720,7 @@
             document.getElementById('dayIncome').innerText = dayInc + " ج.م";
             document.getElementById('dayExpenses').innerText = dayExp + " ج.م";
             document.getElementById('dayDoctorShare').innerText = (dayNet * 0.70).toFixed(2) + " ج.م";
-            document.getElementById('dayClinicShare').innerText = (dayNet * 0.30).toFixed(2) + " ج.م";
+            document.getElementById('dayClinicShare').innerText = (dayNet * 0.30).toFixed(2) + " ج.m";
 
             let monthInc = Object.values(patients).reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
             let monthExp = Object.values(expenses).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
