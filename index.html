@@ -22,11 +22,10 @@
         .nav-item-btn.active { color: #0d6efd; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; font-weight: bold; }
         
-        /* تأثيرات اللمس السريع وتنبيهات الألوان المبتكرة */
         .clickable-name { cursor: pointer; text-decoration: none; transition: all 0.2s ease; display: inline-block; }
         .clickable-name:hover { transform: scale(1.03); text-decoration: underline; }
-        .patient-debt { color: #dc3545 !important; } /* أحمر للمديونية */
-        .patient-clear { color: #198754 !important; } /* أخضر للخالص */
+        .patient-debt { color: #dc3545 !important; } 
+        .patient-clear { color: #198754 !important; } 
     </style>
 </head>
 <body class="container">
@@ -239,7 +238,7 @@
                 <h5 class="fw-bold text-warning mb-3">📈 تقرير الدخل الصافي والتقفيل الشهري</h5>
                 <div class="row g-2 mb-2">
                     <div class="col-6 border-end border-secondary"><small class="text-light">إجمالي الإيرادات</small><h6 class="text-success fw-bold" id="monthTotalIncome">0 ج.م</h6></div>
-                    <div class="col-6"><small class="text-light">إجمالي المصروفات</small><h6 class="text-danger fw-bold" id="monthTotalExpenses">0 ج.m</h6></div>
+                    <div class="col-6"><small class="text-light">إجمالي المصروفات</small><h6 class="text-danger fw-bold" id="monthTotalExpenses">0 ج.م</h6></div>
                 </div>
                 <hr class="bg-secondary my-2">
                 <div class="p-2 border border-warning rounded bg-gradient" style="background-color: #212529;">
@@ -281,9 +280,8 @@
             </div>
             
             <div class="col-12">
-                <label class="form-label fw-bold text-primary">📅 موعد الزيارة القادمة (المتابعة)</label>
-                <input type="datetime-local" id="editNextVisit" class="form-control" onchange="updateNextVisitDayLabel()">
-                <div id="nextVisitDayLabel" class="text-primary fw-bold small mt-1 bg-light p-2 rounded border" style="display:none;"></div>
+                <label class="form-label fw-bold text-primary" id="editNextVisitLabel">📅 موعد الزيارة القادمة (المتابعة):</label>
+                <input type="datetime-local" id="editNextVisit" class="form-control fw-bold text-primary" style="font-size: 16px;" onchange="updateNextVisitDayLabel()">
             </div>
 
             <div class="col-12"><label class="form-label fw-bold">الخدمة / الشغل المطلوب في الزيارة القادمة</label><input type="text" id="editService" class="form-control"></div>
@@ -291,7 +289,7 @@
             <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
             
             <div class="col-12 mt-3">
-                <label class="form-label fw-bold text-primary">📸 صور الأشعة (مساحة تخزين ذكية فائقة اللانهائية ⚙️)</label>
+                <label class="form-label fw-bold text-primary">📸 صور الأشعة</label>
                 <input type="file" id="xrayInput" class="form-control" accept="image/*" multiple onchange="uploadXray()">
                 <div id="xrayGallery" class="mt-2 d-flex flex-wrap bg-light p-2 border rounded"></div>
             </div>
@@ -313,7 +311,7 @@
         
         let lastSystemDateStr = "";
         let isUserViewingCustomDate = false;
-        let currentActiveTab = "patients"; // متغير لتذكر الصفحة الحالية عند الضغط على زر الرجوع
+        let currentActiveTab = "patients"; 
 
         const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
@@ -326,21 +324,35 @@
         }
 
         function getArabicDayName(dateString) {
-            if(!dateString) return "غير محدد";
+            if(!dateString) return "";
             let datePart = dateString.split('T')[0];
             let d = new Date(datePart);
             return arabicDays[d.getDay()];
         }
 
+        // دالة التحديث المبتكرة لعرض اسم اليوم مباشرة مدمجاً داخل العنوان بأناقة وسهولة
         function updateNextVisitDayLabel() {
             let val = document.getElementById('editNextVisit').value;
-            let label = document.getElementById('nextVisitDayLabel');
+            let label = document.getElementById('editNextVisitLabel');
             if(val) {
                 let dayName = getArabicDayName(val);
-                label.innerHTML = `<i class="bi bi-clock-history"></i> ميعاد الزيارة القادم يوافق يوم: <strong class="text-danger">${dayName}</strong> بتاريخ (${val.split('T')[0]}) الساعة (${val.split('T')[1] || ''})`;
-                label.style.display = 'block';
+                let datePart = val.split('T')[0];
+                let timePart = val.split('T')[1] || '';
+                
+                // تحويل الوقت لصيغة 12 ساعة صباحاً/مساءً لسهولة النطق للمريض
+                if(timePart) {
+                    let parts = timePart.split(':');
+                    let hours = parseInt(parts[0]);
+                    let minutes = parts[1];
+                    let ampm = hours >= 12 ? 'مساءً' : 'صباحاً';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12; 
+                    timePart = `${hours}:${minutes} ${ampm}`;
+                }
+
+                label.innerHTML = `📅 ميعاد الزيارة القادمة: <span class="badge bg-primary fs-6 fw-bold text-white px-2 py-1">${dayName} - ${datePart} (${timePart})</span>`;
             } else {
-                label.style.display = 'none';
+                label.innerHTML = `📅 موعد الزيارة القادمة (المتابعة):`;
             }
         }
 
@@ -369,9 +381,7 @@
                 let currentTodayStr = getLocalDateString();
                 if (currentTodayStr !== lastSystemDateStr) {
                     lastSystemDateStr = currentTodayStr;
-                    
                     document.getElementById('customPatientDate').value = currentTodayStr;
-                    
                     if (!isUserViewingCustomDate) {
                         document.getElementById('appointmentFilterDate').value = currentTodayStr;
                         if (document.getElementById('page-appointments').style.display === 'block') {
@@ -385,12 +395,7 @@
         function handleAppointmentDateChange() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
             let currentTodayStr = getLocalDateString();
-            
-            if (selectedDate !== currentTodayStr) {
-                isUserViewingCustomDate = true;
-            } else {
-                isUserViewingCustomDate = false;
-            }
+            isUserViewingCustomDate = (selectedDate !== currentTodayStr);
             displayDailyAppointments();
         }
 
@@ -427,7 +432,7 @@
         }
 
         function switchPage(pageName) {
-            currentActiveTab = pageName; // حفظ اسم الصفحة النشطة الحالية لتسهيل عملية العودة إليها
+            currentActiveTab = pageName; 
             
             document.getElementById('page-patients').style.display = 'none';
             document.getElementById('page-appointments').style.display = 'none';
@@ -471,7 +476,6 @@
             }
         }
 
-        // ================= كود صفحة المرضى =================
         function calculateRemaining() {
             let total = parseFloat(document.getElementById('total').value) || 0;
             let paid = parseFloat(document.getElementById('paid').value) || 0;
@@ -513,7 +517,6 @@
                     let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
                     let dayName = getArabicDayName(pDate);
                     
-                    // ميزة الذكاء المالي الملون في العرض
                     let isDebt = (parseFloat(p.remaining) || 0) > 0;
                     let colorClass = isDebt ? 'patient-debt' : 'patient-clear';
                     let icon = isDebt ? '⚠️' : '✨';
@@ -532,7 +535,6 @@
         }
 
         function openPatientProfile(id) {
-            // إخفاء كل الصفحات وفتح ملف المريض المختار
             document.getElementById('page-patients').style.display = 'none';
             document.getElementById('page-appointments').style.display = 'none';
             document.getElementById('page-share').style.display = 'none';
@@ -548,9 +550,9 @@
             document.getElementById('editPhone').value = p.phone || '';
             document.getElementById('editNextVisit').value = p.nextVisit || '';
             
+            // تشغيل دالة التحديث فور فتح الملف ليعرض التسمية الجديدة لليوم فوراً
             updateNextVisitDayLabel();
 
-            // تحديث شريط الحالة المالي الكريتيف داخل الملف
             let remainingMoney = (p.total || 0) - p.paid;
             let statusBadge = document.getElementById('financialStatusBadge');
             if(remainingMoney > 0) {
@@ -669,10 +671,8 @@
             if(confirm('حذف المريض نهائياً؟')) { let id = document.getElementById('editId').value; delete patients[id]; pushToServer('patients', patients, () => { backToMain(); }); }
         }
 
-        // تم تعديل دالة الرجوع لتعيدك تلقائياً للصفحة التي كنت بداخلها (المرضى أو المتابعات أو النسب)
         function backToMain() { switchPage(currentActiveTab); }
 
-        // ================= كود صفحة الحجوزات التليفونية =================
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "book_" + Date.now();
@@ -712,7 +712,7 @@
 
         function convertBookingToPatient(id) {
             let b = bookings[id];
-            if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى؟`)) {
+            if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى/`)) {
                 let pId = "p_" + Date.now();
                 let todayStr = getLocalDateString();
 
@@ -737,7 +737,6 @@
             }
         }
 
-        // ================= كود المتابعات الأونلاين اليومية =================
         function displayDailyAppointments() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
             let tbody = document.getElementById('dailyAppointmentsTable'); tbody.innerHTML = '';
@@ -751,8 +750,15 @@
             
             list.forEach(p => {
                 let time = p.nextVisit.split('T')[1] || '--:--';
+                if(time !== '--:--') {
+                    let pParts = time.split(':');
+                    let hrs = parseInt(pParts[0]);
+                    let mins = pParts[1];
+                    let ampm = hrs >= 12 ? 'م' : 'ص';
+                    hrs = hrs % 12 ? hrs % 12 : 12;
+                    time = `${hrs}:${mins} ${ampm}`;
+                }
                 
-                // الميزة الكريتيف: تلوين الأسماء داخل جدول المتابعات اليومية مع تفعيل الفتح السريع بالضغط
                 let isDebt = (parseFloat(p.remaining) || 0) > 0;
                 let colorClass = isDebt ? 'patient-debt' : 'patient-clear';
                 let icon = isDebt ? '⚠️' : '✨';
@@ -764,14 +770,13 @@
                                 ${icon} ${p.name}
                             </strong>
                         </td>
-                        <td class="text-primary fw-bold">${time}</td>
+                        <td class="text-primary fw-bold text-nowrap" style="font-size:12px;">${time}</td>
                         <td><span class="badge bg-secondary text-wrap">${p.service || 'متابعة'}</span></td>
-                        <td>${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success">📞 اتصل</a>` : `<span class="text-muted small">بلا رقم</span>`}</td>
+                        <td>${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success px-1 py-0" style="font-size:11px;">📞 اتصل</a>` : `<span class="text-muted small">بلا رقم</span>`}</td>
                     </tr>`;
             });
         }
 
-        // ================= كود صفحة المعمل السحابية =================
         function calculateLabRemaining() {
             let total = parseFloat(document.getElementById('labTotal').value) || 0;
             let paid = parseFloat(document.getElementById('labPaid').value) || 0;
@@ -802,7 +807,6 @@
 
         function deleteLab(id) { if(confirm('مسح الطلبية؟')) { delete labs[id]; pushToServer('labs', labs, displayLabs); } }
 
-        // ================= كود صفحة المصاريف السحابية =================
         document.getElementById('expenseForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "exp_" + Date.now();
@@ -827,7 +831,6 @@
 
         function deleteExpense(id) { if(confirm('مسح المصروف؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
 
-        // ================= النظام المالي ونسب الشركاء الأونلاين =================
         function calculateDailyShares() {
             let selectedDate = document.getElementById('shareFilterDate').value;
             if(!selectedDate) return;
@@ -836,7 +839,7 @@
             document.getElementById('shareDayTitle').innerText = `أرباح وكشف نسب يوم ${dayName} (${selectedDate}):`;
 
             let dayInc = 0;
-            let paidListHTML = ""; // لتجميع قائمة كشف أسماء المرضى الكريتيف
+            let paidListHTML = ""; 
             
             Object.values(patients).forEach(p => {
                 let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
@@ -850,7 +853,6 @@
                         let badgeText = isDebt ? `متبقي عليه: ${p.remaining} ج.م` : 'خالص بالكامل ✨';
                         let badgeColor = isDebt ? 'bg-danger' : 'bg-success';
                         
-                        // هنا جعلنا قائمة الحسابات والنسب برضه تفتح الملف بمجرد الضغط اللحظي على الاسم
                         paidListHTML += `
                             <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
                                 <span class="clickable-name ${colorClass} fw-bold" onclick="openPatientProfile('${p.id}')">
@@ -865,7 +867,6 @@
                 }
             });
 
-            // عرض القائمة الذكية للمسددين اليوم
             let listContainer = document.getElementById('dailyPaidPatientsList');
             if(paidListHTML !== "") {
                 listContainer.innerHTML = paidListHTML;
@@ -892,7 +893,7 @@
 
             document.getElementById('monthTotalIncome').innerText = monthInc + " ج.م";
             document.getElementById('monthTotalExpenses').innerText = monthExp + " ج.م";
-            document.getElementById('monthNetProfit').innerText = monthNet + " ج.م";
+            document.getElementById('monthNetProfit').innerText = monthNet + " ج.m";
         }
     </script>
 </body>
