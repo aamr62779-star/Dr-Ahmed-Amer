@@ -13,19 +13,24 @@
         .btn-success:hover { background-color: #0ea885; }
         .login-container { max-width: 400px; margin: 100px auto; }
         
-        /* إخفاء الصفحات افتراضياً */
         #appContent, #page-patients, #page-labs, #page-expenses, #page-share, #page-appointments, #patientProfile { display: none; }
-        
         .xray-thumb { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin: 5px; cursor: pointer; border: 2px solid #ddd; }
         
-        /* شريط التنقل السفلي المطور لـ 5 أزرار */
         .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background-color: #ffffff; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 1000; display: flex; justify-content: space-around; padding: 10px 0; }
         .nav-item-btn { background: none; border: none; color: #6c757d; font-size: 11px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 20%; }
         .nav-item-btn i { font-size: 20px; margin-bottom: 2px; }
         .nav-item-btn.active { color: #0d6efd; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; font-weight: bold; }
     </style>
 </head>
 <body class="container">
+
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="mt-2 text-primary">جاري التحديث السحابي...</div>
+        </div>
+    </div>
 
     <div id="loginScreen" class="card p-4 text-center login-container">
         <h4 class="text-primary fw-bold mb-3">عيادة دكتور أحمد حسن عامر</h4>
@@ -38,10 +43,9 @@
     </div>
 
     <div id="appContent">
-        
         <div class="text-center mb-3">
             <h3 class="text-primary fw-bold">عيادة دكتور أحمد حسن عامر</h3>
-            <p class="text-muted small">نظام الإدارة والجدولة الذكي</p>
+            <p class="text-muted small">نظام العيادة السحابي المشترك 🌐</p>
         </div>
 
         <div id="page-patients">
@@ -49,11 +53,11 @@
                 <h5 class="mb-3 text-secondary fw-bold">إضافة مريض جديد</h5>
                 <form id="patientForm" class="row g-2">
                     <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض" required></div>
-                    <div class="col-12"><input type="text" id="service" class="form-control" placeholder="الخدمة (حشو، تركيبة، خلع...)"></div>
+                    <div class="col-12"><input type="text" id="service" class="form-control" placeholder="الخدمة الحالية"></div>
                     <div class="col-6"><input type="number" id="paid" class="form-control" placeholder="المبلغ المدفوع" oninput="calculateRemaining()"></div>
                     <div class="col-6"><input type="number" id="total" class="form-control" placeholder="الإجمالي" oninput="calculateRemaining()"></div>
                     <div class="col-12"><input type="number" id="remaining" class="form-control" placeholder="المتبقي تلقائياً" readonly style="background-color: #e9ecef;"></div>
-                    <div class="col-12"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض وفتح ملفه</button></div>
+                    <div class="col-12"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض سحابياً</button></div>
                 </form>
             </div>
             <div class="mb-3">
@@ -79,15 +83,12 @@
         <div id="page-appointments">
             <div class="card p-3 mb-3 text-center bg-white">
                 <h5 class="text-primary fw-bold mb-2">📅 أجندة المتابعات والزيارات اليومية</h5>
-                <p class="text-muted small">البرنامج يفرز تلقائياً المواعيد بناءً على المسجل في ملفات المرضى</p>
                 <div class="row g-2 justify-content-center">
                     <div class="col-md-6 col-12">
-                        <label class="form-label small fw-bold text-secondary">اختر التاريخ لعرض مواعيده:</label>
-                        <input type="date" id="appointmentFilterDate" class="form-control text-centerfw-bold" onchange="displayDailyAppointments()">
+                        <input type="date" id="appointmentFilterDate" class="form-control text-center fw-bold" onchange="displayDailyAppointments()">
                     </div>
                 </div>
             </div>
-
             <div class="card p-2">
                 <h6 class="p-2 text-secondary fw-bold" id="appointmentDayLabel">زيارات اليوم:</h6>
                 <div class="table-responsive">
@@ -139,7 +140,7 @@
             <div class="card p-3 mb-4">
                 <h5 class="mb-3 text-secondary fw-bold">تسجيل مصروفات العيادة</h5>
                 <form id="expenseForm" class="row g-2">
-                    <div class="col-12"><input type="text" id="expReason" class="form-control" placeholder="بند الصرف (إيجار، خامات...)" required></div>
+                    <div class="col-12"><input type="text" id="expReason" class="form-control" placeholder="بند الصرف" required></div>
                     <div class="col-8"><input type="number" id="expAmount" class="form-control" placeholder="المبلغ المصروف" required></div>
                     <div class="col-4"><button type="submit" class="btn btn-danger w-100 fw-bold">إضافة</button></div>
                 </form>
@@ -170,7 +171,7 @@
                 <div class="row g-3">
                     <div class="col-6">
                         <div class="p-2 border rounded bg-light">
-                            <small class="text-success fw-bold">إجمالي دخل المرضى</small>
+                            <small class="text-success fw-bold">إجمالي الدخل</small>
                             <h5 class="mt-1 fw-bold text-dark" id="shareTotalIncome">0 ج.م</h5>
                         </div>
                     </div>
@@ -194,21 +195,11 @@
         </div>
 
         <div class="nav-bottom">
-            <button class="nav-item-btn active" onclick="switchPage('patients')">
-                <i class="bi bi-people-fill"></i>المرضى
-            </button>
-            <button class="nav-item-btn" onclick="switchPage('appointments')">
-                <i class="bi bi-calendar-event-fill"></i>المتابعات
-            </button>
-            <button class="nav-item-btn" onclick="switchPage('labs')">
-                <i class="bi bi-box-seam-fill"></i>المعمل
-            </button>
-            <button class="nav-item-btn" onclick="switchPage('expenses')">
-                <i class="bi bi-credit-card-fill"></i>المصاريف
-            </button>
-            <button class="nav-item-btn" onclick="switchPage('share')">
-                <i class="bi bi-calculator-fill"></i>النسب
-            </button>
+            <button class="nav-item-btn active" onclick="switchPage('patients')"><i class="bi bi-people-fill"></i>المرضى</button>
+            <button class="nav-item-btn" onclick="switchPage('appointments')"><i class="bi bi-calendar-event-fill"></i>المتابعات</button>
+            <button class="nav-item-btn" onclick="switchPage('labs')"><i class="bi bi-box-seam-fill"></i>المعمل</button>
+            <button class="nav-item-btn" onclick="switchPage('expenses')"><i class="bi bi-credit-card-fill"></i>المصاريف</button>
+            <button class="nav-item-btn" onclick="switchPage('share')"><i class="bi bi-calculator-fill"></i>النسب</button>
         </div>
     </div>
 
@@ -217,10 +208,9 @@
         <h4 class="text-primary fw-bold mb-3" id="profileTitle">ملف المريض</h4>
         
         <form id="editForm" class="row g-3">
-            <input type="hidden" id="editIndex">
+            <input type="hidden" id="editId">
             
             <div class="col-12"><label class="form-label fw-bold">اسم المريض</label><input type="text" id="editName" class="form-control" required></div>
-            
             <div class="col-12">
                 <label class="form-label fw-bold text-dark">📞 رقم الموبايل</label>
                 <div class="input-group">
@@ -228,13 +218,11 @@
                     <a id="phoneCallBtn" href="#" class="btn btn-primary"><i class="bi bi-telephone-fill"></i> اتصال سريع</a>
                 </div>
             </div>
-
             <div class="col-12">
                 <label class="form-label fw-bold text-primary">📅 موعد الزيارة القادمة (المتابعة)</label>
                 <input type="datetime-local" id="editNextVisit" class="form-control">
             </div>
-
-            <div class="col-12"><label class="form-label fw-bold">الخدمة / الشغل المطلوب في الزيارة القادمة</label><input type="text" id="editService" class="form-control" placeholder="حشو عصب، مقاس تركيبة..."></div>
+            <div class="col-12"><label class="form-label fw-bold">الخدمة / الشغل المطلوب في الزيارة القادمة</label><input type="text" id="editService" class="form-control"></div>
             <div class="col-6"><label class="form-label fw-bold text-success">المدفوع الحالي (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
             <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
             
@@ -245,29 +233,64 @@
             </div>
 
             <div class="col-12 d-flex gap-2 mt-3">
-                <button type="button" onclick="savePatientChanges()" class="btn btn-success flex-grow-1 fw-bold">حفظ التعديل في الملف</button>
-                <button type="button" onclick="deletePatientRecord()" class="btn btn-danger fw-bold">حذف</button>
+                <button type="button" onclick="savePatientChanges()" class="btn btn-success flex-grow-1 fw-bold">حفظ التعديل سحابياً</button>
+                <button type="button" onclick="deletePatientRecord()" class="btn btn-danger fw-bold">حذف نهائي</button>
             </div>
         </form>
     </div>
 
     <script>
-        // قواعد تسجيل الدخول والتنقل
+        // رابط سيرفر فايربيس الخاص بك
+        const FIREBASE_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com/";
+
+        let patients = {};
+        let labs = {};
+        let expenses = {};
+
         function checkPassword() {
-            const input = document.getElementById('passwordInput').value;
-            if (input === "1234") {
+            if (document.getElementById('passwordInput').value === "1234") {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
+                document.getElementById('appointmentFilterDate').value = new Date().toISOString().split('T')[0];
                 
-                // ضبط تاريخ فلتر المتابعات لليوم تلقائياً عند الدخول
-                let today = new Date().toISOString().split('T')[0];
-                document.getElementById('appointmentFilterDate').value = today;
-
-                switchPage('patients'); 
+                // بدء سحب البيانات الحية فور دخول البرنامج
+                showLoading(true);
+                syncDataFromServer();
             } else {
                 document.getElementById('loginError').style.display = 'block';
                 document.getElementById('passwordInput').value = '';
             }
+        }
+
+        function showLoading(status) {
+            document.getElementById('loadingOverlay').style.display = status ? 'flex' : 'none';
+        }
+
+        // دالة المزامنة وسحب البيانات أونلاين
+        function syncDataFromServer() {
+            fetch(`${FIREBASE_URL}.json`)
+            .then(res => res.json())
+            .then(data => {
+                if(data) {
+                    patients = data.patients || {};
+                    labs = data.labs || {};
+                    expenses = data.expenses || {};
+                }
+                showLoading(false);
+                switchPage('patients');
+            })
+            .catch(err => { console.error(err); showLoading(false); });
+        }
+
+        function pushToServer(node, updatedData, callback) {
+            showLoading(true);
+            fetch(`${FIREBASE_URL}${node}.json`, {
+                method: 'PUT',
+                body: JSON.stringify(updatedData)
+            })
+            .then(res => res.json())
+            .then(() => { showLoading(false); if(callback) callback(); })
+            .catch(err => { console.error(err); showLoading(false); });
         }
 
         function switchPage(pageName) {
@@ -304,46 +327,7 @@
             }
         }
 
-        let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
-
-        // ================= كود صفحة المتابعات اليومية (الجديدة) =================
-        function displayDailyAppointments() {
-            let selectedDate = document.getElementById('appointmentFilterDate').value;
-            let tbody = document.getElementById('dailyAppointmentsTable');
-            tbody.innerHTML = '';
-            
-            document.getElementById('appointmentDayLabel').innerText = `زيارات ومتابعات يوم (${selectedDate}):`;
-
-            // تصفية المرضى الذين يوافق موعد زيارتهم التاريخ المختار
-            let dayAppointments = patients.filter(p => p.nextVisit && p.nextVisit.split('T')[0] === selectedDate);
-
-            if(dayAppointments.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">لا توجد حالات أو متابعات مسجلة في هذا اليوم</td></tr>`;
-                return;
-            }
-
-            // ترتيب المواعيد حسب الساعة
-            dayAppointments.sort((a, b) => a.nextVisit.localeCompare(b.nextVisit));
-
-            dayAppointments.forEach((p) => {
-                // استخراج الساعة بشكل شيك
-                let timePart = p.nextVisit.split('T')[1] || '';
-                let formattedTime = timePart ? timePart : '--:--';
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${p.name}</strong></td>
-                        <td class="text-primary fw-bold">${formattedTime}</td>
-                        <td><span class="badge bg-secondary text-wrap">${p.service || 'فحص / متابعة دورية'}</span></td>
-                        <td>
-                            ${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success"><i class="bi bi-telephone-fill"></i> اتصل</a>` : `<span class="text-muted small">لا يوجد رقم</span>`}
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        // ================= باقي كود النظام المستقر =================
+        // ================= كود صفحة المرضى =================
         function calculateRemaining() {
             let total = parseFloat(document.getElementById('total').value) || 0;
             let paid = parseFloat(document.getElementById('paid').value) || 0;
@@ -352,19 +336,19 @@
 
         document.getElementById('patientForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            let id = "p_" + Date.now();
             let name = document.getElementById('name').value;
             let service = document.getElementById('service').value;
             let paid = parseFloat(document.getElementById('paid').value) || 0;
             let remaining = parseFloat(document.getElementById('remaining').value) || 0;
             let total = paid + remaining;
-            let xrays = [];
-            let phone = '';
-            let nextVisit = '';
 
-            patients.unshift({ name, service, paid, remaining, total, xrays, phone, nextVisit });
-            localStorage.setItem('clinic_patients', JSON.stringify(patients));
-            document.getElementById('patientForm').reset();
-            openPatientProfile(0);
+            patients[id] = { id, name, service, paid, remaining, total, xrays: [], phone: '', nextVisit: '' };
+            
+            pushToServer('patients', patients, () => {
+                document.getElementById('patientForm').reset();
+                openPatientProfile(id);
+            });
         });
 
         function displayPatients() {
@@ -372,33 +356,34 @@
             let tableBody = document.getElementById('patientTable');
             tableBody.innerHTML = '';
             
-            let filtered = patients.filter(p => p.name.toLowerCase().includes(searchTerm));
-            if(filtered.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">لا يوجد مرضى مسجلين</td></tr>`;
+            let keys = Object.keys(patients).reverse();
+            if(keys.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">لا يوجد مرضى مسجلين أونلاين</td></tr>`;
                 return;
             }
 
-            patients.forEach((p, index) => {
+            keys.forEach(id => {
+                let p = patients[id];
                 if(p.name.toLowerCase().includes(searchTerm)) {
                     tableBody.innerHTML += `
                         <tr>
                             <td><strong>${p.name}</strong></td>
                             <td><span class="badge bg-secondary">${p.service || 'فحص'}</span></td>
                             <td class="text-danger fw-bold">${p.remaining} ج.م</td>
-                            <td><button class="btn btn-sm btn-primary fw-bold" onclick="openPatientProfile(${index})">👁️ ملف</button></td>
+                            <td><button class="btn btn-sm btn-primary fw-bold" onclick="openPatientProfile('${id}')">👁️ ملف</button></td>
                         </tr>
                     `;
                 }
             });
         }
 
-        function openPatientProfile(index) {
+        function openPatientProfile(id) {
             document.getElementById('page-patients').style.display = 'none';
             document.getElementById('patientProfile').style.display = 'block';
-            let p = patients[index];
+            let p = patients[id];
             
-            document.getElementById('profileTitle').innerText = `الملف الرقمي: ${p.name}`;
-            document.getElementById('editIndex').value = index;
+            document.getElementById('profileTitle').innerText = `الملف الرقمي السحابي: ${p.name}`;
+            document.getElementById('editId').value = id;
             document.getElementById('editName').value = p.name;
             document.getElementById('editService').value = p.service || '';
             document.getElementById('editPaid').value = p.paid;
@@ -406,59 +391,56 @@
             document.getElementById('editNextVisit').value = p.nextVisit || '';
             
             let callBtn = document.getElementById('phoneCallBtn');
-            if(p.phone) {
-                callBtn.href = "tel:" + p.phone;
-                callBtn.classList.remove('disabled');
-            } else {
-                callBtn.href = "#";
-                callBtn.classList.add('disabled');
-            }
+            if(p.phone) { callBtn.href = "tel:" + p.phone; callBtn.classList.remove('disabled'); } 
+            else { callBtn.href = "#"; callBtn.classList.add('disabled'); }
 
-            let total = p.total || (parseFloat(p.paid) + parseFloat(p.remaining)) || 0;
-            document.getElementById('editRemaining').value = total - p.paid;
-            displayXrays(index);
+            document.getElementById('editRemaining').value = (p.total || 0) - p.paid;
+            displayXrays(id);
         }
 
         function calculateEditRemaining() {
-            let index = document.getElementById('editIndex').value;
+            let id = document.getElementById('editId').value;
             let currentPaid = parseFloat(document.getElementById('editPaid').value) || 0;
-            let originalTotal = patients[index].total || (parseFloat(patients[index].paid) + parseFloat(patients[index].remaining)) || 0;
+            let originalTotal = patients[id].total || 0;
             document.getElementById('editRemaining').value = originalTotal - currentPaid;
         }
 
         function savePatientChanges() {
-            let index = document.getElementById('editIndex').value;
-            patients[index].name = document.getElementById('editName').value;
-            patients[index].service = document.getElementById('editService').value;
-            patients[index].paid = parseFloat(document.getElementById('editPaid').value) || 0;
-            patients[index].remaining = parseFloat(document.getElementById('editRemaining').value) || 0;
-            patients[index].total = patients[index].paid + patients[index].remaining;
-            patients[index].phone = document.getElementById('editPhone').value;
-            patients[index].nextVisit = document.getElementById('editNextVisit').value;
+            let id = document.getElementById('editId').value;
+            patients[id].name = document.getElementById('editName').value;
+            patients[id].service = document.getElementById('editService').value;
+            patients[id].paid = parseFloat(document.getElementById('editPaid').value) || 0;
+            patients[id].remaining = parseFloat(document.getElementById('editRemaining').value) || 0;
+            patients[id].total = patients[id].paid + patients[id].remaining;
+            patients[id].phone = document.getElementById('editPhone').value;
+            patients[id].nextVisit = document.getElementById('editNextVisit').value;
 
-            localStorage.setItem('clinic_patients', JSON.stringify(patients));
-            backToMain();
+            pushToServer('patients', patients, () => { backToMain(); });
         }
 
         function uploadXray() {
-            let index = document.getElementById('editIndex').value;
+            let id = document.getElementById('editId').value;
             let files = document.getElementById('xrayInput').files;
-            if(!patients[index].xrays) patients[index].xrays = [];
+            if(!patients[id].xrays) patients[id].xrays = [];
+            
+            let loadedCount = 0;
             for(let file of files) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
-                    patients[index].xrays.push(e.target.result);
-                    localStorage.setItem('clinic_patients', JSON.stringify(patients));
-                    displayXrays(index);
+                    patients[id].xrays.push(e.target.result);
+                    loadedCount++;
+                    if(loadedCount === files.length) {
+                        pushToServer('patients', patients, () => { displayXrays(id); });
+                    }
                 }
                 reader.readAsDataURL(file);
             }
         }
 
-        function displayXrays(index) {
+        function displayXrays(id) {
             let gallery = document.getElementById('xrayGallery');
             gallery.innerHTML = '';
-            let xrays = patients[index].xrays || [];
+            let xrays = patients[id].xrays || [];
             if(xrays.length === 0) {
                 gallery.innerHTML = '<span class="text-muted small p-2">لا توجد أشعات مسجلة</span>';
                 return;
@@ -467,103 +449,131 @@
                 gallery.innerHTML += `
                     <div class="position-relative d-inline-block">
                         <img src="${imgSrc}" class="xray-thumb" onclick="window.open('${imgSrc}')">
-                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 start-0 m-1" style="padding: 1px 5px; font-size:10px;" onclick="deleteXray(${index}, ${imgIndex})">X</button>
+                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 start-0 m-1" style="padding: 1px 5px; font-size:10px;" onclick="deleteXray('${id}', ${imgIndex})">X</button>
                     </div>
                 `;
             });
         }
 
-        function deleteXray(pIndex, imgIndex) {
+        function deleteXray(id, imgIndex) {
             if(confirm('حذف الأشعة؟')) {
-                patients[pIndex].xrays.splice(imgIndex, 1);
-                localStorage.setItem('clinic_patients', JSON.stringify(patients));
-                displayXrays(pIndex);
+                patients[id].xrays.splice(imgIndex, 1);
+                pushToServer('patients', patients, () => { displayXrays(id); });
             }
         }
 
         function deletePatientRecord() {
             if(confirm('حذف المريض نهائياً؟')) {
-                let index = document.getElementById('editIndex').value;
-                patients.splice(index, 1);
-                localStorage.setItem('clinic_patients', JSON.stringify(patients));
-                backToMain();
+                let id = document.getElementById('editId').value;
+                delete patients[id];
+                pushToServer('patients', patients, () => { backToMain(); });
             }
         }
 
         function backToMain() { switchPage('patients'); }
 
-        // ================= كود صفحة المعمل =================
-        let labs = JSON.parse(localStorage.getItem('clinic_labs')) || [];
+        // ================= كود المتابعات الأونلاين =================
+        function displayDailyAppointments() {
+            let selectedDate = document.getElementById('appointmentFilterDate').value;
+            let tbody = document.getElementById('dailyAppointmentsTable');
+            tbody.innerHTML = '';
+            document.getElementById('appointmentDayLabel').innerText = `متابعات وزيارات يوم (${selectedDate}):`;
+
+            let list = Object.values(patients).filter(p => p.nextVisit && p.nextVisit.split('T')[0] === selectedDate);
+
+            if(list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">لا توجد حالات مسجلة لهذا اليوم</td></tr>`;
+                return;
+            }
+
+            list.sort((a, b) => a.nextVisit.localeCompare(b.nextVisit));
+            list.forEach(p => {
+                let time = p.nextVisit.split('T')[1] || '--:--';
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${p.name}</strong></td>
+                        <td class="text-primary fw-bold">${time}</td>
+                        <td><span class="badge bg-secondary text-wrap">${p.service || 'متابعة'}</span></td>
+                        <td>${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success">📞 اتصل</a>` : `<span class="text-muted small">بلا رقم</span>`}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // ================= كود صفحة المعمل السحابية =================
         function calculateLabRemaining() {
             let total = parseFloat(document.getElementById('labTotal').value) || 0;
             let paid = parseFloat(document.getElementById('labPaid').value) || 0;
             document.getElementById('labRemaining').value = total - paid;
         }
+
         document.getElementById('labForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            let id = "lab_" + Date.now();
             let name = document.getElementById('labName').value;
             let caseDesc = document.getElementById('labCase').value;
             let total = parseFloat(document.getElementById('labTotal').value) || 0;
             let paid = parseFloat(document.getElementById('labPaid').value) || 0;
             let remaining = total - paid;
-            labs.unshift({ name, caseDesc, total, paid, remaining });
-            localStorage.setItem('clinic_labs', JSON.stringify(labs));
-            document.getElementById('labForm').reset();
-            displayLabs();
+
+            labs[id] = { id, name, caseDesc, total, paid, remaining };
+            pushToServer('labs', labs, () => { document.getElementById('labForm').reset(); displayLabs(); });
         });
+
         function displayLabs() {
             let tbody = document.getElementById('labTable');
             tbody.innerHTML = '';
-            if(labs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد طلبيات معامل</td></tr>';
+            let keys = Object.keys(labs).reverse();
+            if(keys.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد معاملات معامل</td></tr>';
                 return;
             }
-            labs.forEach((l, i) => {
-                tbody.innerHTML += `<tr><td><strong>${l.name}</strong></td><td><small>${l.caseDesc || ''}</small></td><td class="text-danger fw-bold">${l.remaining} ج.م</td><td><button class="btn btn-sm btn-outline-danger" onclick="deleteLab(${i})">حذف</button></td></tr>`;
+            keys.forEach(id => {
+                let l = labs[id];
+                tbody.innerHTML += `<tr><td><strong>${l.name}</strong></td><td><small>${l.caseDesc || ''}</small></td><td class="text-danger fw-bold">${l.remaining} ج.م</td><td><button class="btn btn-sm btn-outline-danger" onclick="deleteLab('${id}')">حذف</button></td></tr>`;
             });
         }
-        function deleteLab(i) {
-            if(confirm('مسح المعمل؟')) { labs.splice(i, 1); localStorage.setItem('clinic_labs', JSON.stringify(labs)); displayLabs(); }
+
+        function deleteLab(id) {
+            if(confirm('مسح الطلبية؟')) { delete labs[id]; pushToServer('labs', labs, displayLabs); }
         }
 
-        // ================= كود صفحة المصاريف =================
-        let expenses = JSON.parse(localStorage.getItem('clinic_expenses')) || [];
+        // ================= كود صفحة المصاريف السحابية =================
         document.getElementById('expenseForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            let id = "exp_" + Date.now();
             let reason = document.getElementById('expReason').value;
             let amount = parseFloat(document.getElementById('expAmount').value) || 0;
-            expenses.unshift({ reason, amount });
-            localStorage.setItem('clinic_expenses', JSON.stringify(expenses));
-            document.getElementById('expenseForm').reset();
-            displayExpenses();
+
+            expenses[id] = { id, reason, amount };
+            pushToServer('expenses', expenses, () => { document.getElementById('expenseForm').reset(); displayExpenses(); });
         });
+
         function displayExpenses() {
             let tbody = document.getElementById('expenseTable');
             tbody.innerHTML = '';
             let totalExp = 0;
-            expenses.forEach((e, i) => {
+            Object.values(expenses).reverse().forEach(e => {
                 totalExp += e.amount;
-                tbody.innerHTML += `<tr><td>${e.reason}</td><td class="text-danger">${e.amount} ج.م</td><td><button class="btn btn-sm text-danger" onclick="deleteExpense(${i})"><i class="bi bi-trash"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr><td>${e.reason}</td><td class="text-danger">${e.amount} ج.م</td><td><button class="btn btn-sm text-danger" onclick="deleteExpense('${e.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
             });
-            if(expenses.length === 0) tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">لا توجد مصروفات</td></tr>';
+            if(Object.keys(expenses).length === 0) tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">لا توجد مصروفات مسجلة</td></tr>';
             document.getElementById('totalExpensesLabel').innerText = totalExp + " ج.م";
         }
-        function deleteExpense(i) {
-            if(confirm('مسح بند الصرف?')) { expenses.splice(i, 1); localStorage.setItem('clinic_expenses', JSON.stringify(expenses)); displayExpenses(); }
+
+        function deleteExpense(id) {
+            if(confirm('مسح المصروف؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); }
         }
 
         // ================= كود حساب النسب =================
         function calculateShares() {
-            let totalIncome = patients.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
-            let totalExp = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-            let netIncome = totalIncome - totalExp;
-            if(netIncome < 0) netIncome = 0;
-            let doctorShare = netIncome * 0.70;
-            let clinicShare = netIncome * 0.30;
+            let totalIncome = Object.values(patients).reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
+            let totalExp = Object.values(expenses).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+            let netIncome = Math.max(0, totalIncome - totalExp);
             document.getElementById('shareTotalIncome').innerText = totalIncome + " ج.م";
-            document.getElementById('shareTotalExpenses').innerText = totalExp + " ج.م";
-            document.getElementById('doctorShareLabel').innerText = doctorShare.toFixed(2) + " ج.م";
-            document.getElementById('clinicShareLabel').innerText = clinicShare.toFixed(2) + " ج.م";
+            document.getElementById('shareTotalExpenses').innerText = totalExp + " ج.m";
+            document.getElementById('doctorShareLabel').innerText = (netIncome * 0.70).toFixed(2) + " ج.م";
+            document.getElementById('clinicShareLabel').innerText = (netIncome * 0.30).toFixed(2) + " ج.م";
         }
     </script>
 </body>
