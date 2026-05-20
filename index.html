@@ -69,7 +69,7 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>الاسم</th>
-                                <th>الخدمة</th>
+                                <th>المدفوع</th>
                                 <th>المتبقي</th>
                                 <th>الملف</th>
                             </tr>
@@ -240,7 +240,6 @@
     </div>
 
     <script>
-        // رابط سيرفر فايربيس الخاص بك
         const FIREBASE_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com/";
 
         let patients = {};
@@ -364,11 +363,12 @@
             keys.forEach(id => {
                 let p = patients[id];
                 if(p.name.toLowerCase().includes(searchTerm)) {
+                    // تم تعديل الجدول هنا ليظهر المدفوع والمتبقي مباشرة بدون الخدمة لتوسيع الجدول للموبايل
                     tableBody.innerHTML += `
                         <tr>
                             <td><strong>${p.name}</strong></td>
-                            <td><span class="badge bg-secondary">${p.service || 'فحص'}</span></td>
-                            <td class="text-danger fw-bold">${p.remaining} ج.م</td>
+                            <td class="text-success fw-bold">${p.paid || 0} ج.م</td>
+                            <td class="text-danger fw-bold">${p.remaining || 0} g.m</td>
                             <td><button type="button" class="btn btn-sm btn-primary fw-bold" onclick="openPatientProfile('${id}')">👁️ ملف</button></td>
                         </tr>
                     `;
@@ -417,7 +417,6 @@
             pushToServer('patients', patients, () => { backToMain(); });
         }
 
-        // ================= 🛠️ الدالة السحرية الجديدة لرفع وضغط الصور =================
         function uploadXray() {
             let id = document.getElementById('editId').value;
             let files = document.getElementById('xrayInput').files;
@@ -433,9 +432,8 @@
                 reader.onload = function(e) {
                     let img = new Image();
                     img.onload = function() {
-                        // إعداد كانفاس لتصغير مساحة الصورة هندسياً
                         let canvas = document.createElement('canvas');
-                        let max_size = 800; // أقصى طول أو عرض للحفاظ على سرعة الرفع والوضوح
+                        let max_size = 800;
                         let width = img.width;
                         let height = img.height;
 
@@ -450,16 +448,14 @@
                         let ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        // ضغط الجودة لـ 60% لتقليل الوزن لأقصى درجة مناسبة للسيرفر السحابي
                         let compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
                         
                         patients[id].xrays.push(compressedBase64);
                         loadedCount++;
 
-                        // عند انتهاء معالجة وضغط كل الصور المحددة
                         if(loadedCount === files.length) {
                             pushToServer('patients', patients, () => { 
-                                document.getElementById('xrayInput').value = ''; // تصفير زر الإدخال
+                                document.getElementById('xrayInput').value = '';
                                 displayXrays(id); 
                             });
                         }
@@ -475,7 +471,6 @@
             gallery.innerHTML = '';
             let xrayData = patients[id].xrays;
             
-            // معالجة مشكلة التخزين لو كان مصفوفة فارغة أو مسجل بشكل خاطئ
             let xrays = [];
             if (xrayData) {
                 xrays = Array.isArray(xrayData) ? xrayData : Object.values(xrayData);
