@@ -65,10 +65,11 @@
             </div>
             <div class="card p-2">
                 <div class="table-responsive">
-                    <table class="table table-striped align-middle mb-0">
+                    <table class="table table-striped align-middle mb-0" style="font-size: 13px;">
                         <thead class="table-dark">
                             <tr>
                                 <th>الاسم</th>
+                                <th>الزيارة</th>
                                 <th>المدفوع</th>
                                 <th>المتبقي</th>
                                 <th>الملف</th>
@@ -177,7 +178,7 @@
                 <h6 class="text-muted mb-3 fw-bold" id="shareDayTitle">أرباح يوم اليوم:</h6>
                 <div class="row text-center mb-3">
                     <div class="col-6 border-end"><small class="text-muted">دخل اليوم</small><h6 class="fw-bold text-success" id="dayIncome">0 ج.م</h6></div>
-                    <div class="col-6"><small class="text-muted">مصاريف اليوم</small><h6 class="fw-bold text-danger" id="dayExpenses">0 ج.m</h6></div>
+                    <div class="col-6"><small class="text-muted">مصاريف اليوم</small><h6 class="fw-bold text-danger" id="dayExpenses">0 ج.م</h6></div>
                 </div>
                 <div class="p-2 border rounded text-center mb-2" style="background-color: #e6f9f5;">
                     <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد اليوم (70%)</small>
@@ -216,6 +217,10 @@
         <button onclick="backToMain()" class="btn btn-secondary btn-sm mb-3" style="max-width: 100px;">← رجوع</button>
         <h4 class="text-primary fw-bold mb-3" id="profileTitle">ملف المريض</h4>
         
+        <div class="alert alert-info py-2 px-3 mb-3 fw-bold small text-center" style="border-radius: 8px;">
+            <i class="bi bi-calendar-check-fill"></i> تاريخ زيارة المريض للعيادة: <span id="lblDateCreated" class="text-dark"></span>
+        </div>
+
         <form id="editForm" class="row g-3">
             <input type="hidden" id="editId">
             <div class="col-12"><label class="form-label fw-bold">اسم المريض</label><input type="text" id="editName" class="form-control" required></div>
@@ -253,6 +258,15 @@
         let patients = {};
         let labs = {};
         let expenses = {};
+
+        // مصفوفة أسماء الأيام بالعربية
+        const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+
+        function getArabicDayName(dateString) {
+            if(!dateString) return "غير محدد";
+            let d = new Date(dateString);
+            return arabicDays[d.getDay()];
+        }
 
         function checkPassword() {
             if (document.getElementById('passwordInput').value === "1234") {
@@ -329,8 +343,6 @@
             } else if(pageName === 'share') {
                 document.getElementById('page-share').style.display = 'block';
                 buttons[4].classList.add('active');
-                
-                // تعيين تاريخ اليوم تلقائياً لصفحة الحسابات اليومية
                 document.getElementById('shareFilterDate').value = new Date().toISOString().split('T')[0];
                 calculateDailyShares();
             }
@@ -352,7 +364,7 @@
             let remaining = parseFloat(document.getElementById('remaining').value) || 0;
             let total = paid + remaining;
             
-            // إضافة حقل تاريخ الإنشاء للحسابات باليوم الواحد
+            // تسجيل تاريخ الإنشاء التلقائي
             let dateStr = new Date().toISOString().split('T')[0];
 
             patients[id] = { id, name, service, paid, remaining, total, xrays: [], phone: '', nextVisit: '', dateCreated: dateStr };
@@ -369,18 +381,22 @@
             tableBody.innerHTML = '';
             let keys = Object.keys(patients).reverse();
             if(keys.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">لا يوجد مرضى مسجلين أونلاين</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">لا يوجد مرضى مسجلين أونلاين</td></tr>`;
                 return;
             }
             keys.forEach(id => {
                 let p = patients[id];
                 if(p.name.toLowerCase().includes(searchTerm)) {
+                    let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
+                    let dayName = getArabicDayName(pDate);
+                    
                     tableBody.innerHTML += `
                         <tr>
                             <td><strong>${p.name}</strong></td>
-                            <td class="text-success fw-bold">${p.paid || 0} ج.م</td>
-                            <td class="text-danger fw-bold">${p.remaining || 0} ج.م</td>
-                            <td><button type="button" class="btn btn-sm btn-primary fw-bold" onclick="openPatientProfile('${id}')">👁️ ملف</button></td>
+                            <td class="text-muted" style="font-size:11px;">${dayName}<br>${pDate}</td>
+                            <td class="text-success fw-bold">${p.paid || 0}</td>
+                            <td class="text-danger fw-bold">${p.remaining || 0}</td>
+                            <td><button type="button" class="btn btn-sm btn-primary fw-bold" style="font-size:11px; padding: 2px 6px;" onclick="openPatientProfile('${id}')">👁️ ملف</button></td>
                         </tr>
                     `;
                 }
@@ -400,6 +416,11 @@
             document.getElementById('editPhone').value = p.phone || '';
             document.getElementById('editNextVisit').value = p.nextVisit || '';
             
+            // عرض اسم اليوم والتاريخ بالتفصيل في البروفايل
+            let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
+            let dayName = getArabicDayName(pDate);
+            document.getElementById('lblDateCreated').innerText = `يوم ${dayName} (${pDate})`;
+
             let callBtn = document.getElementById('phoneCallBtn');
             if(p.phone) { callBtn.href = "tel:" + p.phone; callBtn.classList.remove('disabled'); } 
             else { callBtn.href = "#"; callBtn.classList.add('disabled'); }
@@ -425,7 +446,6 @@
             patients[id].phone = document.getElementById('editPhone').value;
             patients[id].nextVisit = document.getElementById('editNextVisit').value;
 
-            // لو مفيش تاريخ إنشاء قديم نثبته على النهارده عشان الحسابات اليومية متضيعش
             if(!patients[id].dateCreated) {
                 patients[id].dateCreated = new Date().toISOString().split('T')[0];
             }
@@ -447,8 +467,7 @@
                     img.onload = function() {
                         let canvas = document.createElement('canvas');
                         let max_size = 800;
-                        let width = img.width;
-                        let height = img.height;
+                        let width = img.width; let height = img.height;
                         if (width > height) { if (width > max_size) { height *= max_size / width; width = max_size; } } 
                         else { if (height > max_size) { width *= max_size / height; height = max_size; } }
                         canvas.width = width; canvas.height = height;
@@ -574,14 +593,14 @@
 
         function deleteExpense(id) { if(confirm('مسح المصروف؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
 
-        // ================= 🧠 النظام المالي المطور: حساب النسب باليوم والإغلاق الشهري الصافي =================
+        // ================= النظام المالي المطور: حساب النسب باليوم والإغلاق الشهري الصافي =================
         function calculateDailyShares() {
             let selectedDate = document.getElementById('shareFilterDate').value;
             if(!selectedDate) return;
 
-            document.getElementById('shareDayTitle').innerText = `أرباح وكشف نسب يوم (${selectedDate}):`;
+            let dayName = getArabicDayName(selectedDate);
+            document.getElementById('shareDayTitle').innerText = `أرباح وكشف نسب يوم ${dayName} (${selectedDate}):`;
 
-            // 1. حسابات اليوم المختار لوحده
             let dayInc = 0;
             Object.values(patients).forEach(p => {
                 let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
@@ -601,7 +620,6 @@
             document.getElementById('dayDoctorShare').innerText = (dayNet * 0.70).toFixed(2) + " ج.م";
             document.getElementById('dayClinicShare').innerText = (dayNet * 0.30).toFixed(2) + " ج.م";
 
-            // 2. الحساب الكلي الشهري (صافي الإيراد والمصاريف بالكامل)
             let monthInc = Object.values(patients).reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
             let monthExp = Object.values(expenses).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
             let monthNet = Math.max(0, monthInc - monthExp);
