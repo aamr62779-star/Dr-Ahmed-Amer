@@ -181,23 +181,27 @@
 
         <div id="page-expenses">
             <div class="card p-3 mb-4">
-                <h5 class="mb-3 text-secondary fw-bold">تسجيل مصروفات العيادة</h5>
+                <h5 class="mb-3 text-danger fw-bold">تسجيل مصروفات العيادة المخصصة</h5>
                 <form id="expenseForm" class="row g-2">
-                    <div class="col-12"><input type="text" id="expReason" class="form-control" placeholder="بند الصرف" required></div>
-                    <div class="col-8"><input type="number" id="expAmount" class="form-control" placeholder="المبلغ المصروف" required></div>
-                    <div class="col-4"><button type="submit" class="btn btn-danger w-100 fw-bold">إضافة</button></div>
+                    <div class="col-12"><input type="text" id="expReason" class="form-control" placeholder="بند الصرف (مثال: إيجار، خامات، كهرباء...)" required></div>
+                    <div class="col-12"><input type="number" id="expAmount" class="form-control" placeholder="المبلغ المصروف (ج.م)" required></div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted mb-0">تاريخ الصرف المخصص:</label>
+                        <input type="date" id="expDate" class="form-control fw-bold text-center" required>
+                    </div>
+                    <div class="col-12 mt-2"><button type="submit" class="btn btn-danger w-100 fw-bold">إضافة بند المصروف 💸</button></div>
                 </form>
             </div>
             <div class="card p-3 mb-3 bg-light text-center">
-                <h6 class="text-muted mb-1">إجمالي مصروفات العيادة الحالية</h6>
+                <h6 class="text-muted mb-1">إجمالي مصروفات العيادة المسجلة كلياً</h6>
                 <h4 class="text-danger fw-bold" id="totalExpensesLabel">0 ج.م</h4>
             </div>
             <div class="card p-2">
                 <div class="table-responsive">
-                    <table class="table table-striped align-middle mb-0">
+                    <table class="table table-striped align-middle mb-0" style="font-size: 13px;">
                         <thead class="table-dark">
                             <tr>
-                                <th>البند</th>
+                                <th>البند والتاريخ</th>
                                 <th>المبلغ</th>
                                 <th>مسح</th>
                             </tr>
@@ -210,7 +214,7 @@
 
         <div id="page-share">
             <div class="card p-3 mb-3 bg-white text-center">
-                <h5 class="text-primary fw-bold mb-2">📋 كشف حساب ونسب باليوم</h5>
+                <h5 class="text-primary fw-bold mb-2">📋 كشف حساب ونسب باليوم (منفصل عن المصاريف)</h5>
                 <div class="d-flex justify-content-center">
                     <input type="date" id="shareFilterDate" class="form-control text-center fw-bold w-70" onchange="calculateDailyShares()">
                 </div>
@@ -219,8 +223,7 @@
             <div class="card p-3 mb-3 bg-gradient" style="background: #ffffff; border-left: 5px solid #0d6efd;">
                 <h6 class="text-muted mb-3 fw-bold" id="shareDayTitle">أرباح يوم اليوم:</h6>
                 <div class="row text-center mb-3">
-                    <div class="col-6 border-end"><small class="text-muted">دخل اليوم</small><h6 class="fw-bold text-success" id="dayIncome">0 ج.م</h6></div>
-                    <div class="col-6"><small class="text-muted">مصاريف اليوم</small><h6 class="fw-bold text-danger" id="dayExpenses">0 ج.م</h6></div>
+                    <div class="col-12"><small class="text-muted">إجمالي دخل اليوم الفعلي من المرضى</small><h4 class="fw-bold text-success mt-1" id="dayIncome">0 ج.م</h4></div>
                 </div>
                 <div class="p-2 border rounded text-center mb-2" style="background-color: #e6f9f5;">
                     <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد اليوم (70%)</small>
@@ -233,14 +236,14 @@
             </div>
 
             <div class="card p-3 mb-3 text-center bg-dark text-white">
-                <h5 class="fw-bold text-warning mb-3">📈 تقرير الدخل الصافي والتقفيل الكلي الشامل</h5>
+                <h5 class="fw-bold text-warning mb-3">📈 التقفيل الكلي الشامل (نظام المزامنة)</h5>
                 <div class="row g-2 mb-2">
                     <div class="col-6 border-end border-secondary"><small class="text-light">إجمالي الإيرادات</small><h6 class="text-success fw-bold" id="monthTotalIncome">0 ج.م</h6></div>
                     <div class="col-6"><small class="text-light">إجمالي المصروفات</small><h6 class="text-danger fw-bold" id="monthTotalExpenses">0 ج.م</h6></div>
                 </div>
                 <hr class="bg-secondary my-2">
                 <div class="p-2 border border-warning rounded bg-gradient" style="background-color: #212529;">
-                    <small class="text-warning fw-bold d-block">💰 صافي الدخل الكلي للعيادة بعد الخصم</small>
+                    <small class="text-warning fw-bold d-block">💰 صافي الدخل الكلي للعيادة بعد خصم التكاليف</small>
                     <h2 class="text-warning fw-bold m-0 mt-1" id="monthNetProfit">0 ج.م</h2>
                 </div>
             </div>
@@ -248,8 +251,8 @@
 
         <div id="page-monthly">
             <div class="card p-3 mb-3 text-center bg-white">
-                <h5 class="text-primary fw-bold mb-2">📊 تقرير الدخل والأرباح الشهرية المستقل</h5>
-                <p class="text-muted small">اختر السنة والشهر لعرض تقرير التقفيل المالي المخصص</p>
+                <h5 class="text-primary fw-bold mb-2">📊 تقرير التقفيل المالي والخصم الشهري المجمع</h5>
+                <p class="text-muted small">هنا تُخصم كافة المصروفات التاريخية المحددة من الإيراد الشهري بالكامل</p>
                 <div class="row g-2">
                     <div class="col-6">
                         <select id="monthlyYearSelect" class="form-select text-center fw-bold" onchange="calculateCustomMonthlyReport()">
@@ -281,25 +284,25 @@
                 <h6 class="text-secondary fw-bold mb-3" id="monthlyReportTitle">تقرير شهر مايو 2026:</h6>
                 <div class="row text-center mb-3">
                     <div class="col-6 border-end">
-                        <small class="text-muted d-block mb-1">📥 إجمالي دخل الشهر</small>
+                        <small class="text-muted d-block mb-1">📥 دخل الشهر الفعلي</small>
                         <h5 class="fw-bold text-success" id="customMonthIncome">0 ج.م</h5>
                     </div>
                     <div class="col-6">
-                        <small class="text-muted d-block mb-1">📤 مصروفات الشهر</small>
+                        <small class="text-muted d-block mb-1">📤 مصروفات الشهر المحددة</small>
                         <h5 class="fw-bold text-danger" id="customMonthExpenses">0 ج.م</h5>
                     </div>
                 </div>
                 <div class="p-3 border rounded text-center bg-light mb-3">
-                    <small class="text-dark fw-bold d-block">💰 صافي أرباح الشهر (بعد خصم المصاريف)</small>
+                    <small class="text-dark fw-bold d-block">💰 صافي أرباح الشهر للعيادة (بعد خصم المصاريف)</small>
                     <h3 class="text-primary fw-bold m-0 mt-1" id="customMonthNetProfit">0 ج.م</h3>
                 </div>
                 <hr>
                 <div class="p-2 border rounded text-center mb-2" style="background-color: #e6f9f5;">
-                    <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد لهذا الشهر (70%)</small>
+                    <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد المبدئية من الإيراد (70%)</small>
                     <h4 class="text-success fw-bold m-0 mt-1" id="customMonthDoctorShare">0 ج.م</h4>
                 </div>
                 <div class="p-2 border rounded text-center" style="background-color: #f0f4fc;">
-                    <small class="text-primary fw-bold d-block">🏢 صافي نسبة العيادة لهذا الشهر (30%)</small>
+                    <small class="text-primary fw-bold d-block">🏢 صافي حصة العيادة بعد استيعاب المصاريف</small>
                     <h5 class="text-primary fw-bold m-0 mt-1" id="customMonthClinicShare">0 ج.م</h5>
                 </div>
             </div>
@@ -416,10 +419,10 @@
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
                 
-                // تعيين تاريخ اليوم الافتراضي في حقول التواريخ الأساسية عند الفتح لأول مرة
                 let todayStr = new Date().toISOString().split('T')[0];
                 document.getElementById('dateCreated').value = todayStr;
                 document.getElementById('appointmentFilterDate').value = todayStr;
+                document.getElementById('expDate').value = todayStr; // تعيين التاريخ الافتراضي للمصروفات
                 
                 let now = new Date();
                 document.getElementById('monthlyYearSelect').value = now.getFullYear().toString();
@@ -479,11 +482,12 @@
             let buttons = document.querySelectorAll('.nav-item-btn');
             buttons.forEach(b => b.classList.remove('active'));
 
+            let todayStr = new Date().toISOString().split('T')[0];
+
             if(pageName === 'patients') {
                 document.getElementById('page-patients').style.display = 'block';
                 buttons[0].classList.add('active');
-                // تحديث التاريخ الافتراضي للفورم الخارجي ليكون تاريخ اليوم الحالي دائماً عند التنقل
-                document.getElementById('dateCreated').value = new Date().toISOString().split('T')[0];
+                document.getElementById('dateCreated').value = todayStr;
                 displayPatients();
             } else if(pageName === 'appointments') {
                 document.getElementById('page-appointments').style.display = 'block';
@@ -500,11 +504,12 @@
             } else if(pageName === 'expenses') {
                 document.getElementById('page-expenses').style.display = 'block';
                 buttons[4].classList.add('active');
+                document.getElementById('expDate').value = todayStr; // إعادة تعيين تاريخ الصرف
                 displayExpenses();
             } else if(pageName === 'share') {
                 document.getElementById('page-share').style.display = 'block';
                 buttons[5].classList.add('active');
-                document.getElementById('shareFilterDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('shareFilterDate').value = todayStr;
                 calculateDailyShares();
             } else if(pageName === 'monthly') {
                 document.getElementById('page-monthly').style.display = 'block';
@@ -514,26 +519,15 @@
         }
 
         // ================= كود صفحة المرضى الفعليين =================
-        // [تعديل مستهدف 🛠️] حفظ المريض بالتاريخ المختار يدوياً من الفورم
         document.getElementById('patientForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "p_" + Date.now();
             let name = document.getElementById('name').value;
             let phone = document.getElementById('phone').value;
-            let chosenDate = document.getElementById('dateCreated').value; // استخدام التاريخ المحدد من الواجهة
+            let chosenDate = document.getElementById('dateCreated').value;
 
             patients[id] = { 
-                id, 
-                name, 
-                phone, 
-                service: '', 
-                paid: 0, 
-                remaining: 0, 
-                total: 0, 
-                xrays: [], 
-                nextVisit: '', 
-                sessionNumber: '', 
-                dateCreated: chosenDate 
+                id, name, phone, service: '', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', sessionNumber: '', dateCreated: chosenDate 
             };
             
             pushToServer('patients', patients, () => {
@@ -597,7 +591,6 @@
             document.getElementById('editPhone').value = p.phone || '';
             document.getElementById('editSessionNumber').value = p.sessionNumber || '';
             
-            // [تعديل مستهدف 🛠️] إدخال تاريخ التسجيل الحالي داخل حقل تعديل التواريخ
             let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
             document.getElementById('editDateCreated').value = pDate;
             
@@ -632,8 +625,6 @@
             patients[id].phone = document.getElementById('editPhone').value;
             patients[id].nextVisit = document.getElementById('editNextVisit').value;
             patients[id].sessionNumber = document.getElementById('editSessionNumber').value;
-            
-            // [تعديل مستهدف 🛠️] حفظ تاريخ التسجيل بعد تعديله يدوياً من داخل ملف المريض
             patients[id].dateCreated = document.getElementById('editDateCreated').value;
 
             pushToServer('patients', patients, () => { backToMain(); });
@@ -757,7 +748,6 @@
                 let pId = "p_" + Date.now();
                 let todayStr = new Date().toISOString().split('T')[0];
 
-                // التحويل يأخذ تاريخ اليوم الحالي تلقائياً كدخول للعيادة
                 patients[pId] = { id: pId, name: b.name, phone: b.phone, service: '', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', sessionNumber: '', dateCreated: todayStr };
                 delete bookings[id];
 
@@ -852,15 +842,16 @@
 
         function deleteLab(id) { if(confirm('مسح الطلبية؟')) { delete labs[id]; pushToServer('labs', labs, displayLabs); } }
 
-        // ================= كود صفحة المصاريف السحابية =================
+        // ================= كود صفحة المصاريف السحابية المطورة =================
+        // [تعديل مستهدف 🛠️] ربط حفظ المصروف بالتاريخ المختار يدوياً
         document.getElementById('expenseForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "exp_" + Date.now();
             let reason = document.getElementById('expReason').value;
             let amount = parseFloat(document.getElementById('expAmount').value) || 0;
-            let dateStr = new Date().toISOString().split('T')[0];
+            let chosenExpenseDate = document.getElementById('expDate').value; // التقاط التاريخ المحدد للمصروف
 
-            expenses[id] = { id, reason, amount, dateCreated: dateStr };
+            expenses[id] = { id, reason, amount, dateCreated: chosenExpenseDate };
             pushToServer('expenses', expenses, () => { document.getElementById('expenseForm').reset(); displayExpenses(); });
         });
 
@@ -869,7 +860,8 @@
             let totalExp = 0;
             Object.values(expenses).reverse().forEach(e => {
                 totalExp += e.amount;
-                tbody.innerHTML += `<tr><td>${e.reason}</td><td class="text-danger">${e.amount} ج.م</td><td><button class="btn btn-sm text-danger" onclick="deleteExpense('${e.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
+                let eDate = e.dateCreated || new Date(parseInt(e.id.split('_')[1])).toISOString().split('T')[0];
+                tbody.innerHTML += `<tr><td><strong>${e.reason}</strong><br><small class="text-muted">🗓️ ${eDate}</small></td><td class="text-danger fw-bold">${e.amount} ج.م</td><td><button class="btn btn-sm text-danger" onclick="deleteExpense('${e.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
             });
             if(Object.keys(expenses).length === 0) tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">لا توجد مصروفات مسجلة</td></tr>';
             document.getElementById('totalExpensesLabel').innerText = totalExp + " ج.م";
@@ -877,7 +869,8 @@
 
         function deleteExpense(id) { if(confirm('مسح المصروف؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
 
-        // ================= النظام المالي المطور =================
+        // ================= النظام المالي المطور والمعزول =================
+        // [تعديل مستهدف 🛠️] عزل المصروفات اليومية عن حساب النسب لعدم التأثير على دخل الدكتور
         function calculateDailyShares() {
             let selectedDate = document.getElementById('shareFilterDate').value;
             if(!selectedDate) return;
@@ -891,28 +884,22 @@
                 if(pDate === selectedDate) { dayInc += (parseFloat(p.paid) || 0); }
             });
 
-            let dayExp = 0;
-            Object.values(expenses).forEach(e => {
-                let eDate = e.dateCreated || new Date(parseInt(e.id.split('_')[1])).toISOString().split('T')[0];
-                if(eDate === selectedDate) { dayExp += (parseFloat(e.amount) || 0); }
-            });
-
-            let dayNet = Math.max(0, dayInc - dayExp);
-
+            // يتم حساب النسب هنا مباشرة من دخل المرضى الصافي دون المساس بالمصاريف
             document.getElementById('dayIncome').innerText = dayInc + " ج.م";
-            document.getElementById('dayExpenses').innerText = dayExp + " ج.م";
-            document.getElementById('dayDoctorShare').innerText = (dayNet * 0.70).toFixed(2) + " ج.م";
-            document.getElementById('dayClinicShare').innerText = (dayNet * 0.30).toFixed(2) + " ج.م";
+            document.getElementById('dayDoctorShare').innerText = (dayInc * 0.70).toFixed(2) + " ج.م";
+            document.getElementById('dayClinicShare').innerText = (dayInc * 0.30).toFixed(2) + " ج.م";
 
-            let monthInc = Object.values(patients).reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
-            let monthExp = Object.values(expenses).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-            let monthNet = Math.max(0, monthInc - monthExp);
+            // التقفيل السحابي الكلي التراكمي
+            let totalIncAll = Object.values(patients).reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
+            let totalExpAll = Object.values(expenses).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+            let totalNetAll = Math.max(0, totalIncAll - totalExpAll);
 
-            document.getElementById('monthTotalIncome').innerText = monthInc + " ج.م";
-            document.getElementById('monthTotalExpenses').innerText = monthExp + " ج.م";
-            document.getElementById('monthNetProfit').innerText = monthNet + " ج.م";
+            document.getElementById('monthTotalIncome').innerText = totalIncAll + " ج.م";
+            document.getElementById('monthTotalExpenses').innerText = totalExpAll + " ج.م";
+            document.getElementById('monthNetProfit').innerText = totalNetAll + " ج.م";
         }
 
+        // [تعديل مستهدف 🛠️] تجميع المصروفات بناءً على تاريخها وخصمها حصراً من التقفيل الختامي للشهر
         function calculateCustomMonthlyReport() {
             let year = document.getElementById('monthlyYearSelect').value;
             let month = document.getElementById('monthlyMonthSelect').value;
@@ -937,13 +924,19 @@
                 }
             });
 
+            // تصفية أرباح الشهر الإجمالية بعد خصم المصاريف
             let netProfit = Math.max(0, totalIncome - totalExpenses);
-            let doctorShare = netProfit * 0.70;
-            let clinicShare = netProfit * 0.30;
+            
+            // نسبة الدكتور المبدئية المؤمنة بالكامل من الإيراد (70% من إجمالي الدخل قبل خصم المصاريف)
+            let doctorShare = totalIncome * 0.70;
+            
+            // العيادة تتحمل المصروفات من حصتها الـ 30% أو من صافي الأرباح المتبقية
+            let clinicShare = netProfit - doctorShare;
+            if(clinicShare < 0) clinicShare = 0; // حماية لعدم ظهور قيم سالبة في الحالات الاستثنائية
 
             document.getElementById('customMonthIncome').innerText = totalIncome + " ج.م";
             document.getElementById('customMonthExpenses').innerText = totalExpenses + " ج.م";
-            document.getElementById('customMonthNetProfit').innerText = netProfit + " ج.m";
+            document.getElementById('customMonthNetProfit').innerText = netProfit + " ج.م";
             document.getElementById('customMonthDoctorShare').innerText = doctorShare.toFixed(2) + " ج.م";
             document.getElementById('customMonthClinicShare').innerText = clinicShare.toFixed(2) + " ج.م";
         }
