@@ -64,7 +64,11 @@
                 <form id="patientForm" class="row g-2">
                     <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض بالكامل" required></div>
                     <div class="col-12"><input type="tel" id="phone" class="form-control" placeholder="رقم الموبايل (010xxxxxxxx)"></div>
-                    <div class="col-12"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض وفتح ملفه 💾</button></div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted mb-0">تاريخ التسجيل (يمكنك اختيار تاريخ قديم):</label>
+                        <input type="date" id="dateCreated" class="form-control fw-bold text-center" required>
+                    </div>
+                    <div class="col-12 mt-2"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض وفتح ملفه 💾</button></div>
                 </form>
             </div>
             
@@ -316,8 +320,9 @@
         <button onclick="backToMain()" class="btn btn-secondary btn-sm mb-3" style="max-width: 100px;">← رجوع</button>
         <h4 class="text-primary fw-bold mb-3" id="profileTitle">ملف المريض</h4>
         
-        <div class="alert alert-info py-2 px-3 mb-3 fw-bold small text-center" style="border-radius: 8px;">
-            <i class="bi bi-calendar-check-fill"></i> تاريخ تسجيل المريض: <span id="lblDateCreated" class="text-dark"></span>
+        <div class="col-12 mb-3">
+            <label class="form-label fw-bold text-secondary"><i class="bi bi-calendar-check-fill"></i> تاريخ تسجيل / دخول المريض للعيادة</label>
+            <input type="date" id="editDateCreated" class="form-control fw-bold text-center bg-light">
         </div>
 
         <form id="editForm" class="row g-3">
@@ -410,7 +415,11 @@
             if (document.getElementById('passwordInput').value === "1234") {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
-                document.getElementById('appointmentFilterDate').value = new Date().toISOString().split('T')[0];
+                
+                // تعيين تاريخ اليوم الافتراضي في حقول التواريخ الأساسية عند الفتح لأول مرة
+                let todayStr = new Date().toISOString().split('T')[0];
+                document.getElementById('dateCreated').value = todayStr;
+                document.getElementById('appointmentFilterDate').value = todayStr;
                 
                 let now = new Date();
                 document.getElementById('monthlyYearSelect').value = now.getFullYear().toString();
@@ -473,6 +482,8 @@
             if(pageName === 'patients') {
                 document.getElementById('page-patients').style.display = 'block';
                 buttons[0].classList.add('active');
+                // تحديث التاريخ الافتراضي للفورم الخارجي ليكون تاريخ اليوم الحالي دائماً عند التنقل
+                document.getElementById('dateCreated').value = new Date().toISOString().split('T')[0];
                 displayPatients();
             } else if(pageName === 'appointments') {
                 document.getElementById('page-appointments').style.display = 'block';
@@ -503,13 +514,13 @@
         }
 
         // ================= كود صفحة المرضى الفعليين =================
-        // [تعديل مستهدف 🛠️] معالجة تسجيل المريض بالاسم والموبايل فقط، وتعيين الحقول الأخرى كقيم فارغة مبدئياً
+        // [تعديل مستهدف 🛠️] حفظ المريض بالتاريخ المختار يدوياً من الفورم
         document.getElementById('patientForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "p_" + Date.now();
             let name = document.getElementById('name').value;
             let phone = document.getElementById('phone').value;
-            let dateStr = new Date().toISOString().split('T')[0];
+            let chosenDate = document.getElementById('dateCreated').value; // استخدام التاريخ المحدد من الواجهة
 
             patients[id] = { 
                 id, 
@@ -522,12 +533,12 @@
                 xrays: [], 
                 nextVisit: '', 
                 sessionNumber: '', 
-                dateCreated: dateStr 
+                dateCreated: chosenDate 
             };
             
             pushToServer('patients', patients, () => {
                 document.getElementById('patientForm').reset();
-                openPatientProfile(id); // فتح ملف المريض المنشأ مباشرة لإكمال البيانات
+                openPatientProfile(id);
             });
         });
 
@@ -570,7 +581,6 @@
             });
         }
 
-        // [تعديل مستهدف 🛠️] دالة فتح ملف المريض المنفصل مع إدراج الإجمالي والمدفوع لحساب المتبقي تلقائياً
         function openPatientProfile(id) {
             document.getElementById('page-patients').style.display = 'none';
             document.getElementById('page-appointments').style.display = 'none';
@@ -587,16 +597,16 @@
             document.getElementById('editPhone').value = p.phone || '';
             document.getElementById('editSessionNumber').value = p.sessionNumber || '';
             
+            // [تعديل مستهدف 🛠️] إدخال تاريخ التسجيل الحالي داخل حقل تعديل التواريخ
+            let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
+            document.getElementById('editDateCreated').value = pDate;
+            
             let rawNextVisit = p.nextVisit || '';
             if(rawNextVisit.includes('T')) {
                 rawNextVisit = rawNextVisit.split('T')[0];
             }
             document.getElementById('editNextVisit').value = rawNextVisit;
             updateNextVisitDayLabel();
-            
-            let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
-            let dayName = getArabicDayName(pDate);
-            document.getElementById('lblDateCreated').innerText = `يوم ${dayName} (${pDate})`;
 
             let callBtn = document.getElementById('phoneCallBtn');
             if(p.phone) { callBtn.href = "tel:" + p.phone; callBtn.classList.remove('disabled'); } 
@@ -622,10 +632,9 @@
             patients[id].phone = document.getElementById('editPhone').value;
             patients[id].nextVisit = document.getElementById('editNextVisit').value;
             patients[id].sessionNumber = document.getElementById('editSessionNumber').value;
-
-            if(!patients[id].dateCreated) {
-                patients[id].dateCreated = new Date().toISOString().split('T')[0];
-            }
+            
+            // [تعديل مستهدف 🛠️] حفظ تاريخ التسجيل بعد تعديله يدوياً من داخل ملف المريض
+            patients[id].dateCreated = document.getElementById('editDateCreated').value;
 
             pushToServer('patients', patients, () => { backToMain(); });
         }
@@ -748,6 +757,7 @@
                 let pId = "p_" + Date.now();
                 let todayStr = new Date().toISOString().split('T')[0];
 
+                // التحويل يأخذ تاريخ اليوم الحالي تلقائياً كدخول للعيادة
                 patients[pId] = { id: pId, name: b.name, phone: b.phone, service: '', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', sessionNumber: '', dateCreated: todayStr };
                 delete bookings[id];
 
@@ -769,7 +779,7 @@
             }
         }
 
-        // ================= كود المتابعات والزيارات اليومية للمرضى مع شارة رقم الجلسة =================
+        // ================= كود المتابعات والزيارات اليومية للمرضى =================
         function displayDailyAppointments() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
             let tbody = document.getElementById('dailyAppointmentsTable'); 
@@ -933,7 +943,7 @@
 
             document.getElementById('customMonthIncome').innerText = totalIncome + " ج.م";
             document.getElementById('customMonthExpenses').innerText = totalExpenses + " ج.م";
-            document.getElementById('customMonthNetProfit').innerText = netProfit + " ج.م";
+            document.getElementById('customMonthNetProfit').innerText = netProfit + " ج.m";
             document.getElementById('customMonthDoctorShare').innerText = doctorShare.toFixed(2) + " ج.م";
             document.getElementById('customMonthClinicShare').innerText = clinicShare.toFixed(2) + " ج.م";
         }
