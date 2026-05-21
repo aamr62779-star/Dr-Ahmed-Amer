@@ -161,8 +161,15 @@
                 </form>
             </div>
             
-            <div class="mb-3">
-                <input type="text" id="searchBar" class="form-control border-info" placeholder="🔍 ابحث باسم المريض لفتح ملفه..." oninput="displayPatients()">
+            <div class="row g-2 mb-3">
+                <div class="col flex-grow-1">
+                    <input type="text" id="searchBar" class="form-control border-info" placeholder="🔍 ابحث باسم المريض لفتح ملفه..." oninput="displayPatients()">
+                </div>
+                <div class="col-auto">
+                    <button type="button" id="debtFilterBtn" class="btn btn-outline-danger fw-bold h-100" onclick="toggleDebtFilter()">
+                        <i class="bi bi-exclamation-triangle-fill"></i> الفلوس المتأخرة ⚠️
+                    </button>
+                </div>
             </div>
             
             <div class="card p-2">
@@ -497,6 +504,9 @@
         let bookings = {};
         let labs = {};
         let expenses = {};
+        
+        // متغير لمتابعة حالة زر الفلتر الذكي للمديونيات
+        let isDebtFilterActive = false;
 
         const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
         const arabicMonthsNames = {
@@ -504,7 +514,6 @@
             "07": "يوليو", "08": "أغسطس", "09": "سبتمبر", "10": "أكتوبر", "11": "نوفمبر", "12": "ديسمبر"
         };
 
-        // دالة إدخال الخدمة السريعة بضغطة زر
         function setQuickService(serviceName) {
             document.getElementById('editService').value = serviceName;
         }
@@ -653,6 +662,22 @@
             }
         }
 
+        // دالة تشغيل وإلغاء فلتر المديونيات
+        function toggleDebtFilter() {
+            isDebtFilterActive = !isDebtFilterActive;
+            let btn = document.getElementById('debtFilterBtn');
+            if(isDebtFilterActive) {
+                btn.classList.remove('btn-outline-danger');
+                btn.classList.add('btn-danger');
+                btn.innerHTML = `<i class="bi bi-people-fill"></i> عرض كل الحالات`;
+            } else {
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-outline-danger');
+                btn.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> الفلوس المتأخرة ⚠️`;
+            }
+            displayPatients();
+        }
+
         // ================= كود صفحه 1: المرضى الفعليين =================
         document.getElementById('patientForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -677,17 +702,27 @@
             let tableBody = document.getElementById('patientTable');
             tableBody.innerHTML = '';
             let keys = Object.keys(patients).reverse();
+            
             if(keys.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">لا يوجد مرضى مسجلين أونلاين</td></tr>`;
                 return;
             }
+            
+            let shownCount = 0;
             keys.forEach(id => {
                 let p = patients[id];
+                let remVal = parseFloat(p.remaining) || 0;
+                
+                // تطبيق فلتر المديونيات الذكي إذا كان مفعلاً
+                if(isDebtFilterActive && remVal <= 0) {
+                    return; // تخطي الحالات الخالصة تماماً
+                }
+                
                 if(p.name.toLowerCase().includes(searchTerm)) {
+                    shownCount++;
                     let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
                     let dayName = getArabicDayName(pDate);
                     
-                    let remVal = parseFloat(p.remaining) || 0;
                     let financialBadge = '';
                     if(remVal <= 0) {
                         financialBadge = `<br><span class="status-badge-paid"><i class="bi bi-check-circle-fill"></i> خالص</span>`;
@@ -695,6 +730,7 @@
                         financialBadge = `<br><span class="status-badge-debt"><i class="bi bi-exclamation-triangle-fill"></i> مديونية: ${remVal} ج.م</span>`;
                     }
                     
+                    // إظهار رقم الموبايل كـ زر اتصال دائم ومباشر جنب المديونية
                     let phoneHtml = p.phone ? `<br><a href="tel:${p.phone}" class="phone-call-link"><i class="bi bi-telephone-outbound-fill"></i> ${p.phone}</a>` : '<br><span class="text-muted small">بلا رقم</span>';
                     
                     tableBody.innerHTML += `
@@ -712,6 +748,10 @@
                     `;
                 }
             });
+
+            if(shownCount === 0 && isDebtFilterActive) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-success fw-bold p-3">🎉 ممتاز يا دكتور! لا يوجد أي مريض عليه مديونية حالياً.</td></tr>`;
+            }
         }
 
         function openPatientProfile(id) {
