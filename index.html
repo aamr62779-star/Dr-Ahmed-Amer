@@ -172,27 +172,10 @@
             transition: all 0.3s ease;
         }
 
-        /* ستايل أزرار الواتساب المضافة للعيادة */
-        .btn-whatsapp-followup {
-            background-color: #25D366;
-            color: white;
-            border: none;
-            font-weight: bold;
-        }
-        .btn-whatsapp-followup:hover {
-            background-color: #1ebd58;
-            color: white;
-        }
-        .btn-whatsapp-care {
-            background-color: #128C7E;
-            color: white;
-            border: none;
-            font-weight: bold;
-        }
-        .btn-whatsapp-care:hover {
-            background-color: #0a6b5f;
-            color: white;
-        }
+        .btn-whatsapp-followup { background-color: #25D366; color: white; border: none; font-weight: bold; }
+        .btn-whatsapp-followup:hover { background-color: #1ebd58; color: white; }
+        .btn-whatsapp-care { background-color: #128C7E; color: white; border: none; font-weight: bold; }
+        .btn-whatsapp-care:hover { background-color: #0a6b5f; color: white; }
     </style>
 </head>
 <body class="container" data-theme="dark">
@@ -574,9 +557,46 @@
                 </div>
             </div>
             
-            <div class="col-6"><label class="form-label fw-bold text-dark">إجمالي الحساب (ج.م)</label><input type="number" id="editTotal" class="form-control" oninput="calculateEditRemaining()"></div>
-            <div class="col-6"><label class="form-label fw-bold text-success">المدفوع حتى الآن (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
-            <div class="col-12"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control text-center fw-bold text-danger" readonly></div>
+            <div class="col-12">
+                <label class="form-label fw-bold text-dark">💰 إجمالي الحساب الكامل للحالة (ج.م)</label>
+                <input type="number" id="editTotal" class="form-control fw-bold text-primary text-center" oninput="calculateEditRemaining()" placeholder="أدخل إجمالي تكلفة العلاج الكاملة">
+            </div>
+
+            <div class="col-12 p-3 border rounded border-warning" style="background-color: rgba(255, 193, 7, 0.05);">
+                <label class="form-label fw-bold text-warning"><i class="bi bi-plus-circle-fill"></i> تسجيل دفعة مالية جديدة لجلسة اليوم</label>
+                <div class="input-group">
+                    <input type="number" id="newSessionPayment" class="form-control text-center fw-bold text-success" placeholder="المبلغ المدفوع اليوم">
+                    <input type="text" id="newSessionLabel" class="form-control text-center" placeholder="رقم/بند الجلسة">
+                    <button type="button" class="btn btn-warning fw-bold" onclick="addNewSessionPaymentRecord()">إضافة الدفعة 💵</button>
+                </div>
+            </div>
+
+            <div class="col-6">
+                <label class="form-label fw-bold text-success">إجمالي المدفوع حتى الآن</label>
+                <input type="number" id="editPaid" class="form-control text-center text-success fw-bold" readonly>
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-bold text-danger">المتبقي عليه نهائياً</label>
+                <input type="number" id="editRemaining" class="form-control text-center fw-bold text-danger" readonly>
+            </div>
+
+            <div class="col-12 mt-2">
+                <label class="form-label fw-bold text-secondary"><i class="bi bi-clock-history"></i> سجل دفعات الجلسات المؤرخ للمريض</label>
+                <div class="table-responsive border rounded">
+                    <table class="table table-sm table-striped align-middle text-center mb-0" style="font-size: 12px;">
+                        <thead class="table-info">
+                            <tr>
+                                <th>بند / رقم الجلسة</th>
+                                <th>المبلغ المدفوع</th>
+                                <th>تاريخ ووقت الدفع</th>
+                                <th>حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessionPaymentsTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
             
             <div class="col-12 mt-3">
                 <label class="form-label fw-bold text-primary">📸 صور الأشعة الرقمية</label>
@@ -602,7 +622,6 @@
             "07": "يوليو", "08": "أغسطس", "09": "سبتمبر", "10": "أكتوبر", "11": "نوفمبر", "12": "ديسمبر"
         };
 
-        // دالة فحص وتحديد اللقب تلقائياً بناءً على الاسم المكتوب
         function getTitleByGender(name) {
             let n = name.trim();
             if(n.startsWith("رنا") || n.startsWith("مروة") || n.startsWith("فاطمة") || n.startsWith("ام") || n.startsWith("أم") || n.startsWith("أمل") || n.startsWith("منى") || n.startsWith("شيماء") || n.startsWith("ايه") || n.startsWith("آية") || n.endsWith("ة") || n.endsWith("اء")) {
@@ -611,7 +630,6 @@
             return "الأستاذ";
         }
 
-        // 1️⃣ إرسال رسالة المتابعة وتذكير الموعد عبر الواتساب
         function sendWhatsAppFollowUp() {
             let phone = document.getElementById('editPhone').value.trim();
             let name = document.getElementById('editName').value.trim();
@@ -623,17 +641,12 @@
             let title = getTitleByGender(name);
             let dayName = getArabicDayName(nextVisitDate);
             
-            // صياغة الرسالة المطلوبة تماماً
             let message = `أهلاً وسهلاً بحضرتك يا ${title} (${name})، عيادة دكتور أحمد حسن عامر لطب وجراحة الفم والأسنان بنفكرك بمعاد الجلسه القادم يوافق يوم (${dayName}) بتاريخ (${nextVisitDate}). نتمنى لك دوام الصحة والعافية.`;
-            
-            // تنسيق الرقم الدولي لفتح الواتساب
             if(phone.startsWith("01")) { phone = "20" + phone; }
-            
             let url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         }
 
-        // 2️⃣ إرسال رسالة الاطمئنان بعد انتهاء الخدمة عبر الواتساب
         function sendWhatsAppCareMessage() {
             let phone = document.getElementById('editPhone').value.trim();
             let name = document.getElementById('editName').value.trim();
@@ -643,11 +656,8 @@
             let title = getTitleByGender(name);
             let pronoun = (title === "الأستاذة") ? "عليكى" : "عليك";
 
-            // صياغة رسالة الاطمئنان المطلوبة
             let message = `أهلاً وسهلاً بحضرتك يا ${title} (${name})، اخبار حضرتك؟ مع حضرتك دكتور أحمد حسن عامر طبيب الأسنان بتواصل مع حضرتك اطمن ${pronoun} بعد الزيارة والخدمة الطبية بالعيادة، ونحب نعرف رأي حضرتك في الخدمة بتاعتنا؟`;
-            
             if(phone.startsWith("01")) { phone = "20" + phone; }
-            
             let url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         }
@@ -709,7 +719,7 @@
 
         document.getElementById('patientForm').addEventListener('submit', function(e) {
             e.preventDefault(); let id = "p_" + Date.now(); let name = document.getElementById('name').value; let phone = document.getElementById('phone').value; let chosenDate = document.getElementById('dateCreated').value;
-            patients[id] = { id, name, phone, service: '', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', sessionNumber: '', dateCreated: chosenDate };
+            patients[id] = { id, name, phone, service: '', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', sessionNumber: '', dateCreated: chosenDate, sessionPayments: [] };
             pushToServer('patients', patients, () => { document.getElementById('patientForm').reset(); document.getElementById('dateCreated').value = getSmartTodayString(); openPatientProfile(id); });
         });
 
@@ -735,21 +745,121 @@
             let p = patients[id]; document.getElementById('profileTitle').innerText = `الملف السحابي: ${p.name}`;
             document.getElementById('editId').value = id; document.getElementById('editName').value = p.name;
             document.getElementById('editService').value = p.service || ''; document.getElementById('editTotal').value = p.total || 0;
-            document.getElementById('editPaid').value = p.paid || 0; document.getElementById('editPhone').value = p.phone || '';
+            document.getElementById('editPhone').value = p.phone || '';
             document.getElementById('editSessionNumber').value = p.sessionNumber || ''; document.getElementById('editDateCreated').value = p.dateCreated || p.id.split('_')[1];
             document.getElementById('editNextVisit').value = p.nextVisit || '';
             document.getElementById('phoneCallBtn').href = `tel:${p.phone || ''}`;
-            updateNextVisitDayLabel(); calculateEditRemaining(); displayXrays(id);
+            
+            // تهيئة حقول دفع الجلسات الجديدة
+            document.getElementById('newSessionPayment').value = '';
+            document.getElementById('newSessionLabel').value = p.sessionNumber || '';
+
+            updateNextVisitDayLabel(); 
+            displaySessionPaymentsList(id); // بناء جدول الدفعات
+            displayXrays(id);
         }
 
-        function calculateEditRemaining() { let total = parseFloat(document.getElementById('editTotal').value) || 0; let paid = parseFloat(document.getElementById('editPaid').value) || 0; document.getElementById('editRemaining').value = total - paid; }
+        // دالة بناء وعرض قائمة دفعات الجلسات المؤرخة
+        function displaySessionPaymentsList(id) {
+            let p = patients[id];
+            let tbody = document.getElementById('sessionPaymentsTableBody');
+            tbody.innerHTML = '';
+            
+            if(!p.sessionPayments) p.sessionPayments = [];
+            
+            // حساب المجموع الكلي للدفعات وتحديث الحقول تلقائياً
+            let totalPaidCalculated = 0;
+            
+            if(p.sessionPayments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-2">لم يتم تسجيل أي دفعات مالية للجلسات حتى الآن</td></tr>`;
+            } else {
+                p.sessionPayments.forEach((pay, index) => {
+                    totalPaidCalculated += parseFloat(pay.amount) || 0;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="fw-bold text-primary">${pay.label || 'جلسة غير مسمّاة'}</td>
+                            <td class="text-success fw-bold">${pay.amount} ج.م</td>
+                            <td class="text-muted" style="font-size: 11px;">${pay.dateTime}</td>
+                            <td><button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="deleteSessionPaymentRecord('${id}', ${index})"><i class="bi bi-trash3-fill"></i></button></td>
+                        </tr>`;
+                });
+            }
+            
+            // تحديث قيم الواجهة بناءً على الدفعات الفعلية المسجلة
+            document.getElementById('editPaid').value = totalPaidCalculated;
+            patients[id].paid = totalPaidCalculated;
+            calculateEditRemaining();
+        }
+
+        // دالة تسجيل دفعة جديدة في الجلسة بالتاريخ والوقت الفوري لعيادة دكتور أحمد
+        function addNewSessionPaymentRecord() {
+            let id = document.getElementById('editId').value;
+            let amountInput = document.getElementById('newSessionPayment').value.trim();
+            let labelInput = document.getElementById('newSessionLabel').value.trim();
+            
+            if(!amountInput || isNaN(amountInput) || parseFloat(amountInput) <= 0) {
+                alert("من فضلك أدخل مبلغ دفع صالح وصحيح للجلسة!");
+                return;
+            }
+            
+            let amount = parseFloat(amountInput);
+            let label = labelInput ? labelInput : (document.getElementById('editSessionNumber').value || "جلسة علاجية");
+            
+            // صياغة التاريخ والوقت واليوم الحالي باللغة العربية
+            let now = new Date();
+            let dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+            let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            let fullDateTimeStamp = `${getArabicDayName(dateStr)} ${dateStr} (${timeStr})`;
+            
+            if(!patients[id].sessionPayments) patients[id].sessionPayments = [];
+            
+            // إضافة الدفعة للمصفوفة السحابية
+            patients[id].sessionPayments.push({
+                amount: amount,
+                label: label,
+                dateTime: fullDateTimeStamp
+            });
+            
+            // إعادة تصفير الحقول المساعدة بالواجهة
+            document.getElementById('newSessionPayment').value = '';
+            
+            // تحديث الجدول فورياً
+            displaySessionPaymentsList(id);
+        }
+
+        // دالة حذف دفعة خاطئة من سجل المريض
+        function deleteSessionPaymentRecord(id, index) {
+            if(confirm("هل أنت متأكد من حذف هذه الدفعة المالية من سجل المريض نهائياً؟")) {
+                patients[id].sessionPayments.splice(index, 1);
+                displaySessionPaymentsList(id);
+            }
+        }
+
+        function calculateEditRemaining() { 
+            let total = parseFloat(document.getElementById('editTotal').value) || 0; 
+            let paid = parseFloat(document.getElementById('editPaid').value) || 0; 
+            let rem = total - paid;
+            document.getElementById('editRemaining').value = rem; 
+            
+            let id = document.getElementById('editId').value;
+            if(id && patients[id]) {
+                patients[id].total = total;
+                patients[id].remaining = rem;
+            }
+        }
+
         function savePatientChanges() {
             let id = document.getElementById('editId').value;
-            patients[id].name = document.getElementById('editName').value; patients[id].service = document.getElementById('editService').value;
-            patients[id].total = parseFloat(document.getElementById('editTotal').value) || 0; patients[id].paid = parseFloat(document.getElementById('editPaid').value) || 0;
-            patients[id].remaining = parseFloat(document.getElementById('editRemaining').value) || 0; patients[id].phone = document.getElementById('editPhone').value;
-            patients[id].nextVisit = document.getElementById('editNextVisit').value; patients[id].sessionNumber = document.getElementById('editSessionNumber').value;
+            patients[id].name = document.getElementById('editName').value; 
+            patients[id].service = document.getElementById('editService').value;
+            patients[id].total = parseFloat(document.getElementById('editTotal').value) || 0; 
+            patients[id].paid = parseFloat(document.getElementById('editPaid').value) || 0;
+            patients[id].remaining = parseFloat(document.getElementById('editRemaining').value) || 0; 
+            patients[id].phone = document.getElementById('editPhone').value;
+            patients[id].nextVisit = document.getElementById('editNextVisit').value; 
+            patients[id].sessionNumber = document.getElementById('editSessionNumber').value;
             patients[id].dateCreated = document.getElementById('editDateCreated').value;
+            
             pushToServer('patients', patients, () => { backToMain(); });
         }
 
@@ -801,7 +911,7 @@
         function convertBookingToPatient(id) {
             let b = bookings[id];
             if(confirm(`تحويل الحجز للمريض: ${b.name}؟`)) {
-                let pId = "p_" + Date.now(); patients[pId] = { id: pId, name: b.name, phone: b.phone, service: '', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', sessionNumber: '', dateCreated: getSmartTodayString() };
+                let pId = "p_" + Date.now(); patients[pId] = { id: pId, name: b.name, phone: b.phone, service: '', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', sessionNumber: '', dateCreated: getSmartTodayString(), sessionPayments: [] };
                 delete bookings[id]; showLoading(true); fetch(`${FIREBASE_URL}patients.json`, { method: 'PUT', body: JSON.stringify(patients) }).then(() => fetch(`${FIREBASE_URL}bookings.json`, { method: 'PUT', body: JSON.stringify(bookings) })).then(() => { showLoading(false); switchPage('patients'); openPatientProfile(pId); });
             }
         }
