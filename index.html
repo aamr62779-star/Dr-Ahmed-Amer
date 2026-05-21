@@ -6,27 +6,21 @@
     <title>عيادة دكتور أحمد حسن عامر</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
     <style>
-        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 10px; padding-bottom: 95px; }
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 10px; padding-bottom: 90px; }
         .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
         .btn-success { background-color: #11caa0; border: none; }
         .btn-success:hover { background-color: #0ea885; }
         .login-container { max-width: 400px; margin: 100px auto; }
         
-        #appContent, #page-patients, #page-appointments, #page-bookings, #page-labs, #page-expenses, #page-share, #page-monthly-archive, #patientProfile { display: none; }
+        #appContent, #page-patients, #page-appointments, #page-bookings, #page-labs, #page-expenses, #page-share, #patientProfile { display: none; }
         .xray-thumb { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin: 5px; cursor: pointer; border: 2px solid #ddd; }
         
         .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background-color: #ffffff; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 1000; display: flex; justify-content: space-around; padding: 10px 0; }
-        .nav-item-btn { background: none; border: none; color: #6c757d; font-size: 9px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 14%; }
-        .nav-item-btn i { font-size: 17px; margin-bottom: 2px; }
+        .nav-item-btn { background: none; border: none; color: #6c757d; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 16%; }
+        .nav-item-btn i { font-size: 18px; margin-bottom: 2px; }
         .nav-item-btn.active { color: #0d6efd; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; font-weight: bold; }
-        
-        .clickable-name { cursor: pointer; text-decoration: none; transition: all 0.2s ease; display: inline-block; }
-        .clickable-name:hover { transform: scale(1.03); text-decoration: underline; }
-        .patient-debt { color: #dc3545 !important; } 
-        .patient-clear { color: #198754 !important; } 
     </style>
 </head>
 <body class="container">
@@ -56,13 +50,9 @@
 
         <div id="page-patients">
             <div class="card p-3 mb-4">
-                <h5 class="mb-3 text-secondary fw-bold">إضافة مريض جديد مباشر</h5>
+                <h5 class="mb-3 text-secondary fw-bold">إضافة مريض جديد مباشرة</h5>
                 <form id="patientForm" class="row g-2">
                     <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض" required></div>
-                    <div class="col-12">
-                        <label class="form-label small fw-bold text-muted mb-1">تاريخ الكشف / الزيارة:</label>
-                        <input type="date" id="customPatientDate" class="form-control text-center fw-bold" required>
-                    </div>
                     <div class="col-12"><input type="text" id="service" class="form-control" placeholder="الخدمة الحالية"></div>
                     <div class="col-6"><input type="number" id="paid" class="form-control" placeholder="المبلغ المدفوع" oninput="calculateRemaining()"></div>
                     <div class="col-6"><input type="number" id="total" class="form-control" placeholder="الإجمالي" oninput="calculateRemaining()"></div>
@@ -96,7 +86,7 @@
                 <h5 class="text-primary fw-bold mb-2">📅 أجندة المتابعات والزيارات اليومية</h5>
                 <div class="row g-2 justify-content-center">
                     <div class="col-md-6 col-12">
-                        <input type="date" id="appointmentFilterDate" class="form-control text-center fw-bold" onchange="handleAppointmentDateChange()">
+                        <input type="date" id="appointmentFilterDate" class="form-control text-center fw-bold" onchange="displayDailyAppointments()">
                     </div>
                 </div>
             </div>
@@ -106,7 +96,8 @@
                     <table class="table table-bordered align-middle mb-0 bg-white">
                         <thead class="table-primary">
                             <tr>
-                                <th>المريض (اضغط للفتح)</th>
+                                <th>المريض</th>
+                                <th>الساعة</th>
                                 <th>الشغل المطلوب</th>
                                 <th>تواصل</th>
                             </tr>
@@ -228,46 +219,17 @@
                     <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.م</h5>
                 </div>
             </div>
-            
-            <div class="card p-2 mb-3">
-                <h6 class="p-2 text-dark fw-bold border-bottom"><i class="bi bi-cash-stack text-success"></i> مرضى سددوا دفعات اليوم (اضغط لفتح الملف):</h6>
-                <ul class="list-group list-group-flush" id="dailyPaidPatientsList" style="font-size: 13px;"></ul>
-            </div>
 
             <div class="card p-3 mb-3 text-center bg-dark text-white">
-                <h5 class="fw-bold text-warning mb-3">📈 تقرير الدخل الصافي والتقفيل الشهري الحالي</h5>
+                <h5 class="fw-bold text-warning mb-3">📈 تقرير الدخل الصافي والتقفيل الشهري</h5>
                 <div class="row g-2 mb-2">
                     <div class="col-6 border-end border-secondary"><small class="text-light">إجمالي الإيرادات</small><h6 class="text-success fw-bold" id="monthTotalIncome">0 ج.م</h6></div>
                     <div class="col-6"><small class="text-light">إجمالي المصروفات</small><h6 class="text-danger fw-bold" id="monthTotalExpenses">0 ج.م</h6></div>
                 </div>
                 <hr class="bg-secondary my-2">
                 <div class="p-2 border border-warning rounded bg-gradient" style="background-color: #212529;">
-                    <small class="text-warning fw-bold d-block">💰 صافي الدخل الكلي للعيادة بعد الخصم</small>
+                    <small class="text-warning fw-bold d-block">💰 صافي الدخل الكلي للعيادة بعد الخم</small>
                     <h2 class="text-warning fw-bold m-0 mt-1" id="monthNetProfit">0 ج.م</h2>
-                </div>
-            </div>
-        </div>
-
-        <div id="page-monthly-archive">
-            <div class="card p-3 mb-3 text-center bg-white border-bottom border-primary border-3">
-                <h5 class="text-primary fw-bold m-0"><i class="bi bi-bar-chart-line-fill"></i> أرشيف الدخل والأرباح الشهرية الكلية</h5>
-                <p class="text-muted small m-0 mt-1">تقرير مقارنة مالي تلقائي لكل الشهور المسجلة</p>
-            </div>
-            
-            <div class="card p-2">
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered align-middle mb-0 text-center" style="font-size: 13px;">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>الشهر / السنة</th>
-                                <th class="text-success">إجمالي الدخل</th>
-                                <th class="text-danger">المصروفات</th>
-                                <th class="table-primary text-dark">صافي الأرباح</th>
-                            </tr>
-                        </thead>
-                        <tbody id="monthlyArchiveTableBody">
-                            </tbody>
-                    </table>
                 </div>
             </div>
         </div>
@@ -279,16 +241,13 @@
             <button class="nav-item-btn" onclick="switchPage('labs')"><i class="bi bi-box-seam-fill"></i>المعمل</button>
             <button class="nav-item-btn" onclick="switchPage('expenses')"><i class="bi bi-credit-card-fill"></i>المصاريف</button>
             <button class="nav-item-btn" onclick="switchPage('share')"><i class="bi bi-calculator-fill"></i>النسب</button>
-            <button class="nav-item-btn" onclick="switchPage('monthly-archive')"><i class="bi bi-journal-bookmark-fill text-danger"></i>الشهور</button>
         </div>
     </div>
 
     <div id="patientProfile" class="card p-4 mb-4">
         <button onclick="backToMain()" class="btn btn-secondary btn-sm mb-3" style="max-width: 100px;">← رجوع</button>
-        <h4 class="text-primary fw-bold mb-1" id="profileTitle">ملف المريض</h4>
+        <h4 class="text-primary fw-bold mb-3" id="profileTitle">ملف المريض</h4>
         
-        <div id="financialStatusBadge" class="alert py-1 px-2 text-center small fw-bold mb-3" style="border-radius: 6px;"></div>
-
         <div class="alert alert-info py-2 px-3 mb-3 fw-bold small text-center" style="border-radius: 8px;">
             <i class="bi bi-calendar-check-fill"></i> تاريخ زيارة المريض للعيادة: <span id="lblDateCreated" class="text-dark"></span>
         </div>
@@ -303,18 +262,16 @@
                     <a id="phoneCallBtn" href="#" class="btn btn-primary"><i class="bi bi-telephone-fill"></i> اتصال سريع</a>
                 </div>
             </div>
-            
             <div class="col-12">
-                <label class="form-label fw-bold text-primary mb-1" id="editNextVisitLabel">📅 موعد الزيارة القادمة (المتابعة):</label>
-                <input type="date" id="editNextVisit" class="form-control text-center fw-bold text-primary" onchange="updateNextVisitDayLabel(this.value)">
+                <label class="form-label fw-bold text-primary">📅 موعد الزيارة القادمة (المتابعة)</label>
+                <input type="datetime-local" id="editNextVisit" class="form-control">
             </div>
-
             <div class="col-12"><label class="form-label fw-bold">الخدمة / الشغل المطلوب في الزيارة القادمة</label><input type="text" id="editService" class="form-control"></div>
             <div class="col-6"><label class="form-label fw-bold text-success">المدفوع الحالي (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
             <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
             
             <div class="col-12 mt-3">
-                <label class="form-label fw-bold text-primary">📸 صور الأشعة والملفات الكلينيكية</label>
+                <label class="form-label fw-bold text-primary">📸 صور الأشعة (مساحة تخزين ذكية فائقة اللانهائية ⚙️)</label>
                 <input type="file" id="xrayInput" class="form-control" accept="image/*" multiple onchange="uploadXray()">
                 <div id="xrayGallery" class="mt-2 d-flex flex-wrap bg-light p-2 border rounded"></div>
             </div>
@@ -333,79 +290,27 @@
         let bookings = {};
         let labs = {};
         let expenses = {};
-        
-        let lastSystemDateStr = "";
-        let isUserViewingCustomDate = false;
-        let currentActiveTab = "patients"; 
 
         const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-        const arabicMonths = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-
-        function getLocalDateString() {
-            let now = new Date();
-            let year = now.getFullYear();
-            let month = String(now.getMonth() + 1).padStart(2, '0');
-            let day = String(now.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
 
         function getArabicDayName(dateString) {
-            if(!dateString) return "";
+            if(!dateString) return "غير محدد";
             let d = new Date(dateString);
-            return isNaN(d.getTime()) ? "" : arabicDays[d.getDay()];
-        }
-
-        function updateNextVisitDayLabel(val) {
-            let label = document.getElementById('editNextVisitLabel');
-            if(val) {
-                let dayName = getArabicDayName(val);
-                label.innerHTML = `📅 ميعاد الزيارة القادمة: <span class="badge bg-primary fs-6 fw-bold text-white px-2 py-1">يوم ${dayName} (${val})</span>`;
-            } else {
-                label.innerHTML = `📅 موعد الزيارة القادمة (المتابعة):`;
-            }
+            return arabicDays[d.getDay()];
         }
 
         function checkPassword() {
             if (document.getElementById('passwordInput').value === "1234") {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
-                
-                let todayStr = getLocalDateString();
-                lastSystemDateStr = todayStr;
-                document.getElementById('appointmentFilterDate').value = todayStr;
-                document.getElementById('customPatientDate').value = todayStr;
+                document.getElementById('appointmentFilterDate').value = new Date().toISOString().split('T')[0];
                 
                 showLoading(true, "جاري فتح الملفات السحابية...");
                 syncDataFromServer();
-
-                startMidnightClockChecker();
             } else {
                 document.getElementById('loginError').style.display = 'block';
                 document.getElementById('passwordInput').value = '';
             }
-        }
-
-        function startMidnightClockChecker() {
-            setInterval(() => {
-                let currentTodayStr = getLocalDateString();
-                if (currentTodayStr !== lastSystemDateStr) {
-                    lastSystemDateStr = currentTodayStr;
-                    document.getElementById('customPatientDate').value = currentTodayStr;
-                    if (!isUserViewingCustomDate) {
-                        document.getElementById('appointmentFilterDate').value = currentTodayStr;
-                        if (document.getElementById('page-appointments').style.display === 'block') {
-                            displayDailyAppointments();
-                        }
-                    }
-                }
-            }, 30000);
-        }
-
-        function handleAppointmentDateChange() {
-            let selectedDate = document.getElementById('appointmentFilterDate').value;
-            let currentTodayStr = getLocalDateString();
-            isUserViewingCustomDate = (selectedDate !== currentTodayStr);
-            displayDailyAppointments();
         }
 
         function showLoading(status, text = "جاري التحديث السحابي...") {
@@ -441,15 +346,12 @@
         }
 
         function switchPage(pageName) {
-            currentActiveTab = pageName; 
-            
             document.getElementById('page-patients').style.display = 'none';
             document.getElementById('page-appointments').style.display = 'none';
             document.getElementById('page-bookings').style.display = 'none';
             document.getElementById('page-labs').style.display = 'none';
             document.getElementById('page-expenses').style.display = 'none';
             document.getElementById('page-share').style.display = 'none';
-            document.getElementById('page-monthly-archive').style.display = 'none';
             document.getElementById('patientProfile').style.display = 'none';
 
             let buttons = document.querySelectorAll('.nav-item-btn');
@@ -462,9 +364,6 @@
             } else if(pageName === 'appointments') {
                 document.getElementById('page-appointments').style.display = 'block';
                 buttons[1].classList.add('active');
-                if (!isUserViewingCustomDate) {
-                    document.getElementById('appointmentFilterDate').value = getLocalDateString();
-                }
                 displayDailyAppointments();
             } else if(pageName === 'bookings') {
                 document.getElementById('page-bookings').style.display = 'block';
@@ -481,15 +380,12 @@
             } else if(pageName === 'share') {
                 document.getElementById('page-share').style.display = 'block';
                 buttons[5].classList.add('active');
-                document.getElementById('shareFilterDate').value = getLocalDateString();
+                document.getElementById('shareFilterDate').value = new Date().toISOString().split('T')[0];
                 calculateDailyShares();
-            } else if(pageName === 'monthly-archive') {
-                document.getElementById('page-monthly-archive').style.display = 'block';
-                buttons[6].classList.add('active');
-                buildMonthlyArchiveReport();
             }
         }
 
+        // ================= كود صفحة المرضى =================
         function calculateRemaining() {
             let total = parseFloat(document.getElementById('total').value) || 0;
             let paid = parseFloat(document.getElementById('paid').value) || 0;
@@ -504,14 +400,11 @@
             let paid = parseFloat(document.getElementById('paid').value) || 0;
             let remaining = parseFloat(document.getElementById('remaining').value) || 0;
             let total = paid + remaining;
-            
-            let dateStr = document.getElementById('customPatientDate').value; 
-            if(!dateStr) dateStr = getLocalDateString();
+            let dateStr = new Date().toISOString().split('T')[0];
 
             patients[id] = { id, name, service, paid, remaining, total, xrays: [], phone: '', nextVisit: '', dateCreated: dateStr };
             pushToServer('patients', patients, () => {
                 document.getElementById('patientForm').reset();
-                document.getElementById('customPatientDate').value = getLocalDateString();
                 openPatientProfile(id);
             });
         });
@@ -531,14 +424,10 @@
                     let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
                     let dayName = getArabicDayName(pDate);
                     
-                    let isDebt = (parseFloat(p.remaining) || 0) > 0;
-                    let colorClass = isDebt ? 'patient-debt' : 'patient-clear';
-                    let icon = isDebt ? '⚠️' : '✨';
-
                     tableBody.innerHTML += `
                         <tr>
-                            <td><strong class="clickable-name ${colorClass}" onclick="openPatientProfile('${id}')">${icon} ${p.name}</strong></td>
-                            <td class="text-muted" style="font-size:11px;"><strong>${dayName}</strong><br>${pDate}</td>
+                            <td><strong>${p.name}</strong></td>
+                            <td class="text-muted" style="font-size:11px;">${dayName}<br>${pDate}</td>
                             <td class="text-success fw-bold">${p.paid || 0}</td>
                             <td class="text-danger fw-bold">${p.remaining || 0}</td>
                             <td><button type="button" class="btn btn-sm btn-primary fw-bold" style="font-size:11px; padding: 2px 6px;" onclick="openPatientProfile('${id}')">👁️ ملف</button></td>
@@ -550,11 +439,7 @@
 
         function openPatientProfile(id) {
             document.getElementById('page-patients').style.display = 'none';
-            document.getElementById('page-appointments').style.display = 'none';
-            document.getElementById('page-share').style.display = 'none';
-            document.getElementById('page-monthly-archive').style.display = 'none';
             document.getElementById('patientProfile').style.display = 'block';
-            
             let p = patients[id];
             
             document.getElementById('profileTitle').innerText = `الملف الرقمي السحابي: ${p.name}`;
@@ -563,26 +448,7 @@
             document.getElementById('editService').value = p.service || '';
             document.getElementById('editPaid').value = p.paid;
             document.getElementById('editPhone').value = p.phone || '';
-            
-            let nextVisitField = document.getElementById('editNextVisit');
-            if (p.nextVisit) {
-                let cleanDate = p.nextVisit.split('T')[0];
-                nextVisitField.value = cleanDate;
-                updateNextVisitDayLabel(cleanDate);
-            } else {
-                nextVisitField.value = '';
-                updateNextVisitDayLabel('');
-            }
-
-            let remainingMoney = (p.total || 0) - p.paid;
-            let statusBadge = document.getElementById('financialStatusBadge');
-            if(remainingMoney > 0) {
-                statusBadge.className = "alert alert-danger py-1 px-2 text-center small fw-bold mb-3";
-                statusBadge.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> تنبيه مالي: هذا المريض مديون للعيادة بمبلغ ( ${remainingMoney} ج.م )`;
-            } else {
-                statusBadge.className = "alert alert-success py-1 px-2 text-center small fw-bold mb-3";
-                statusBadge.innerHTML = `<i class="bi bi-check-circle-fill"></i> الحساب خالص تماماً ✨ ( إجمالي المدفوع: ${p.paid} ج.م )`;
-            }
+            document.getElementById('editNextVisit').value = p.nextVisit || '';
             
             let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
             let dayName = getArabicDayName(pDate);
@@ -592,7 +458,7 @@
             if(p.phone) { callBtn.href = "tel:" + p.phone; callBtn.classList.remove('disabled'); } 
             else { callBtn.href = "#"; callBtn.classList.add('disabled'); }
 
-            document.getElementById('editRemaining').value = remainingMoney;
+            document.getElementById('editRemaining').value = (p.total || 0) - p.paid;
             displayXrays(id);
         }
 
@@ -614,7 +480,7 @@
             patients[id].nextVisit = document.getElementById('editNextVisit').value;
 
             if(!patients[id].dateCreated) {
-                patients[id].dateCreated = getLocalDateString();
+                patients[id].dateCreated = new Date().toISOString().split('T')[0];
             }
 
             pushToServer('patients', patients, () => { backToMain(); });
@@ -692,8 +558,9 @@
             if(confirm('حذف المريض نهائياً؟')) { let id = document.getElementById('editId').value; delete patients[id]; pushToServer('patients', patients, () => { backToMain(); }); }
         }
 
-        function backToMain() { switchPage(currentActiveTab); }
+        function backToMain() { switchPage('patients'); }
 
+        // ================= كود صفحة الحجوزات التليفونية المستقلة =================
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "book_" + Date.now();
@@ -735,7 +602,7 @@
             let b = bookings[id];
             if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى؟`)) {
                 let pId = "p_" + Date.now();
-                let todayStr = getLocalDateString();
+                let todayStr = new Date().toISOString().split('T')[0];
 
                 patients[pId] = { id: pId, name: b.name, phone: b.phone, service: 'حجز مسبق تم الحضور', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', dateCreated: todayStr };
                 delete bookings[id];
@@ -758,34 +625,49 @@
             }
         }
 
+        // ================= [تعديل مستهدف 🛠️] كود المتابعات والزيارات اليومية للمرضى =================
         function displayDailyAppointments() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
-            let tbody = document.getElementById('dailyAppointmentsTable'); tbody.innerHTML = '';
+            let tbody = document.getElementById('dailyAppointmentsTable'); 
+            tbody.innerHTML = '';
             
-            let currentDayName = getArabicDayName(selectedDate);
-            document.getElementById('appointmentDayLabel').innerText = `متابعات وزيارات يوم ${currentDayName} (${selectedDate}):`;
+            document.getElementById('appointmentDayLabel').innerText = `متابعات وزيارات يوم (${selectedDate}):`;
             
-            let list = Object.values(patients).filter(p => p.nextVisit && p.nextVisit === selectedDate);
-            if(list.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted p-3">لا توجد حالات مسجلة لهذا اليوم</td></tr>`; return; }
+            // فلترة المرضى الفعليين بناءً على حقل الزيارة القادمة بعد قص توقيت الساعة لضمان المطابقة الكاملة مع اليوم
+            let list = Object.values(patients).filter(p => {
+                return p.nextVisit && p.nextVisit.split('T')[0] === selectedDate;
+            });
+            
+            if(list.length === 0) { 
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">لا توجد حالات أو متابعات مسجلة لهذا اليوم</td></tr>`; 
+                return; 
+            }
+            
+            // ترتيب المتابعات حسب الساعة من الأقرب للأبعد خلال اليوم
+            list.sort((a, b) => a.nextVisit.localeCompare(b.nextVisit));
             
             list.forEach(p => {
-                let isDebt = (parseFloat(p.remaining) || 0) > 0;
-                let colorClass = isDebt ? 'patient-debt' : 'patient-clear';
-                let icon = isDebt ? '⚠️' : '✨';
-
+                // استخراج الساعة من صيغة datetime-local
+                let rawTime = p.nextVisit.split('T')[1] || '';
+                let timeFormatted = '--:--';
+                if(rawTime) {
+                    let parts = rawTime.split(':');
+                    timeFormatted = parts[0] + ':' + parts[1]; // عرض الساعة والدقائق فقط
+                }
+                
                 tbody.innerHTML += `
                     <tr>
+                        <td><strong>${p.name}</strong></td>
+                        <td class="text-primary fw-bold" style="font-size: 13px;"><i class="bi bi-clock-history"></i> ${timeFormatted}</td>
+                        <td><span class="badge bg-secondary text-wrap" style="max-width: 120px;">${p.service || 'متابعة عادية'}</span></td>
                         <td>
-                            <strong class="clickable-name ${colorClass}" onclick="openPatientProfile('${p.id}')">
-                                ${icon} ${p.name}
-                            </strong>
+                            ${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success fw-bold" style="font-size: 11px; padding: 2px 6px;"><i class="bi bi-telephone"></i> اتصل</a>` : `<span class="text-muted small">بلا رقم</span>`}
                         </td>
-                        <td><span class="badge bg-secondary text-wrap">${p.service || 'متابعة'}</span></td>
-                        <td>${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success px-1 py-0" style="font-size:11px;">📞 اتصل</a>` : `<span class="text-muted small">بلا رقم</span>`}</td>
                     </tr>`;
             });
         }
 
+        // ================= كود صفحة المعمل السحابية =================
         function calculateLabRemaining() {
             let total = parseFloat(document.getElementById('labTotal').value) || 0;
             let paid = parseFloat(document.getElementById('labPaid').value) || 0;
@@ -816,12 +698,13 @@
 
         function deleteLab(id) { if(confirm('مسح الطلبية؟')) { delete labs[id]; pushToServer('labs', labs, displayLabs); } }
 
+        // ================= كود صفحة المصاريف السحابية =================
         document.getElementById('expenseForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "exp_" + Date.now();
             let reason = document.getElementById('expReason').value;
             let amount = parseFloat(document.getElementById('expAmount').value) || 0;
-            let dateStr = getLocalDateString();
+            let dateStr = new Date().toISOString().split('T')[0];
 
             expenses[id] = { id, reason, amount, dateCreated: dateStr };
             pushToServer('expenses', expenses, () => { document.getElementById('expenseForm').reset(); displayExpenses(); });
@@ -840,6 +723,7 @@
 
         function deleteExpense(id) { if(confirm('مسح المصروف؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
 
+        // ================= النظام المالي المطور =================
         function calculateDailyShares() {
             let selectedDate = document.getElementById('shareFilterDate').value;
             if(!selectedDate) return;
@@ -848,40 +732,10 @@
             document.getElementById('shareDayTitle').innerText = `أرباح وكشف نسب يوم ${dayName} (${selectedDate}):`;
 
             let dayInc = 0;
-            let paidListHTML = ""; 
-            
             Object.values(patients).forEach(p => {
                 let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
-                if(pDate === selectedDate) { 
-                    let currentPaid = (parseFloat(p.paid) || 0);
-                    dayInc += currentPaid; 
-                    
-                    if(currentPaid > 0) {
-                        let isDebt = (parseFloat(p.remaining) || 0) > 0;
-                        let colorClass = isDebt ? 'patient-debt' : 'patient-clear';
-                        let badgeText = isDebt ? `متبقي عليه: ${p.remaining} ج.م` : 'خالص بالكامل ✨';
-                        let badgeColor = isDebt ? 'bg-danger' : 'bg-success';
-                        
-                        paidListHTML += `
-                            <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
-                                <span class="clickable-name ${colorClass} fw-bold" onclick="openPatientProfile('${p.id}')">
-                                    👤 ${p.name}
-                                </span>
-                                <div>
-                                    <span class="badge bg-primary rounded-pill">دفع: ${currentPaid} ج.م</span>
-                                    <span class="badge ${badgeColor} rounded-pill">${badgeText}</span>
-                                </div>
-                            </li>`;
-                    }
-                }
+                if(pDate === selectedDate) { dayInc += (parseFloat(p.paid) || 0); }
             });
-
-            let listContainer = document.getElementById('dailyPaidPatientsList');
-            if(paidListHTML !== "") {
-                listContainer.innerHTML = paidListHTML;
-            } else {
-                listContainer.innerHTML = `<li class="list-group-item text-center text-muted small bg-transparent">لم يتم تحصيل دفعات في هذا التاريخ</li>`;
-            }
 
             let dayExp = 0;
             Object.values(expenses).forEach(e => {
@@ -891,94 +745,18 @@
 
             let dayNet = Math.max(0, dayInc - dayExp);
 
-            document.getElementById('dayIncome').innerText = dayInc + " ج.m";
-            document.getElementById('dayExpenses').innerText = dayExp + " ج.m";
+            document.getElementById('dayIncome').innerText = dayInc + " ج.م";
+            document.getElementById('dayExpenses').innerText = dayExp + " ج.م";
             document.getElementById('dayDoctorShare').innerText = (dayNet * 0.70).toFixed(2) + " ج.م";
             document.getElementById('dayClinicShare').innerText = (dayNet * 0.30).toFixed(2) + " ج.م";
 
-            let todayStr = getLocalDateString();
-            let currentMonthKey = todayStr.substring(0, 7); // YYYY-MM
-            
-            let monthInc = 0;
-            Object.values(patients).forEach(p => {
-                let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
-                if(pDate && pDate.substring(0, 7) === currentMonthKey) {
-                    monthInc += (parseFloat(p.paid) || 0);
-                }
-            });
-
-            let monthExp = 0;
-            Object.values(expenses).forEach(e => {
-                let eDate = e.dateCreated || new Date(parseInt(e.id.split('_')[1])).toISOString().split('T')[0];
-                if(eDate && eDate.substring(0, 7) === currentMonthKey) {
-                    monthExp += (parseFloat(e.amount) || 0);
-                }
-            });
-
+            let monthInc = Object.values(patients).reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
+            let monthExp = Object.values(expenses).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
             let monthNet = Math.max(0, monthInc - monthExp);
 
             document.getElementById('monthTotalIncome').innerText = monthInc + " ج.م";
             document.getElementById('monthTotalExpenses').innerText = monthExp + " ج.م";
             document.getElementById('monthNetProfit').innerText = monthNet + " ج.م";
-        }
-
-        // 🌟 دالة بناء الأرشيف التاريخي لكل الشهور تلقائياً 🌟
-        function buildMonthlyArchiveReport() {
-            let archiveMap = {};
-
-            // 1. حساب دخل المرضى لكل شهر وسنة
-            Object.values(patients).forEach(p => {
-                let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
-                if(pDate && pDate.length >= 7) {
-                    let monthKey = pDate.substring(0, 7); // تفصل مثل "2026-05"
-                    if(!archiveMap[monthKey]) {
-                        archiveMap[monthKey] = { income: 0, expenses: 0 };
-                    }
-                    archiveMap[monthKey].income += (parseFloat(p.paid) || 0);
-                }
-            });
-
-            // 2. حساب مصروفات العيادة لكل شهر وسنة
-            Object.values(expenses).forEach(e => {
-                let eDate = e.dateCreated || new Date(parseInt(e.id.split('_')[1])).toISOString().split('T')[0];
-                if(eDate && eDate.length >= 7) {
-                    let monthKey = eDate.substring(0, 7);
-                    if(!archiveMap[monthKey]) {
-                        archiveMap[monthKey] = { income: 0, expenses: 0 };
-                    }
-                    archiveMap[monthKey].expenses += (parseFloat(e.amount) || 0);
-                }
-            });
-
-            let tbody = document.getElementById('monthlyArchiveTableBody');
-            tbody.innerHTML = '';
-
-            // ترتب الشهور تنازلياً (الشهر الأحدث يظهر أولاً)
-            let sortedMonths = Object.keys(archiveMap).sort().reverse();
-
-            if(sortedMonths.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">لا توجد بيانات مسجلة لشهور سابقة بعد</td></tr>`;
-                return;
-            }
-
-            sortedMonths.forEach(key => {
-                let data = archiveMap[key];
-                let parts = key.split('-');
-                let year = parts[0];
-                let monthIndex = parseInt(parts[1]) - 1;
-                let monthName = arabicMonths[monthIndex] || parts[1];
-
-                let netProfit = Math.max(0, data.income - data.expenses);
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="fw-bold text-dark">${monthName} ${year}</td>
-                        <td class="text-success fw-bold">${data.income.toFixed(0)} ج.م</td>
-                        <td class="text-danger">${data.expenses.toFixed(0)} ج.م</td>
-                        <td class="table-primary fw-bold text-primary">${netProfit.toFixed(0)} ج.م</td>
-                    </tr>
-                `;
-            });
         }
     </script>
 </body>
