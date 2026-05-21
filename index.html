@@ -25,6 +25,8 @@
         
         .patient-clickable-link { color: #0d6efd; cursor: pointer; text-decoration: none; }
         .patient-clickable-link:hover { text-decoration: underline; color: #0a58ca; }
+        .phone-call-link { color: #198754; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 2px; }
+        .phone-call-link:hover { text-decoration: underline; color: #146c43; }
         .day-badge { background-color: #e6f0fa; color: #0d6efd; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block; margin-top: 5px; }
         .report-card { border-right: 5px solid #0d6efd; background-color: #fff; }
         
@@ -81,7 +83,7 @@
                     <table class="table table-striped align-middle mb-0" style="font-size: 13px;">
                         <thead class="table-dark">
                             <tr>
-                                <th>الاسم وحالة الحساب</th>
+                                <th>الاسم ورقم التواصل</th>
                                 <th>الزيارة</th>
                                 <th>المدفوع</th>
                                 <th>المتبقي</th>
@@ -111,7 +113,7 @@
                             <tr>
                                 <th>المريض (اضغط للفتح)</th>
                                 <th>الشغل ورقم الجلسة اليوم</th>
-                                <th>تواصل</th>
+                                <th>اتصال سريع</th>
                             </tr>
                         </thead>
                         <tbody id="dailyAppointmentsTable"></tbody>
@@ -337,10 +339,10 @@
             <input type="hidden" id="editId">
             <div class="col-12"><label class="form-label fw-bold">اسم المريض</label><input type="text" id="editName" class="form-control" required></div>
             <div class="col-12">
-                <label class="form-label fw-bold text-dark">📞 رقم الموبايل</label>
+                <label class="form-label fw-bold text-dark">📞 رقم الموبايل (اضغط للاتصال السريع)</label>
                 <div class="input-group">
-                    <input type="tel" id="editPhone" class="form-control" placeholder="010xxxxxxx">
-                    <a id="phoneCallBtn" href="#" class="btn btn-primary"><i class="bi bi-telephone-fill"></i> اتصال سريع</a>
+                    <input type="tel" id="editPhone" class="form-control text-center fw-bold text-success" style="font-size: 18px;" placeholder="010xxxxxxx">
+                    <a id="phoneCallBtn" href="#" class="btn btn-success fw-bold"><i class="bi bi-telephone-fill"></i> اتصل الآن</a>
                 </div>
             </div>
             
@@ -487,8 +489,6 @@
             let buttons = document.querySelectorAll('.nav-item-btn');
             buttons.forEach(b => b.classList.remove('active'));
 
-            let todayStr = new Date().toISOString().split('T')[0];
-
             if(pageName === 'patients') {
                 document.getElementById('page-patients').style.display = 'block';
                 buttons[0].classList.add('active');
@@ -520,7 +520,7 @@
             }
         }
 
-        // ================= كود صفحة المرضى الفعليين =================
+        // ================= كود صفحه 1: المرضى الفعليين وطريقة عرض الهاتف الذكي =================
         document.getElementById('patientForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "p_" + Date.now();
@@ -561,10 +561,14 @@
                         financialBadge = `<br><span class="status-badge-debt"><i class="bi bi-exclamation-triangle-fill"></i> مديونية: ${remVal} ج.م</span>`;
                     }
                     
+                    // تحويل رقم الهاتف في الجدول إلى رابط اتصال مباشر 📞
+                    let phoneHtml = p.phone ? `<br><a href="tel:${p.phone}" class="phone-call-link"><i class="bi bi-telephone-outbound-fill"></i> ${p.phone}</a>` : '<br><span class="text-muted small">بلا رقم هاتف</span>';
+                    
                     tableBody.innerHTML += `
                         <tr>
                             <td>
                                 <strong class="patient-clickable-link" onclick="openPatientProfile('${id}')">${p.name}</strong>
+                                ${phoneHtml}
                                 ${financialBadge}
                             </td>
                             <td class="text-muted" style="font-size:11px;">${dayName}<br>${pDate}</td>
@@ -602,8 +606,13 @@
             updateNextVisitDayLabel();
 
             let callBtn = document.getElementById('phoneCallBtn');
-            if(p.phone) { callBtn.href = "tel:" + p.phone; callBtn.classList.remove('disabled'); } 
-            else { callBtn.href = "#"; callBtn.classList.add('disabled'); }
+            if(p.phone) { 
+                callBtn.href = "tel:" + p.phone; 
+                callBtn.classList.remove('disabled'); 
+            } else { 
+                callBtn.href = "#"; 
+                callBtn.classList.add('disabled'); 
+            }
 
             calculateEditRemaining();
             displayXrays(id);
@@ -704,7 +713,7 @@
 
         function backToMain() { switchPage('patients'); }
 
-        // ================= كود صفحة الحجوزات التليفونية =================
+        // ================= كود صفحة الحجوزات التليفونية وتفعيل الروابط المباشرة =================
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "book_" + Date.now();
@@ -729,9 +738,13 @@
             keys.forEach(id => {
                 let b = bookings[id];
                 let dayName = getArabicDayName(b.date);
+                
+                // تفعيل رابط الهاتف داخل جدول الحجوزات القادمة للتواصل السريع 📞
+                let bookPhoneHtml = b.phone ? `<br><a href="tel:${b.phone}" class="phone-call-link"><i class="bi bi-telephone-outbound-fill"></i> ${b.phone}</a>` : '<br><span class="text-muted small">بلا رقم</span>';
+                
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${b.name}</strong><br><span class="text-muted">${b.phone || 'بلا رقم'}</span></td>
+                        <td><strong>${b.name}</strong>${bookPhoneHtml}</td>
                         <td class="text-primary fw-bold">${dayName}<br><small>${b.date}</small></td>
                         <td>
                             <button class="btn btn-sm btn-success fw-bold mb-1 w-100" style="font-size:10px;" onclick="convertBookingToPatient('${id}')">🤝 شرف (تحويل لمريض)</button>
@@ -769,7 +782,7 @@
             }
         }
 
-        // ================= كود المتابعات والزيارات اليومية للمرضى =================
+        // ================= كود المتابعات والزيارات اليومية للمرضى مع زر اتصال مباشر موحد =================
         function displayDailyAppointments() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
             let tbody = document.getElementById('dailyAppointmentsTable'); 
@@ -805,7 +818,7 @@
                             ${sessionBadgeHtml}
                         </td>
                         <td>
-                            ${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success fw-bold" style="font-size: 11px; padding: 2px 6px;"><i class="bi bi-telephone"></i> اتصل</a>` : `<span class="text-muted small">بلا رقم</span>`}
+                            ${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success fw-bold d-block text-center" style="font-size: 11px; padding: 4px 6px;"><i class="bi bi-telephone-fill"></i> اتصل فوراً</a>` : `<span class="text-muted small">بلا رقم</span>`}
                         </td>
                     </tr>`;
             });
@@ -842,7 +855,7 @@
 
         function deleteLab(id) { if(confirm('مسح الطلبية؟')) { delete labs[id]; pushToServer('labs', labs, displayLabs); } }
 
-        // ================= [تعديل مستهدف 🛠️] كود المصروفات مع الفواتير البصرية ومقارنة الأسعار =================
+        // ================= كود المصروفات مع الفواتير البصرية ومقارنة الأسعار =================
         document.getElementById('expenseForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "exp_" + Date.now();
@@ -862,7 +875,7 @@
                         let img = new Image();
                         img.onload = function() {
                             let canvas = document.createElement('canvas');
-                            let max_size = 800; // حجم مثالي لقراءة تفاصيل الفاتورة بدقة
+                            let max_size = 800;
                             let width = img.width; let height = img.height;
                             if (width > height) { if (width > max_size) { height *= max_size / width; width = max_size; } } 
                             else { if (height > max_size) { width *= max_size / height; height = max_size; } }
@@ -903,7 +916,6 @@
                 totalExp += e.amount;
                 let eDate = e.dateCreated || new Date(parseInt(e.id.split('_')[1])).toISOString().split('T')[0];
                 
-                // إعداد الواجهة البصرية للفواتير المرفقة
                 let invoicesHtml = '';
                 let invData = e.invoices || [];
                 let invoices = Array.isArray(invData) ? invData : Object.values(invData);
