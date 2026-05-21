@@ -27,9 +27,10 @@
         .day-badge { background-color: #e6f0fa; color: #0d6efd; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block; margin-top: 5px; }
         .report-card { border-right: 5px solid #0d6efd; background-color: #fff; }
         
-        /* شارات التمييز المالي الجديدة */
+        /* شارات التمييز المالي والمتابعة */
         .status-badge-paid { background-color: #d1e7dd; color: #0f5132; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 4px; }
         .status-badge-debt { background-color: #f8d7da; color: #842029; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 4px; }
+        .session-badge { background-color: #fff3cd; color: #664d03; border: 1px solid #ffecb5; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; }
     </style>
 </head>
 <body class="container">
@@ -102,11 +103,11 @@
             <div class="card p-2">
                 <h6 class="p-2 text-secondary fw-bold" id="appointmentDayLabel">زيارات اليوم:</h6>
                 <div class="table-responsive">
-                    <table class="table table-bordered align-middle mb-0 bg-white">
+                    <table class="table table-bordered align-middle mb-0 bg-white" style="font-size: 13px;">
                         <thead class="table-primary">
                             <tr>
                                 <th>المريض (اضغط للفتح)</th>
-                                <th>الشغل المطلوب في المتابعة</th>
+                                <th>الشغل ورقم الجلسة اليوم</th>
                                 <th>تواصل</th>
                             </tr>
                         </thead>
@@ -224,7 +225,7 @@
                 </div>
                 <div class="p-2 border rounded text-center" style="background-color: #f0f4fc;">
                     <small class="text-primary fw-bold d-block">🏢 صافي نسبة العيادة اليوم (30%)</small>
-                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.م</h5>
+                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.m</h5>
                 </div>
             </div>
 
@@ -305,7 +306,7 @@
             <button class="nav-item-btn active" onclick="switchPage('patients')"><i class="bi bi-people-fill"></i>المرضى</button>
             <button class="nav-item-btn" onclick="switchPage('appointments')"><i class="bi bi-calendar-event-fill"></i>المتابعات</button>
             <button class="nav-item-btn" onclick="switchPage('bookings')"><i class="bi bi-telephone-inbound-fill text-primary"></i>الحجوزات</button>
-            <button class="nav-item-btn" onclick="switchPage('labs')"><i class="bi bi-box-seam-fill"></i>الممعمل</button>
+            <button class="nav-item-btn" onclick="switchPage('labs')"><i class="bi bi-box-seam-fill"></i>المعمل</button>
             <button class="nav-item-btn" onclick="switchPage('expenses')"><i class="bi bi-credit-card-fill"></i>المصاريف</button>
             <button class="nav-item-btn" onclick="switchPage('share')"><i class="bi bi-calculator-fill"></i>النسب</button>
             <button class="nav-item-btn" onclick="switchPage('monthly')"><i class="bi bi-bar-chart-line-fill text-danger"></i>التقارير</button>
@@ -337,6 +338,24 @@
                 <div id="nextVisitDayLabel" class="day-badge" style="display: none;"></div>
             </div>
             
+            <div class="col-12">
+                <label class="form-label fw-bold text-warning">🔄 رقم الجلسة القادمة (المستهدفة اليوم)</label>
+                <select id="editSessionNumber" class="form-select fw-bold">
+                    <option value="">-- بدون تحديد --</option>
+                    <option value="الجلسة الأولى">الجلسة الأولى</option>
+                    <option value="الجلسة الثانية">الجلسة الثانية</option>
+                    <option value="الجلسة الثالثة">الجلسة الثالثة</option>
+                    <option value="الجلسة الرابعة">الجلسة الرابعة</option>
+                    <option value="الجلسة الخامسة">الجلسة الخامسة</option>
+                    <option value="الجلسة السادسة">الجلسة السادسة</option>
+                    <option value="الجلسة السابعة">الجلسة السابعة</option>
+                    <option value="الجلسة الثامنة">الجلسة الثامنة</option>
+                    <option value="الجلسة التاسعة">الجلسة التاسعة</option>
+                    <option value="الجلسة العاشرة">الجلسة العاشرة</option>
+                    <option value="متابعة دورية">متابعة دورية</option>
+                </select>
+            </div>
+
             <div class="col-12"><label class="form-label fw-bold">الخدمة / الشغل المطلوب في الزيارة القادمة</label><input type="text" id="editService" class="form-control"></div>
             <div class="col-6"><label class="form-label fw-bold text-success">المدفوع الحالي (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
             <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
@@ -500,14 +519,13 @@
             let total = paid + remaining;
             let dateStr = new Date().toISOString().split('T')[0];
 
-            patients[id] = { id, name, service, paid, remaining, total, xrays: [], phone: '', nextVisit: '', dateCreated: dateStr };
+            patients[id] = { id, name, service, paid, remaining, total, xrays: [], phone: '', nextVisit: '', sessionNumber: '', dateCreated: dateStr };
             pushToServer('patients', patients, () => {
                 document.getElementById('patientForm').reset();
                 openPatientProfile(id);
             });
         });
 
-        // [تعديل مستهدف 🛠️] دالة عرض المرضى مع التمييز المالي المطور (خالص / مديونية)
         function displayPatients() {
             let searchTerm = document.getElementById('searchBar').value.toLowerCase();
             let tableBody = document.getElementById('patientTable');
@@ -523,7 +541,6 @@
                     let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
                     let dayName = getArabicDayName(pDate);
                     
-                    // حساب المتبقي وتجهيز الشارة المالية المناسبة
                     let remVal = parseFloat(p.remaining) || 0;
                     let financialBadge = '';
                     if(remVal <= 0) {
@@ -561,6 +578,7 @@
             document.getElementById('editService').value = p.service || '';
             document.getElementById('editPaid').value = p.paid;
             document.getElementById('editPhone').value = p.phone || '';
+            document.getElementById('editSessionNumber').value = p.sessionNumber || '';
             
             let rawNextVisit = p.nextVisit || '';
             if(rawNextVisit.includes('T')) {
@@ -597,6 +615,7 @@
             patients[id].total = patients[id].paid + patients[id].remaining;
             patients[id].phone = document.getElementById('editPhone').value;
             patients[id].nextVisit = document.getElementById('editNextVisit').value;
+            patients[id].sessionNumber = document.getElementById('editSessionNumber').value;
 
             if(!patients[id].dateCreated) {
                 patients[id].dateCreated = new Date().toISOString().split('T')[0];
@@ -723,7 +742,7 @@
                 let pId = "p_" + Date.now();
                 let todayStr = new Date().toISOString().split('T')[0];
 
-                patients[pId] = { id: pId, name: b.name, phone: b.phone, service: 'حجز مسبق تم الحضور', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', dateCreated: todayStr };
+                patients[pId] = { id: pId, name: b.name, phone: b.phone, service: 'حجز مسبق تم الحضور', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', sessionNumber: '', dateCreated: todayStr };
                 delete bookings[id];
 
                 showLoading(true, "جاري تحويل البيانات سحابياً...");
@@ -744,7 +763,7 @@
             }
         }
 
-        // ================= كود المتابعات والزيارات اليومية للمرضى =================
+        // ================= [تعديل مستهدف 🛠️] كود المتابعات والزيارات اليومية للمرضى مع شارة رقم الجلسة =================
         function displayDailyAppointments() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
             let tbody = document.getElementById('dailyAppointmentsTable'); 
@@ -765,12 +784,21 @@
             }
             
             list.forEach(p => {
+                // تجهيز شارة رقم الجلسة إن وُجدت
+                let sessionBadgeHtml = '';
+                if (p.sessionNumber) {
+                    sessionBadgeHtml = `<br><span class="session-badge"><i class="bi bi-arrow-repeat"></i> ${p.sessionNumber}</span>`;
+                }
+
                 tbody.innerHTML += `
                     <tr>
                         <td>
                             <strong class="patient-clickable-link" onclick="openPatientProfile('${p.id}')">${p.name}</strong>
                         </td>
-                        <td><span class="badge bg-secondary text-wrap" style="max-width: 200px; font-size:12px;">${p.service || 'متابعة عادية'}</span></td>
+                        <td>
+                            <span class="badge bg-secondary text-wrap" style="max-width: 180px; font-size:12px;">${p.service || 'متابعة عادية'}</span>
+                            ${sessionBadgeHtml}
+                        </td>
                         <td>
                             ${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success fw-bold" style="font-size: 11px; padding: 2px 6px;"><i class="bi bi-telephone"></i> اتصل</a>` : `<span class="text-muted small">بلا رقم</span>`}
                         </td>
