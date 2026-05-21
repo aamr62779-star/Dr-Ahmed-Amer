@@ -16,7 +16,6 @@
         #appContent, #page-patients, #page-appointments, #page-bookings, #page-labs, #page-expenses, #page-share, #page-monthly, #patientProfile { display: none; }
         .xray-thumb { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin: 5px; cursor: pointer; border: 2px solid #ddd; }
         
-        /* تعديل توزيع شريط التنقل السفلي ليستوعب 7 أزرار بشكل ممتاز على الموبايل */
         .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background-color: #ffffff; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 1000; display: flex; justify-content: space-around; padding: 10px 0; }
         .nav-item-btn { background: none; border: none; color: #6c757d; font-size: 9px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 14%; }
         .nav-item-btn i { font-size: 17px; margin-bottom: 2px; }
@@ -27,6 +26,10 @@
         .patient-clickable-link:hover { text-decoration: underline; color: #0a58ca; }
         .day-badge { background-color: #e6f0fa; color: #0d6efd; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block; margin-top: 5px; }
         .report-card { border-right: 5px solid #0d6efd; background-color: #fff; }
+        
+        /* شارات التمييز المالي الجديدة */
+        .status-badge-paid { background-color: #d1e7dd; color: #0f5132; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 4px; }
+        .status-badge-debt { background-color: #f8d7da; color: #842029; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 4px; }
     </style>
 </head>
 <body class="container">
@@ -74,7 +77,7 @@
                     <table class="table table-striped align-middle mb-0" style="font-size: 13px;">
                         <thead class="table-dark">
                             <tr>
-                                <th>الاسم (اضغط للفتح)</th>
+                                <th>الاسم وحالة الحساب</th>
                                 <th>الزيارة</th>
                                 <th>المدفوع</th>
                                 <th>المتبقي</th>
@@ -213,7 +216,7 @@
                 <h6 class="text-muted mb-3 fw-bold" id="shareDayTitle">أرباح يوم اليوم:</h6>
                 <div class="row text-center mb-3">
                     <div class="col-6 border-end"><small class="text-muted">دخل اليوم</small><h6 class="fw-bold text-success" id="dayIncome">0 ج.م</h6></div>
-                    <div class="col-6"><small class="text-muted">مصاريف اليوم</small><h6 class="fw-bold text-danger" id="dayExpenses">0 ج.m</h6></div>
+                    <div class="col-6"><small class="text-muted">مصاريف اليوم</small><h6 class="fw-bold text-danger" id="dayExpenses">0 ج.م</h6></div>
                 </div>
                 <div class="p-2 border rounded text-center mb-2" style="background-color: #e6f9f5;">
                     <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد اليوم (70%)</small>
@@ -272,7 +275,6 @@
 
             <div class="card p-3 mb-3 report-card">
                 <h6 class="text-secondary fw-bold mb-3" id="monthlyReportTitle">تقرير شهر مايو 2026:</h6>
-                
                 <div class="row text-center mb-3">
                     <div class="col-6 border-end">
                         <small class="text-muted d-block mb-1">📥 إجمالي دخل الشهر</small>
@@ -283,19 +285,15 @@
                         <h5 class="fw-bold text-danger" id="customMonthExpenses">0 ج.م</h5>
                     </div>
                 </div>
-                
                 <div class="p-3 border rounded text-center bg-light mb-3">
                     <small class="text-dark fw-bold d-block">💰 صافي أرباح الشهر (بعد خصم المصاريف)</small>
                     <h3 class="text-primary fw-bold m-0 mt-1" id="customMonthNetProfit">0 ج.م</h3>
                 </div>
-
                 <hr>
-
                 <div class="p-2 border rounded text-center mb-2" style="background-color: #e6f9f5;">
                     <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد لهذا الشهر (70%)</small>
                     <h4 class="text-success fw-bold m-0 mt-1" id="customMonthDoctorShare">0 ج.م</h4>
                 </div>
-                
                 <div class="p-2 border rounded text-center" style="background-color: #f0f4fc;">
                     <small class="text-primary fw-bold d-block">🏢 صافي نسبة العيادة لهذا الشهر (30%)</small>
                     <h5 class="text-primary fw-bold m-0 mt-1" id="customMonthClinicShare">0 ج.م</h5>
@@ -307,7 +305,7 @@
             <button class="nav-item-btn active" onclick="switchPage('patients')"><i class="bi bi-people-fill"></i>المرضى</button>
             <button class="nav-item-btn" onclick="switchPage('appointments')"><i class="bi bi-calendar-event-fill"></i>المتابعات</button>
             <button class="nav-item-btn" onclick="switchPage('bookings')"><i class="bi bi-telephone-inbound-fill text-primary"></i>الحجوزات</button>
-            <button class="nav-item-btn" onclick="switchPage('labs')"><i class="bi bi-box-seam-fill"></i>المعمل</button>
+            <button class="nav-item-btn" onclick="switchPage('labs')"><i class="bi bi-box-seam-fill"></i>الممعمل</button>
             <button class="nav-item-btn" onclick="switchPage('expenses')"><i class="bi bi-credit-card-fill"></i>المصاريف</button>
             <button class="nav-item-btn" onclick="switchPage('share')"><i class="bi bi-calculator-fill"></i>النسب</button>
             <button class="nav-item-btn" onclick="switchPage('monthly')"><i class="bi bi-bar-chart-line-fill text-danger"></i>التقارير</button>
@@ -395,7 +393,6 @@
                 document.getElementById('appContent').style.display = 'block';
                 document.getElementById('appointmentFilterDate').value = new Date().toISOString().split('T')[0];
                 
-                // تعيين الشهر والسنة الحاليين تلقائياً في صفحة التقرير الشهري
                 let now = new Date();
                 document.getElementById('monthlyYearSelect').value = now.getFullYear().toString();
                 let m = (now.getMonth() + 1).toString().padStart(2, '0');
@@ -486,7 +483,7 @@
             }
         }
 
-        // ================= كود صفحة المرضى =================
+        // ================= كود صفحة المرضى الفعليين =================
         function calculateRemaining() {
             let total = parseFloat(document.getElementById('total').value) || 0;
             let paid = parseFloat(document.getElementById('paid').value) || 0;
@@ -510,6 +507,7 @@
             });
         });
 
+        // [تعديل مستهدف 🛠️] دالة عرض المرضى مع التمييز المالي المطور (خالص / مديونية)
         function displayPatients() {
             let searchTerm = document.getElementById('searchBar').value.toLowerCase();
             let tableBody = document.getElementById('patientTable');
@@ -525,10 +523,20 @@
                     let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
                     let dayName = getArabicDayName(pDate);
                     
+                    // حساب المتبقي وتجهيز الشارة المالية المناسبة
+                    let remVal = parseFloat(p.remaining) || 0;
+                    let financialBadge = '';
+                    if(remVal <= 0) {
+                        financialBadge = `<br><span class="status-badge-paid"><i class="bi bi-check-circle-fill"></i> خالص</span>`;
+                    } else {
+                        financialBadge = `<br><span class="status-badge-debt"><i class="bi bi-exclamation-triangle-fill"></i> مديونية: ${remVal} ج.م</span>`;
+                    }
+                    
                     tableBody.innerHTML += `
                         <tr>
                             <td>
                                 <strong class="patient-clickable-link" onclick="openPatientProfile('${id}')">${p.name}</strong>
+                                ${financialBadge}
                             </td>
                             <td class="text-muted" style="font-size:11px;">${dayName}<br>${pDate}</td>
                             <td class="text-success fw-bold">${p.paid || 0}</td>
@@ -862,16 +870,14 @@
             document.getElementById('monthNetProfit').innerText = monthNet + " ج.م";
         }
 
-        // ================= [كود الصفحة الجديدة 7️⃣]: معالجة وحساب أرباح الشهر المختار =================
         function calculateCustomMonthlyReport() {
             let year = document.getElementById('monthlyYearSelect').value;
             let month = document.getElementById('monthlyMonthSelect').value;
-            let targetPrefix = `${year}-${month}`; // ينتج شيء مثل "2026-05"
+            let targetPrefix = `${year}-${month}`;
 
             let monthNameAr = arabicMonthsNames[month] || "";
             document.getElementById('monthlyReportTitle').innerText = `تقرير شهر ${monthNameAr} ${year}:`;
 
-            // حساب دخل المرضى المخصص للشهر المختار
             let totalIncome = 0;
             Object.values(patients).forEach(p => {
                 let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
@@ -880,7 +886,6 @@
                 }
             });
 
-            // حساب مصروفات العيادة المخصصة للشهر المختار
             let totalExpenses = 0;
             Object.values(expenses).forEach(e => {
                 let eDate = e.dateCreated || new Date(parseInt(e.id.split('_')[1])).toISOString().split('T')[0];
@@ -893,7 +898,6 @@
             let doctorShare = netProfit * 0.70;
             let clinicShare = netProfit * 0.30;
 
-            // تحديث واجهة الشاشة بالنتائج
             document.getElementById('customMonthIncome').innerText = totalIncome + " ج.م";
             document.getElementById('customMonthExpenses').innerText = totalExpenses + " ج.م";
             document.getElementById('customMonthNetProfit').innerText = netProfit + " ج.م";
