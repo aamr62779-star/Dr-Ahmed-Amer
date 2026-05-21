@@ -67,7 +67,7 @@
                     <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض بالكامل" required></div>
                     <div class="col-12"><input type="tel" id="phone" class="form-control" placeholder="رقم الموبايل (010xxxxxxxx)"></div>
                     <div class="col-12">
-                        <label class="form-label small fw-bold text-muted mb-0">تاريخ التسجيل (يمكنك اختيار تاريخ قديم):</label>
+                        <label class="form-label small fw-bold text-muted mb-0">تاريخ التسجيل (محدث تلقائياً بعد 12):</label>
                         <input type="date" id="dateCreated" class="form-control fw-bold text-center" required>
                     </div>
                     <div class="col-12 mt-2"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض وفتح ملفه 💾</button></div>
@@ -188,7 +188,7 @@
                     <div class="col-12"><input type="text" id="expReason" class="form-control" placeholder="بند الصرف (مثال: خامات، إيجار، فواتير شركة...)" required></div>
                     <div class="col-12"><input type="number" id="expAmount" class="form-control" placeholder="المبلغ المصروف (ج.م)" required></div>
                     <div class="col-12">
-                        <label class="form-label small fw-bold text-muted mb-0">تاريخ الصرف المخصص:</label>
+                        <label class="form-label small fw-bold text-muted mb-0">تاريخ الصرف (محدث تلقائياً بعد 12):</label>
                         <input type="date" id="expDate" class="form-control fw-bold text-center" required>
                     </div>
                     <div class="col-12">
@@ -234,7 +234,7 @@
                 </div>
                 <div class="p-2 border rounded text-center mb-2" style="background-color: #e6f9f5;">
                     <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد اليوم (70%)</small>
-                    <h4 class="text-success fw-bold m-0 mt-1" id="dayDoctorShare">0 ج.m</h4>
+                    <h4 class="text-success fw-bold m-0 mt-1" id="dayDoctorShare">0 ج.م</h4>
                 </div>
                 <div class="p-2 border rounded text-center" style="background-color: #f0f4fc;">
                     <small class="text-primary fw-bold d-block">🏢 صافي نسبة العيادة اليوم (30%)</small>
@@ -251,7 +251,7 @@
                 <hr class="bg-secondary my-2">
                 <div class="p-2 border border-warning rounded bg-gradient" style="background-color: #212529;">
                     <small class="text-warning fw-bold d-block">💰 صافي الدخل الكلي للعيادة بعد خصم التكاليف</small>
-                    <h2 class="text-warning fw-bold m-0 mt-1" id="monthNetProfit">0 ج.م</h2>
+                    <h2 class="text-warning fw-bold m-0 mt-1" id="monthNetProfit">0 ج.m</h2>
                 </div>
             </div>
         </div>
@@ -296,7 +296,7 @@
                     </div>
                     <div class="col-6">
                         <small class="text-muted d-block mb-1">📤 مصروفات الشهر المحددة</small>
-                        <h5 class="fw-bold text-danger" id="customMonthExpenses">0 ج.م</h5>
+                        <h5 class="fw-bold text-danger" id="customMonthExpenses">0 ج.m</h5>
                     </div>
                 </div>
                 <div class="p-3 border rounded text-center bg-light mb-3">
@@ -402,6 +402,15 @@
             "07": "يوليو", "08": "أغسطس", "09": "سبتمبر", "10": "أكتوبر", "11": "نوفمبر", "12": "ديسمبر"
         };
 
+        // دالة ذكية مخصصة لجلب تاريخ اليوم الفعلي وتحديثه فوراً عند تخطي الساعة 12 منتصف الليل بتوقيت الجهاز
+        function getSmartTodayString() {
+            let now = new Date();
+            let year = now.getFullYear();
+            let month = (now.getMonth() + 1).toString().padStart(2, '0');
+            let day = now.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         function getArabicDayName(dateString) {
             if(!dateString) return "";
             let d = new Date(dateString);
@@ -426,10 +435,12 @@
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
                 
-                let todayStr = new Date().toISOString().split('T')[0];
-                document.getElementById('dateCreated').value = todayStr;
-                document.getElementById('appointmentFilterDate').value = todayStr;
-                document.getElementById('expDate').value = todayStr;
+                // تطبيق دالة التاريخ الذكي المحدث تلقائياً بعد الـ 12 في جميع خانات البرنامج عند الفتح
+                let dynamicToday = getSmartTodayString();
+                document.getElementById('dateCreated').value = dynamicToday;
+                document.getElementById('appointmentFilterDate').value = dynamicToday;
+                document.getElementById('expDate').value = dynamicToday;
+                document.getElementById('shareFilterDate').value = dynamicToday;
                 
                 let now = new Date();
                 document.getElementById('monthlyYearSelect').value = now.getFullYear().toString();
@@ -489,17 +500,29 @@
             let buttons = document.querySelectorAll('.nav-item-btn');
             buttons.forEach(b => b.classList.remove('active'));
 
+            // في كل مرة يتم التنقل بين الصفحات يتم التحقق من التوقيت، وإذا تخطت الساعة 12 يقلب التاريخ تلقائياً بالصفحة
+            let dynamicToday = getSmartTodayString();
+
             if(pageName === 'patients') {
                 document.getElementById('page-patients').style.display = 'block';
                 buttons[0].classList.add('active');
+                if(!document.getElementById('dateCreated').value) {
+                    document.getElementById('dateCreated').value = dynamicToday;
+                }
                 displayPatients();
             } else if(pageName === 'appointments') {
                 document.getElementById('page-appointments').style.display = 'block';
                 buttons[1].classList.add('active');
+                if(!document.getElementById('appointmentFilterDate').value) {
+                    document.getElementById('appointmentFilterDate').value = dynamicToday;
+                }
                 displayDailyAppointments();
             } else if(pageName === 'bookings') {
                 document.getElementById('page-bookings').style.display = 'block';
                 buttons[2].classList.add('active');
+                if(!document.getElementById('bookDate').value) {
+                    document.getElementById('bookDate').value = dynamicToday;
+                }
                 displayBookings();
             } else if(pageName === 'labs') {
                 document.getElementById('page-labs').style.display = 'block';
@@ -508,10 +531,16 @@
             } else if(pageName === 'expenses') {
                 document.getElementById('page-expenses').style.display = 'block';
                 buttons[4].classList.add('active');
+                if(!document.getElementById('expDate').value) {
+                    document.getElementById('expDate').value = dynamicToday;
+                }
                 displayExpenses();
             } else if(pageName === 'share') {
                 document.getElementById('page-share').style.display = 'block';
                 buttons[5].classList.add('active');
+                if(!document.getElementById('shareFilterDate').value) {
+                    document.getElementById('shareFilterDate').value = dynamicToday;
+                }
                 calculateDailyShares();
             } else if(pageName === 'monthly') {
                 document.getElementById('page-monthly').style.display = 'block';
@@ -534,6 +563,7 @@
             
             pushToServer('patients', patients, () => {
                 document.getElementById('patientForm').reset();
+                document.getElementById('dateCreated').value = getSmartTodayString(); // إعادة التعيين لليوم الذكي الحالي
                 openPatientProfile(id);
             });
         });
@@ -561,7 +591,6 @@
                         financialBadge = `<br><span class="status-badge-debt"><i class="bi bi-exclamation-triangle-fill"></i> مديونية: ${remVal} ج.م</span>`;
                     }
                     
-                    // تحويل رقم الهاتف في الجدول إلى رابط اتصال مباشر 📞
                     let phoneHtml = p.phone ? `<br><a href="tel:${p.phone}" class="phone-call-link"><i class="bi bi-telephone-outbound-fill"></i> ${p.phone}</a>` : '<br><span class="text-muted small">بلا رقم هاتف</span>';
                     
                     tableBody.innerHTML += `
@@ -724,6 +753,7 @@
             bookings[id] = { id, name, phone, date };
             pushToServer('bookings', bookings, () => {
                 document.getElementById('bookingForm').reset();
+                document.getElementById('bookDate').value = getSmartTodayString();
                 displayBookings();
             });
         });
@@ -738,8 +768,6 @@
             keys.forEach(id => {
                 let b = bookings[id];
                 let dayName = getArabicDayName(b.date);
-                
-                // تفعيل رابط الهاتف داخل جدول الحجوزات القادمة للتواصل السريع 📞
                 let bookPhoneHtml = b.phone ? `<br><a href="tel:${b.phone}" class="phone-call-link"><i class="bi bi-telephone-outbound-fill"></i> ${b.phone}</a>` : '<br><span class="text-muted small">بلا رقم</span>';
                 
                 tbody.innerHTML += `
@@ -759,7 +787,7 @@
             let b = bookings[id];
             if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى?`)) {
                 let pId = "p_" + Date.now();
-                let todayStr = new Date().toISOString().split('T')[0];
+                let todayStr = getSmartTodayString(); // استخدام التاريخ الذكي المحدث تلقائياً عند النقل
 
                 patients[pId] = { id: pId, name: b.name, phone: b.phone, service: '', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', sessionNumber: '', dateCreated: todayStr };
                 delete bookings[id];
@@ -782,7 +810,7 @@
             }
         }
 
-        // ================= كود المتابعات والزيارات اليومية للمرضى مع زر اتصال مباشر موحد =================
+        // ================= كود المتابعات والزيارات اليومية للمرضى =================
         function displayDailyAppointments() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
             let tbody = document.getElementById('dailyAppointmentsTable'); 
@@ -855,7 +883,7 @@
 
         function deleteLab(id) { if(confirm('مسح الطلبية؟')) { delete labs[id]; pushToServer('labs', labs, displayLabs); } }
 
-        // ================= كود المصروفات مع الفواتير البصرية ومقارنة الأسعار =================
+        // ================= كود المصروفات مع الفواتير البصرية =================
         document.getElementById('expenseForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "exp_" + Date.now();
@@ -903,8 +931,7 @@
         function saveExpenseAndSync(id) {
             pushToServer('expenses', expenses, () => {
                 document.getElementById('expenseForm').reset();
-                let todayStr = new Date().toISOString().split('T')[0];
-                document.getElementById('expDate').value = todayStr;
+                document.getElementById('expDate').value = getSmartTodayString();
                 displayExpenses();
             });
         }
