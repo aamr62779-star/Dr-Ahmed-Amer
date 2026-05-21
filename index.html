@@ -87,6 +87,23 @@
         .status-badge-paid { background-color: #E8F5E9; color: #2E7D32; font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 4px; }
         .status-badge-debt { background-color: #FFEBEE; color: #C62828; font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 4px; }
         .session-badge { background-color: #FFF8E1; color: #F57F17; border: 1px solid #FFECB3; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: bold; display: inline-block; }
+        
+        /* تصميم أزرار الخدمات السريعة للموبايل */
+        .quick-service-btn {
+            background-color: #ffffff;
+            border: 1px solid var(--brand-cyan);
+            color: var(--brand-blue);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 30px;
+            margin: 3px;
+            transition: all 0.2s ease;
+        }
+        .quick-service-btn:active, .quick-service-btn:hover {
+            background-color: var(--brand-cyan);
+            color: white;
+        }
     </style>
 </head>
 <body class="container">
@@ -440,7 +457,22 @@
                 </select>
             </div>
 
-            <div class="col-12"><label class="form-label fw-bold">الخدمة / الإجراء الطبي الحالي</label><input type="text" id="editService" class="form-control" placeholder="حشو، زيركون، خلع..."></div>
+            <div class="col-12">
+                <label class="form-label fw-bold">الخدمة / الإجراء الطبي الحالي</label>
+                <input type="text" id="editService" class="form-control" placeholder="اختر من الأزرار أو اكتب هنا...">
+                <div class="mt-2 d-flex flex-wrap">
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('حشو عصب')">🦷 حشو عصب</button>
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('حشو عادى/تجميلي')">✨ حشو تجميلي</button>
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('طربوش زيركون')">💎 طربوش زيركون</button>
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('تركيب بورسلين')">👑 بورسلين</button>
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('خلع عادى')">👌 خلع عادى</button>
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('خلع جراحي')">🩺 خلع جراحي</button>
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('تنظيف جير وتلميع')">🧼 تنظيف وتلميع</button>
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('زراعة أسنان')">🌱 زراعة أسنان</button>
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('استشارة/متابعة')">📝 استشارة</button>
+                </div>
+            </div>
+            
             <div class="col-6"><label class="form-label fw-bold text-dark">إجمالي الحساب (ج.م)</label><input type="number" id="editTotal" class="form-control" oninput="calculateEditRemaining()"></div>
             <div class="col-6"><label class="form-label fw-bold text-success">المدفوع حتى الآن (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
             <div class="col-12"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control text-center fw-bold text-danger" readonly style="background-color: var(--brand-light);"></div>
@@ -471,6 +503,11 @@
             "01": "يناير", "02": "فبراير", "03": "مارس", "04": "أبريل", "05": "مايو", "06": "يونيو",
             "07": "يوليو", "08": "أغسطس", "09": "سبتمبر", "10": "أكتوبر", "11": "نوفمبر", "12": "ديسمبر"
         };
+
+        // دالة إدخال الخدمة السريعة بضغطة زر
+        function setQuickService(serviceName) {
+            document.getElementById('editService').value = serviceName;
+        }
 
         function getSmartTodayString() {
             let now = new Date();
