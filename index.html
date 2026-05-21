@@ -22,9 +22,9 @@
         .nav-item-btn.active { color: #0d6efd; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; font-weight: bold; }
         
-        /* تأثير يجعل اسم المريض يبدو كـ رابط قابل للضغط */
         .patient-clickable-link { color: #0d6efd; cursor: pointer; text-decoration: none; }
         .patient-clickable-link:hover { text-decoration: underline; color: #0a58ca; }
+        .day-badge { background-color: #e6f0fa; color: #0d6efd; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block; margin-top: 5px; }
     </style>
 </head>
 <body class="container">
@@ -101,8 +101,7 @@
                         <thead class="table-primary">
                             <tr>
                                 <th>المريض (اضغط للفتح)</th>
-                                <th>الساعة</th>
-                                <th>الشغل المطلوب</th>
+                                <th>الشغل المطلوب في المتابعة</th>
                                 <th>تواصل</th>
                             </tr>
                         </thead>
@@ -266,10 +265,13 @@
                     <a id="phoneCallBtn" href="#" class="btn btn-primary"><i class="bi bi-telephone-fill"></i> اتصال سريع</a>
                 </div>
             </div>
+            
             <div class="col-12">
                 <label class="form-label fw-bold text-primary">📅 موعد الزيارة القادمة (المتابعة)</label>
-                <input type="datetime-local" id="editNextVisit" class="form-control">
+                <input type="date" id="editNextVisit" class="form-control fw-bold" onchange="updateNextVisitDayLabel()">
+                <div id="nextVisitDayLabel" class="day-badge" style="display: none;"></div>
             </div>
+            
             <div class="col-12"><label class="form-label fw-bold">الخدمة / الشغل المطلوب في الزيارة القادمة</label><input type="text" id="editService" class="form-control"></div>
             <div class="col-6"><label class="form-label fw-bold text-success">المدفوع الحالي (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
             <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
@@ -298,9 +300,23 @@
         const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
         function getArabicDayName(dateString) {
-            if(!dateString) return "غير محدد";
+            if(!dateString) return "";
             let d = new Date(dateString);
+            if (isNaN(d.getTime())) return "";
             return arabicDays[d.getDay()];
+        }
+
+        // دالة تحديث اللفتة التوضيحية ليوم الأسبوع داخل ملف المريض فوراً
+        function updateNextVisitDayLabel() {
+            let val = document.getElementById('editNextVisit').value;
+            let labelDiv = document.getElementById('nextVisitDayLabel');
+            if(val) {
+                let dayName = getArabicDayName(val);
+                labelDiv.innerText = `🔄 الموعد يوافق يوم: ${dayName}`;
+                labelDiv.style.display = 'inline-block';
+            } else {
+                labelDiv.style.display = 'none';
+            }
         }
 
         function checkPassword() {
@@ -445,7 +461,7 @@
 
         function openPatientProfile(id) {
             document.getElementById('page-patients').style.display = 'none';
-            document.getElementById('page-appointments').style.display = 'none'; // لضمان إغلاق صفحة المتابعات أيضاً في حالة الدخول منها
+            document.getElementById('page-appointments').style.display = 'none';
             document.getElementById('patientProfile').style.display = 'block';
             let p = patients[id];
             
@@ -455,7 +471,14 @@
             document.getElementById('editService').value = p.service || '';
             document.getElementById('editPaid').value = p.paid;
             document.getElementById('editPhone').value = p.phone || '';
-            document.getElementById('editNextVisit').value = p.nextVisit || '';
+            
+            // [تعديل 🛠️] سحب التاريخ بدون ساعات ودقائق
+            let rawNextVisit = p.nextVisit || '';
+            if(rawNextVisit.includes('T')) {
+                rawNextVisit = rawNextVisit.split('T')[0];
+            }
+            document.getElementById('editNextVisit').value = rawNextVisit;
+            updateNextVisitDayLabel();
             
             let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
             let dayName = getArabicDayName(pDate);
@@ -484,6 +507,8 @@
             patients[id].remaining = parseFloat(document.getElementById('editRemaining').value) || 0;
             patients[id].total = patients[id].paid + patients[id].remaining;
             patients[id].phone = document.getElementById('editPhone').value;
+            
+            // [تعديل 🛠️] حفظ التاريخ كـ يوم فقط
             patients[id].nextVisit = document.getElementById('editNextVisit').value;
 
             if(!patients[id].dateCreated) {
@@ -638,34 +663,27 @@
             let tbody = document.getElementById('dailyAppointmentsTable'); 
             tbody.innerHTML = '';
             
-            document.getElementById('appointmentDayLabel').innerText = `متابعات وزيارات يوم (${selectedDate}):`;
+            let dayName = getArabicDayName(selectedDate);
+            document.getElementById('appointmentDayLabel').innerText = `متابعات وزيارات يوم ${dayName} (${selectedDate}):`;
             
             let list = Object.values(patients).filter(p => {
-                return p.nextVisit && p.nextVisit.split('T')[0] === selectedDate;
+                if(!p.nextVisit) return false;
+                let targetDate = p.nextVisit.includes('T') ? p.nextVisit.split('T')[0] : p.nextVisit;
+                return targetDate === selectedDate;
             });
             
             if(list.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">لا توجد حالات أو متابعات مسجلة لهذا اليوم</td></tr>`; 
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted p-3">لا توجد حالات أو متابعات مسجلة لهذا اليوم</td></tr>`; 
                 return; 
             }
             
-            list.sort((a, b) => a.nextVisit.localeCompare(b.nextVisit));
-            
             list.forEach(p => {
-                let rawTime = p.nextVisit.split('T')[1] || '';
-                let timeFormatted = '--:--';
-                if(rawTime) {
-                    let parts = rawTime.split(':');
-                    timeFormatted = parts[0] + ':' + parts[1];
-                }
-                
                 tbody.innerHTML += `
                     <tr>
                         <td>
                             <strong class="patient-clickable-link" onclick="openPatientProfile('${p.id}')">${p.name}</strong>
                         </td>
-                        <td class="text-primary fw-bold" style="font-size: 13px;"><i class="bi bi-clock-history"></i> ${timeFormatted}</td>
-                        <td><span class="badge bg-secondary text-wrap" style="max-width: 120px;">${p.service || 'متابعة عادية'}</span></td>
+                        <td><span class="badge bg-secondary text-wrap" style="max-width: 200px; font-size:12px;">${p.service || 'متابعة عادية'}</span></td>
                         <td>
                             ${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success fw-bold" style="font-size: 11px; padding: 2px 6px;"><i class="bi bi-telephone"></i> اتصل</a>` : `<span class="text-muted small">بلا رقم</span>`}
                         </td>
