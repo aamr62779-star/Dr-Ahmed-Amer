@@ -62,17 +62,16 @@
             <div class="card p-3 mb-4">
                 <h5 class="mb-3 text-secondary fw-bold">إضافة مريض جديد مباشرة</h5>
                 <form id="patientForm" class="row g-2">
-                    <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض" required></div>
-                    <div class="col-12"><input type="text" id="service" class="form-control" placeholder="الخدمة الحالية"></div>
-                    <div class="col-6"><input type="number" id="paid" class="form-control" placeholder="المبلغ المدفوع" oninput="calculateRemaining()"></div>
-                    <div class="col-6"><input type="number" id="total" class="form-control" placeholder="الإجمالي" oninput="calculateRemaining()"></div>
-                    <div class="col-12"><input type="number" id="remaining" class="form-control" placeholder="المتبقي تلقائياً" readonly style="background-color: #e9ecef;"></div>
-                    <div class="col-12"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض سحابياً</button></div>
+                    <div class="col-12"><input type="text" id="name" class="form-control" placeholder="اسم المريض بالكامل" required></div>
+                    <div class="col-12"><input type="tel" id="phone" class="form-control" placeholder="رقم الموبايل (010xxxxxxxx)"></div>
+                    <div class="col-12"><button type="submit" class="btn btn-success w-100 fw-bold">حفظ المريض وفتح ملفه 💾</button></div>
                 </form>
             </div>
+            
             <div class="mb-3">
                 <input type="text" id="searchBar" class="form-control" placeholder="🔍 ابحث باسم المريض لفتح ملفه..." oninput="displayPatients()">
             </div>
+            
             <div class="card p-2">
                 <div class="table-responsive">
                     <table class="table table-striped align-middle mb-0" style="font-size: 13px;">
@@ -225,7 +224,7 @@
                 </div>
                 <div class="p-2 border rounded text-center" style="background-color: #f0f4fc;">
                     <small class="text-primary fw-bold d-block">🏢 صافي نسبة العيادة اليوم (30%)</small>
-                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.m</h5>
+                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.م</h5>
                 </div>
             </div>
 
@@ -318,7 +317,7 @@
         <h4 class="text-primary fw-bold mb-3" id="profileTitle">ملف المريض</h4>
         
         <div class="alert alert-info py-2 px-3 mb-3 fw-bold small text-center" style="border-radius: 8px;">
-            <i class="bi bi-calendar-check-fill"></i> تاريخ زيارة المريض للعيادة: <span id="lblDateCreated" class="text-dark"></span>
+            <i class="bi bi-calendar-check-fill"></i> تاريخ تسجيل المريض: <span id="lblDateCreated" class="text-dark"></span>
         </div>
 
         <form id="editForm" class="row g-3">
@@ -339,7 +338,7 @@
             </div>
             
             <div class="col-12">
-                <label class="form-label fw-bold text-warning">🔄 رقم الجلسة القادمة (المستهدفة اليوم)</label>
+                <label class="form-label fw-bold text-warning">🔄 رقم الجلسة القادمة</label>
                 <select id="editSessionNumber" class="form-select fw-bold">
                     <option value="">-- بدون تحديد --</option>
                     <option value="الجلسة الأولى">الجلسة الأولى</option>
@@ -356,12 +355,13 @@
                 </select>
             </div>
 
-            <div class="col-12"><label class="form-label fw-bold">الخدمة / الشغل المطلوب في الزيارة القادمة</label><input type="text" id="editService" class="form-control"></div>
-            <div class="col-6"><label class="form-label fw-bold text-success">المدفوع الحالي (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
-            <div class="col-6"><label class="form-label fw-bold text-danger">المتبقي عليه (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
+            <div class="col-12"><label class="form-label fw-bold">الخدمة / الإجراء الطبي الحالي</label><input type="text" id="editService" class="form-control" placeholder="مثال: حشو عصب، زيركون، خلع..."></div>
+            <div class="col-6"><label class="form-label fw-bold text-dark">إجمالي حساب الحالة (ج.م)</label><input type="number" id="editTotal" class="form-control" oninput="calculateEditRemaining()"></div>
+            <div class="col-6"><label class="form-label fw-bold text-success">المبلغ المدفوع حتى الآن (ج.م)</label><input type="number" id="editPaid" class="form-control" oninput="calculateEditRemaining()"></div>
+            <div class="col-12"><label class="form-label fw-bold text-danger">المتبقي عليه تلقائياً (ج.م)</label><input type="number" id="editRemaining" class="form-control" readonly style="background-color: #e9ecef;"></div>
             
             <div class="col-12 mt-3">
-                <label class="form-label fw-bold text-primary">📸 صور الأشعة (مساحة تخزين ذكية فائقة اللانهائية ⚙️)</label>
+                <label class="form-label fw-bold text-primary">📸 صور الأشعة (مساحة تخزين سحابية ⚙️)</label>
                 <input type="file" id="xrayInput" class="form-control" accept="image/*" multiple onchange="uploadXray()">
                 <div id="xrayGallery" class="mt-2 d-flex flex-wrap bg-light p-2 border rounded"></div>
             </div>
@@ -503,26 +503,31 @@
         }
 
         // ================= كود صفحة المرضى الفعليين =================
-        function calculateRemaining() {
-            let total = parseFloat(document.getElementById('total').value) || 0;
-            let paid = parseFloat(document.getElementById('paid').value) || 0;
-            document.getElementById('remaining').value = total - paid;
-        }
-
+        // [تعديل مستهدف 🛠️] معالجة تسجيل المريض بالاسم والموبايل فقط، وتعيين الحقول الأخرى كقيم فارغة مبدئياً
         document.getElementById('patientForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "p_" + Date.now();
             let name = document.getElementById('name').value;
-            let service = document.getElementById('service').value;
-            let paid = parseFloat(document.getElementById('paid').value) || 0;
-            let remaining = parseFloat(document.getElementById('remaining').value) || 0;
-            let total = paid + remaining;
+            let phone = document.getElementById('phone').value;
             let dateStr = new Date().toISOString().split('T')[0];
 
-            patients[id] = { id, name, service, paid, remaining, total, xrays: [], phone: '', nextVisit: '', sessionNumber: '', dateCreated: dateStr };
+            patients[id] = { 
+                id, 
+                name, 
+                phone, 
+                service: '', 
+                paid: 0, 
+                remaining: 0, 
+                total: 0, 
+                xrays: [], 
+                nextVisit: '', 
+                sessionNumber: '', 
+                dateCreated: dateStr 
+            };
+            
             pushToServer('patients', patients, () => {
                 document.getElementById('patientForm').reset();
-                openPatientProfile(id);
+                openPatientProfile(id); // فتح ملف المريض المنشأ مباشرة لإكمال البيانات
             });
         });
 
@@ -565,6 +570,7 @@
             });
         }
 
+        // [تعديل مستهدف 🛠️] دالة فتح ملف المريض المنفصل مع إدراج الإجمالي والمدفوع لحساب المتبقي تلقائياً
         function openPatientProfile(id) {
             document.getElementById('page-patients').style.display = 'none';
             document.getElementById('page-appointments').style.display = 'none';
@@ -576,7 +582,8 @@
             document.getElementById('editId').value = id;
             document.getElementById('editName').value = p.name;
             document.getElementById('editService').value = p.service || '';
-            document.getElementById('editPaid').value = p.paid;
+            document.getElementById('editTotal').value = p.total || 0;
+            document.getElementById('editPaid').value = p.paid || 0;
             document.getElementById('editPhone').value = p.phone || '';
             document.getElementById('editSessionNumber').value = p.sessionNumber || '';
             
@@ -595,24 +602,23 @@
             if(p.phone) { callBtn.href = "tel:" + p.phone; callBtn.classList.remove('disabled'); } 
             else { callBtn.href = "#"; callBtn.classList.add('disabled'); }
 
-            document.getElementById('editRemaining').value = (p.total || 0) - p.paid;
+            calculateEditRemaining();
             displayXrays(id);
         }
 
         function calculateEditRemaining() {
-            let id = document.getElementById('editId').value;
-            let currentPaid = parseFloat(document.getElementById('editPaid').value) || 0;
-            let originalTotal = patients[id].total || 0;
-            document.getElementById('editRemaining').value = originalTotal - currentPaid;
+            let total = parseFloat(document.getElementById('editTotal').value) || 0;
+            let paid = parseFloat(document.getElementById('editPaid').value) || 0;
+            document.getElementById('editRemaining').value = total - paid;
         }
 
         function savePatientChanges() {
             let id = document.getElementById('editId').value;
             patients[id].name = document.getElementById('editName').value;
             patients[id].service = document.getElementById('editService').value;
+            patients[id].total = parseFloat(document.getElementById('editTotal').value) || 0;
             patients[id].paid = parseFloat(document.getElementById('editPaid').value) || 0;
             patients[id].remaining = parseFloat(document.getElementById('editRemaining').value) || 0;
-            patients[id].total = patients[id].paid + patients[id].remaining;
             patients[id].phone = document.getElementById('editPhone').value;
             patients[id].nextVisit = document.getElementById('editNextVisit').value;
             patients[id].sessionNumber = document.getElementById('editSessionNumber').value;
@@ -742,7 +748,7 @@
                 let pId = "p_" + Date.now();
                 let todayStr = new Date().toISOString().split('T')[0];
 
-                patients[pId] = { id: pId, name: b.name, phone: b.phone, service: 'حجز مسبق تم الحضور', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', sessionNumber: '', dateCreated: todayStr };
+                patients[pId] = { id: pId, name: b.name, phone: b.phone, service: '', paid: 0, remaining: 0, total: 0, xrays: [], nextVisit: '', sessionNumber: '', dateCreated: todayStr };
                 delete bookings[id];
 
                 showLoading(true, "جاري تحويل البيانات سحابياً...");
@@ -763,7 +769,7 @@
             }
         }
 
-        // ================= [تعديل مستهدف 🛠️] كود المتابعات والزيارات اليومية للمرضى مع شارة رقم الجلسة =================
+        // ================= كود المتابعات والزيارات اليومية للمرضى مع شارة رقم الجلسة =================
         function displayDailyAppointments() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
             let tbody = document.getElementById('dailyAppointmentsTable'); 
@@ -784,7 +790,6 @@
             }
             
             list.forEach(p => {
-                // تجهيز شارة رقم الجلسة إن وُجدت
                 let sessionBadgeHtml = '';
                 if (p.sessionNumber) {
                     sessionBadgeHtml = `<br><span class="session-badge"><i class="bi bi-arrow-repeat"></i> ${p.sessionNumber}</span>`;
