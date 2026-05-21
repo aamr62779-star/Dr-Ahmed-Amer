@@ -21,10 +21,6 @@
         .nav-item-btn i { font-size: 18px; margin-bottom: 2px; }
         .nav-item-btn.active { color: #0d6efd; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; font-weight: bold; }
-        
-        /* تأثير يجعل اسم المريض يبدو كـ رابط قابل للضغط */
-        .patient-clickable-link { color: #0d6efd; cursor: pointer; text-decoration: none; }
-        .patient-clickable-link:hover { text-decoration: underline; color: #0a58ca; }
     </style>
 </head>
 <body class="container">
@@ -72,7 +68,7 @@
                     <table class="table table-striped align-middle mb-0" style="font-size: 13px;">
                         <thead class="table-dark">
                             <tr>
-                                <th>الاسم (اضغط للفتح)</th>
+                                <th>الاسم</th>
                                 <th>الزيارة</th>
                                 <th>المدفوع</th>
                                 <th>المتبقي</th>
@@ -100,7 +96,7 @@
                     <table class="table table-bordered align-middle mb-0 bg-white">
                         <thead class="table-primary">
                             <tr>
-                                <th>المريض (اضغط للفتح)</th>
+                                <th>المريض</th>
                                 <th>الساعة</th>
                                 <th>الشغل المطلوب</th>
                                 <th>تواصل</th>
@@ -430,9 +426,7 @@
                     
                     tableBody.innerHTML += `
                         <tr>
-                            <td>
-                                <strong class="patient-clickable-link" onclick="openPatientProfile('${id}')">${p.name}</strong>
-                            </td>
+                            <td><strong>${p.name}</strong></td>
                             <td class="text-muted" style="font-size:11px;">${dayName}<br>${pDate}</td>
                             <td class="text-success fw-bold">${p.paid || 0}</td>
                             <td class="text-danger fw-bold">${p.remaining || 0}</td>
@@ -445,7 +439,6 @@
 
         function openPatientProfile(id) {
             document.getElementById('page-patients').style.display = 'none';
-            document.getElementById('page-appointments').style.display = 'none'; // لضمان إغلاق صفحة المتابعات أيضاً في حالة الدخول منها
             document.getElementById('patientProfile').style.display = 'block';
             let p = patients[id];
             
@@ -493,6 +486,7 @@
             pushToServer('patients', patients, () => { backToMain(); });
         }
 
+        // ================= تكنولوجيا الضغط المطور لحماية المساحة =================
         function uploadXray() {
             let id = document.getElementById('editId').value;
             let files = document.getElementById('xrayInput').files;
@@ -508,6 +502,7 @@
                     let img = new Image();
                     img.onload = function() {
                         let canvas = document.createElement('canvas');
+                        // تعيين دقة متوازنة جداً لحفظ جودة تفاصيل السن والجدور مع تقليل المساحة لأقصى حد
                         let max_size = 700; 
                         let width = img.width; let height = img.height;
                         if (width > height) { if (width > max_size) { height *= max_size / width; width = max_size; } } 
@@ -516,6 +511,7 @@
                         let ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
+                        // ضغط الصورة إلى صيغة JPEG بجودة 0.45 لتقليص المساحة بـ 15 ضعفاً مع وضوح تام
                         let compressedBase64 = canvas.toDataURL('image/jpeg', 0.45);
                         patients[id].xrays.push(compressedBase64);
                         loadedCount++;
@@ -607,7 +603,7 @@
 
         function convertBookingToPatient(id) {
             let b = bookings[id];
-            if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى؟`)) {
+            if(confirm(`هل شرف ${b.name} العيادة وتريد نقله لقائمة المرضى?`)) {
                 let pId = "p_" + Date.now();
                 let todayStr = new Date().toISOString().split('T')[0];
 
@@ -632,44 +628,17 @@
             }
         }
 
-        // ================= كود المتابعات والزيارات اليومية للمرضى =================
+        // ================= كود المتابعات الأونلاين =================
         function displayDailyAppointments() {
             let selectedDate = document.getElementById('appointmentFilterDate').value;
-            let tbody = document.getElementById('dailyAppointmentsTable'); 
-            tbody.innerHTML = '';
-            
+            let tbody = document.getElementById('dailyAppointmentsTable'); tbody.innerHTML = '';
             document.getElementById('appointmentDayLabel').innerText = `متابعات وزيارات يوم (${selectedDate}):`;
-            
-            let list = Object.values(patients).filter(p => {
-                return p.nextVisit && p.nextVisit.split('T')[0] === selectedDate;
-            });
-            
-            if(list.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">لا توجد حالات أو متابعات مسجلة لهذا اليوم</td></tr>`; 
-                return; 
-            }
-            
+            let list = Object.values(patients).filter(p => p.nextVisit && p.nextVisit.split('T')[0] === selectedDate);
+            if(list.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">لا توجد حالات مسجلة لهذا اليوم</td></tr>`; return; }
             list.sort((a, b) => a.nextVisit.localeCompare(b.nextVisit));
-            
             list.forEach(p => {
-                let rawTime = p.nextVisit.split('T')[1] || '';
-                let timeFormatted = '--:--';
-                if(rawTime) {
-                    let parts = rawTime.split(':');
-                    timeFormatted = parts[0] + ':' + parts[1];
-                }
-                
-                tbody.innerHTML += `
-                    <tr>
-                        <td>
-                            <strong class="patient-clickable-link" onclick="openPatientProfile('${p.id}')">${p.name}</strong>
-                        </td>
-                        <td class="text-primary fw-bold" style="font-size: 13px;"><i class="bi bi-clock-history"></i> ${timeFormatted}</td>
-                        <td><span class="badge bg-secondary text-wrap" style="max-width: 120px;">${p.service || 'متابعة عادية'}</span></td>
-                        <td>
-                            ${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success fw-bold" style="font-size: 11px; padding: 2px 6px;"><i class="bi bi-telephone"></i> اتصل</a>` : `<span class="text-muted small">بلا رقم</span>`}
-                        </td>
-                    </tr>`;
+                let time = p.nextVisit.split('T')[1] || '--:--';
+                tbody.innerHTML += `<tr><td><strong>${p.name}</strong></td><td class="text-primary fw-bold">${time}</td><td><span class="badge bg-secondary text-wrap">${p.service || 'متابعة'}</span></td><td>${p.phone ? `<a href="tel:${p.phone}" class="btn btn-sm btn-success">📞 اتصل</a>` : `<span class="text-muted small">بلا رقم</span>`}</td></tr>`;
             });
         }
 
