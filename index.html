@@ -85,7 +85,7 @@
             margin-bottom: 5px;
         }
         
-        #appContent, #page-patients, #page-appointments, #page-bookings, #page-labs, #page-expenses, #page-share, #page-monthly, #patientProfile, #page-patient-self-booking { display: none; }
+        #appContent, #page-patients, #page-appointments, #page-bookings, #page-labs, #page-expenses, #page-share, #page-monthly, #patientProfile { display: none; }
         .xray-thumb, .invoice-thumb { width: 90px; height: 90px; object-fit: cover; border-radius: 12px; margin: 5px; cursor: pointer; border: 2px solid var(--brand-cyan); }
         .invoice-thumb { border-color: #dc3545; }
         
@@ -172,8 +172,6 @@
             font-weight: bold;
         }
         #themeBtn { left: 15px; width: 40px; border-radius: 50%; font-size: 18px; }
-        #patientModeBtn { left: 65px; border-color: #e67e22; color: #e67e22; }
-        #doctorModeBtn { left: 15px; border-color: #2ecc71; color: #2ecc71; display: none; }
 
         .btn-whatsapp-followup { background-color: #25D366; color: white; border: none; font-weight: bold; }
         .btn-whatsapp-followup:hover { background-color: #1ebd58; color: white; }
@@ -184,8 +182,6 @@
 <body class="container" data-theme="dark">
 
     <button type="button" class="top-action-btn" onclick="toggleTheme()" id="themeBtn" title="تبديل وضع الإضاءة">☀️</button>
-    <button type="button" class="top-action-btn" onclick="activatePatientMode()" id="patientModeBtn"><i class="bi bi-shield-lock-fill me-1"></i> وضع المريض 🔒</button>
-    <button type="button" class="top-action-btn" onclick="deactivatePatientMode()" id="doctorModeBtn"><i class="bi bi-person-fill-lock me-1"></i> عودة الطبيب 🔐</button>
 
     <div id="loadingOverlay" class="loading-overlay" style="display: none;">
         <div class="text-center">
@@ -224,32 +220,6 @@
             </svg>
             <h4 class="text-primary fw-bold mb-0">AMER DENT</h4>
             <p class="text-muted small" style="font-size: 11px;">د. أحمد حسن عامر - نظام الإدارة السحابي 🌐</p>
-        </div>
-
-        <div id="page-patient-self-booking" class="mt-4">
-            <div class="card p-4 border-warning text-center shadow-lg" style="max-width: 500px; margin: 0 auto;">
-                <h4 class="text-success fw-bold mb-3"><i class="bi bi-calendar-plus-fill"></i> بوابة تسجيل حجز موعد جديد</h4>
-                <p class="text-muted small">برجاء إدخال بياناتك بدقة لتأكيد حجز مكانك بالعيادة</p>
-                <hr>
-                <form id="patientSelfForm" class="row g-3 text-start">
-                    <div class="col-12">
-                        <label class="form-label fw-bold">🙋‍♂️ اسم المريض بالكامل:</label>
-                        <input type="text" id="selfBookName" class="form-control form-control-lg text-center" placeholder="اكتب اسمك الثلاثي" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold">📱 رقم موبايل التواصل:</label>
-                        <input type="tel" id="selfBookPhone" class="form-control form-control-lg text-center" placeholder="010xxxxxxxx" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold">📅 اختر تاريخ اليوم المطلوب للحجز:</label>
-                        <input type="date" id="selfBookDate" class="form-control form-control-lg text-center fw-bold text-primary" required>
-                    </div>
-                    <div class="col-12 mt-4">
-                        <button type="submit" class="btn btn-success w-100 btn-lg fw-bold py-3 shadow"><i class="bi bi-check2-circle"></i> تأكيد وإرسال طلب الحجز الآن ✨</button>
-                    </div>
-                </form>
-                <div id="selfBookSuccess" class="alert alert-success mt-3 fw-bold" style="display:none;"><i class="bi bi-patch-check-fill"></i> تم تسجيل حجزك بنجاح يا فندم! شرفنا في الموعد المختار.</div>
-            </div>
         </div>
 
         <div id="page-patients">
@@ -335,7 +305,7 @@
                 </form>
             </div>
             <div class="card p-2">
-                <h6 class="p-2 text-secondary fw-bold">📋 قائمة الحجوزات القادمة والذاتية:</h6>
+                <h6 class="p-2 text-secondary fw-bold">📋 قائمة الحجوزات القادمة:</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped align-middle mb-0" style="font-size: 12px;">
                         <thead class="table-info">
@@ -719,67 +689,12 @@
             window.open(url, '_blank');
         }
 
+        // تبديل الثيم
         function toggleTheme() {
             let body = document.body; let btn = document.getElementById('themeBtn');
             if (body.getAttribute('data-theme') === 'dark') { body.setAttribute('data-theme', 'light'); btn.innerText = '🌙'; } 
             else { body.setAttribute('data-theme', 'dark'); btn.innerText = '☀️'; }
         }
-
-        function activatePatientMode() {
-            document.getElementById('patientModeBtn').style.display = 'none';
-            document.getElementById('themeBtn').style.display = 'none';
-            document.getElementById('doctorModeBtn').style.display = 'flex';
-            document.getElementById('mainNavbar').style.display = 'none';
-            
-            document.getElementById('selfBookName').value = '';
-            document.getElementById('selfBookPhone').value = '';
-            document.getElementById('selfBookDate').value = getSmartTodayString();
-            document.getElementById('selfBookSuccess').style.display = 'none';
-
-            document.getElementById('page-patients').style.display = 'none';
-            document.getElementById('page-appointments').style.display = 'none';
-            document.getElementById('page-bookings').style.display = 'none';
-            document.getElementById('page-labs').style.display = 'none';
-            document.getElementById('page-expenses').style.display = 'none';
-            document.getElementById('page-share').style.display = 'none';
-            document.getElementById('page-monthly').style.display = 'none';
-            document.getElementById('patientProfile').style.display = 'none';
-            
-            document.getElementById('page-patient-self-booking').style.display = 'block';
-        }
-
-        function deactivatePatientMode() {
-            let pass = prompt("برجاء إدخال الرقم السري لعودة كشف الطبيب:");
-            if(pass === "1234") {
-                document.getElementById('doctorModeBtn').style.display = 'none';
-                document.getElementById('patientModeBtn').style.display = 'flex';
-                document.getElementById('themeBtn').style.display = 'flex';
-                document.getElementById('mainNavbar').style.display = 'flex';
-                document.getElementById('page-patient-self-booking').style.display = 'none';
-                switchPage('patients');
-            } else if (pass !== null) {
-                alert("الرقم السري غير صحيح! لا يمكن الدخول لحسابات الطبيب.");
-            }
-        }
-
-        document.getElementById('patientSelfForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            let id = "book_" + Date.now();
-            bookings[id] = {
-                id: id,
-                name: document.getElementById('selfBookName').value.trim() + " (حجز ذاتي مريض)",
-                phone: document.getElementById('selfBookPhone').value.trim(),
-                date: document.getElementById('selfBookDate').value
-            };
-            
-            pushToServer('bookings', bookings, () => {
-                document.getElementById('patientSelfForm').reset();
-                document.getElementById('selfBookDate').value = getSmartTodayString();
-                let msg = document.getElementById('selfBookSuccess');
-                msg.style.display = 'block';
-                setTimeout(() => { msg.style.display = 'none'; }, 4000);
-            });
-        });
 
         function setQuickService(serviceName) { document.getElementById('editService').value = serviceName; }
         function getSmartTodayString() { let now = new Date(); return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`; }
@@ -808,8 +723,6 @@
         function pushToServer(node, updatedData, callback) { showLoading(true, "جاري المزامنة المشتركة أونلاين..."); fetch(`${FIREBASE_URL}${node}.json`, { method: 'PUT', body: JSON.stringify(updatedData) }).then(res => res.json()).then(() => { showLoading(false); if(callback) callback(); }).catch(err => { console.error(err); showLoading(false); }); }
 
         function switchPage(pageName) {
-            if(document.getElementById('page-patient-self-booking').style.display === 'block') return; 
-
             document.getElementById('page-patients').style.display = 'none'; document.getElementById('page-appointments').style.display = 'none';
             document.getElementById('page-bookings').style.display = 'none'; document.getElementById('page-labs').style.display = 'none';
             document.getElementById('page-expenses').style.display = 'none'; document.getElementById('page-share').style.display = 'none';
@@ -1034,7 +947,7 @@
             pushToServer('labs', labs, () => { document.getElementById('labForm').reset(); displayLabs(); });
         });
         function displayLabs() { let tbody = document.getElementById('labTable'); tbody.innerHTML = ''; Object.values(labs).reverse().forEach(l => { tbody.innerHTML += `<tr><td><strong>${l.name}</strong></td><td><small>${l.caseDesc||''}</small></td><td class="text-danger fw-bold">${l.remaining} ج.م</td><td><button class="btn btn-sm btn-outline-danger" onclick="deleteLab('${l.id}')">X</button></td></tr>`; }); }
-        function deleteLab(id) { if(confirm('مسح؟')) { delete labs[id]; pushToServer('labs', labs, displayLabs(); } }
+        function deleteLab(id) { if(confirm('مسح؟')) { delete labs[id]; pushToServer('labs', labs, displayLabs); } }
 
         document.getElementById('expenseForm').addEventListener('submit', function(e) {
             e.preventDefault(); let id = "exp_" + Date.now(); expenses[id] = { id, reason: document.getElementById('expReason').value, amount: parseFloat(document.getElementById('expAmount').value)||0, dateCreated: document.getElementById('expDate').value, invoices: [] };
@@ -1065,7 +978,7 @@
             
             let inc = 0; 
             let detailsTbody = document.getElementById('dailyIncomeDetailsTableBody');
-            detailsTbody.innerHTML = ''; // تصفير الجدول المخصص قبل البناء الجديد
+            detailsTbody.innerHTML = ''; 
 
             let hasPayments = false;
 
@@ -1077,7 +990,6 @@
                             inc += (parseFloat(pay.amount) || 0); 
                             hasPayments = true;
 
-                            // حساب الحصص الفردية لكل دفعة مريض مباشرة لعرضها بالجدول
                             let pAmt = parseFloat(pay.amount) || 0;
                             let docPart = (pAmt * 0.7).toFixed(1);
                             let clinicPart = (pAmt * 0.3).toFixed(1);
