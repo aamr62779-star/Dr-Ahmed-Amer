@@ -390,7 +390,7 @@
 
         <div id="page-share">
             <div class="card p-3 mb-3 text-center">
-                <h5 class="text-primary fw-bold mb-2">📋 كشف حساب ونسب باليوم (حسب تاريخ الدفع الفعلي)</h5>
+                <h5 class="text-primary fw-bold mb-2">📋 كشف حساب ونسب باليوم (بعد خصم المصاريف اليومية)</h5>
                 <div class="d-flex justify-content-center">
                     <input type="date" id="shareFilterDate" class="form-control text-center fw-bold text-primary w-70" onchange="calculateDailyShares()">
                 </div>
@@ -398,30 +398,41 @@
 
             <div class="card p-3 mb-3 report-card">
                 <h6 class="text-secondary fw-bold mb-3" id="shareDayTitle">أرباح يوم اليوم:</h6>
-                <div class="row text-center mb-3">
-                    <div class="col-12"><small class="text-muted">إجمالي دخل اليوم الفعال المحصل من الدفعات</small><h4 class="fw-bold text-success mt-1" id="dayIncome">0 ج.م</h4></div>
+                
+                <div class="row text-center mb-3 g-2">
+                    <div class="col-6 border-end">
+                        <small class="text-muted d-block">📥 إيراد اليوم الخام</small>
+                        <h5 class="fw-bold text-primary mt-1" id="dayGrossIncome">0 ج.م</h5>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">📤 مصروفات اليوم</small>
+                        <h5 class="fw-bold text-danger mt-1" id="dayExpenses">0 ج.م</h5>
+                    </div>
+                    <div class="col-12 mt-2 border-top pt-2">
+                        <small class="text-dark fw-bold d-block">💰 صافي الدخل الخاضع للنسبة</small>
+                        <h4 class="fw-bold text-success mt-1" id="dayNetIncome">0 ج.م</h4>
+                    </div>
                 </div>
+
                 <div class="p-2 border rounded text-center mb-2" style="background-color: rgba(46, 125, 50, 0.15);">
-                    <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد اليوم (70%)</small>
+                    <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد (70% من الصافي)</small>
                     <h4 class="text-success fw-bold m-0 mt-1" id="dayDoctorShare">0 ج.م</h4>
                 </div>
                 <div class="p-2 border rounded text-center" style="background-color: rgba(5, 191, 219, 0.12);">
-                    <small class="text-primary fw-bold d-block">🏢 صافي نسبة العيادة اليوم (30%)</small>
+                    <small class="text-primary fw-bold d-block">🏢 صافي حصة العيادة (30% من الصافي)</small>
                     <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.م</h5>
                 </div>
             </div>
 
             <div class="card p-3 mb-3">
-                <h6 class="text-primary fw-bold mb-3"><i class="bi bi-wallet2"></i> كشف حركة خزينة المرضى لليوم المحدد تفصيلياً:</h6>
+                <h6 class="text-primary fw-bold mb-3"><i class="bi bi-wallet2"></i> متحصلات الخزينة لليوم المحدد:</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped align-middle mb-0 text-center" style="font-size: 12px;">
                         <thead class="table-dark">
                             <tr>
                                 <th>اسم المريض</th>
                                 <th>الجلسة / البند</th>
-                                <th>المبلغ</th>
-                                <th>د.أحمد (70%)</th>
-                                <th>العيادة (30%)</th>
+                                <th>المبلغ المسدد</th>
                             </tr>
                         </thead>
                         <tbody id="dailyIncomeDetailsTableBody"></tbody>
@@ -430,14 +441,14 @@
             </div>
 
             <div class="card p-3 mb-3 text-center bg-dark text-white">
-                <h5 class="fw-bold text-warning mb-3">📈 التقفيل الكلي الشامل (نظام المزامنة)</h5>
+                <h5 class="fw-bold text-warning mb-3">📈 التقفيل التراكمي الشامل للعيادة</h5>
                 <div class="row g-2 mb-2">
-                    <div class="col-6 border-end border-secondary"><small class="text-light">إجمالي الإيرادات المسجلة كلياً</small><h6 class="text-success fw-bold" id="monthTotalIncome">0 ج.م</h6></div>
-                    <div class="col-6"><small class="text-light">إجمالي المصروفات</small><h6 class="text-danger fw-bold" id="monthTotalExpenses">0 ج.م</h6></div>
+                    <div class="col-6 border-end border-secondary"><small class="text-light">إجمالي الإيرادات كلياً</small><h6 class="text-success fw-bold" id="monthTotalIncome">0 ج.م</h6></div>
+                    <div class="col-6"><small class="text-light">إجمالي المصروفات كلياً</small><h6 class="text-danger fw-bold" id="monthTotalExpenses">0 ج.م</h6></div>
                 </div>
                 <hr class="bg-secondary my-2">
                 <div class="p-2 border border-warning rounded" style="background-color: #1A1A1A;">
-                    <small class="text-warning fw-bold d-block">💰 صافي الدخل الكلي للعيادة بعد خصم التكاليف</small>
+                    <small class="text-warning fw-bold d-block">💰 أرباح العيادة التراكمية بعد المصاريف</small>
                     <h2 class="text-warning fw-bold m-0 mt-1" id="monthNetProfit">0 ج.م</h2>
                 </div>
             </div>
@@ -569,8 +580,8 @@
                 <input type="text" id="editService" class="form-control" placeholder="اختر من الأزرار أو اكتب هنا...">
                 <div class="mt-2 d-flex flex-wrap">
                     <button type="button" class="quick-service-btn" onclick="setQuickService('حشو عصب')">🦷 حشو عصب</button>
-                    <button type="button" class="quick-service-btn" onclick="setQuickService('حشو عدى/تجميلي')">✨ حشو تجميلي</button>
-                    <button type="button" class="quick-service-btn" onclick="setQuickService('طربوش زيركون')">💎 طربوش زيركون</button>
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('حشو تجميلي')">✨ حشو تجميلي</button>
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('Cosmetic Restorations')">💎 Cosmetic Restorations</button>
                     <button type="button" class="quick-service-btn" onclick="setQuickService('تنظيف جير وتلميع')">🧼 تنظيف وتلميع</button>
                     <button type="button" class="quick-service-btn" onclick="setQuickService('استشارة/متابعة')">📝 استشارة</button>
                 </div>
@@ -689,7 +700,6 @@
             window.open(url, '_blank');
         }
 
-        // تبديل الثيم
         function toggleTheme() {
             let body = document.body; let btn = document.getElementById('themeBtn');
             if (body.getAttribute('data-theme') === 'dark') { body.setAttribute('data-theme', 'light'); btn.innerText = '🌙'; } 
@@ -903,9 +913,10 @@
         }
 
         function displayXrays(id) {
-            let gallery = document.getElementById('xrayGallery'); gallery.innerHTML = ''; let xrays = patients[id].xrays || [];
-            if(xrays.length === 0) { gallery.innerHTML = '<span class="text-muted small p-2">لا توجد أشعات</span>'; return; }
-            xrays.forEach((imgSrc, idx) => { gallery.innerHTML += `<div class="position-relative d-inline-block"><img src="${imgSrc}" class="xray-thumb" onclick="window.open('${imgSrc}')"><button type="button" class="btn btn-danger btn-sm position-absolute top-0 start-0 m-1" onclick="deleteXray('${id}', ${idx})">X</button></div>`; });
+            let gallery = document.getElementById('xrayGallery'); gallery.innerHTML = ''; let xrays = Math.max(0, patients[id].xrays || []);
+            let xrayArr = patients[id].xrays || [];
+            if(xrayArr.length === 0) { gallery.innerHTML = '<span class="text-muted small p-2">لا توجد أشعات</span>'; return; }
+            xrayArr.forEach((imgSrc, idx) => { gallery.innerHTML += `<div class="position-relative d-inline-block"><img src="${imgSrc}" class="xray-thumb" onclick="window.open('${imgSrc}')"><button type="button" class="btn btn-danger btn-sm position-absolute top-0 start-0 m-1" onclick="deleteXray('${id}', ${idx})">X</button></div>`; });
         }
 
         function deleteXray(id, idx) { if(confirm('حذف؟')) { patients[id].xrays.splice(idx, 1); pushToServer('patients', patients, () => { displayXrays(id); }); } }
@@ -972,35 +983,32 @@
         }
         function deleteExpense(id) { if(confirm('مسح؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
 
+        // التحديث الذكي لحساب النسب اليومية بعد خصم المصروفات اليومية مباشرة
         function calculateDailyShares() {
             let date = document.getElementById('shareFilterDate').value; if(!date) return;
             document.getElementById('shareDayTitle').innerText = `أرباح يوم ${getArabicDayName(date)} (${date}):`;
             
-            let inc = 0; 
+            let grossIncome = 0; 
             let detailsTbody = document.getElementById('dailyIncomeDetailsTableBody');
             detailsTbody.innerHTML = ''; 
 
             let hasPayments = false;
 
+            // 1. حساب إجمالي الإيراد الخام لليوم المختار
             Object.values(patients).forEach(p => { 
                 if (p.sessionPayments) {
                     p.sessionPayments.forEach(pay => {
                         let payDate = pay.pureDate || (pay.dateTime ? pay.dateTime.split(' ')[1] : '');
                         if (payDate === date) { 
-                            inc += (parseFloat(pay.amount) || 0); 
-                            hasPayments = true;
-
                             let pAmt = parseFloat(pay.amount) || 0;
-                            let docPart = (pAmt * 0.7).toFixed(1);
-                            let clinicPart = (pAmt * 0.3).toFixed(1);
+                            grossIncome += pAmt; 
+                            hasPayments = true;
 
                             detailsTbody.innerHTML += `
                                 <tr>
                                     <td><strong class="patient-clickable-link" onclick="openPatientProfile('${p.id}')">${p.name}</strong></td>
                                     <td class="text-muted">${pay.label || 'دفعة جلسة'}</td>
                                     <td class="text-success fw-bold">${pAmt} ج.م</td>
-                                    <td class="text-primary fw-bold">${docPart} ج.م</td>
-                                    <td class="text-secondary small">${clinicPart} ج.م</td>
                                 </tr>`;
                         }
                     });
@@ -1008,20 +1016,39 @@
             });
 
             if(!hasPayments) {
-                detailsTbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-2">لا توجد أي متحصلات مالية مسجلة في هذا اليوم</td></tr>`;
+                detailsTbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-2">لا توجد أي متحصلات مالية مسجلة في هذا اليوم</td></tr>`;
             }
 
-            document.getElementById('dayIncome').innerText = inc + " ج.م"; 
-            document.getElementById('dayDoctorShare').innerText = (inc * 0.7).toFixed(1) + " ج.م"; 
-            document.getElementById('dayClinicShare').innerText = (inc * 0.3).toFixed(1) + " ج.م";
+            // 2. حساب إجمالي مصروفات نفس اليوم المحدد
+            let dayExpTotal = 0;
+            Object.values(expenses).forEach(e => {
+                if (e.dateCreated === date) {
+                    dayExpTotal += (parseFloat(e.amount) || 0);
+                }
+            });
+
+            // 3. حساب صافي الدخل اليومي الخاضع للنسبة بعد خصم مصاريف اليوم
+            let netIncome = grossIncome - dayExpTotal;
             
+            // في حال كانت المصاريف أكبر من الإيراد، نمنع الأرقام السالبة في توزيع النسب الفردية
+            let incomeToDivide = Math.max(0, netIncome);
+
+            document.getElementById('dayGrossIncome').innerText = grossIncome + " ج.م";
+            document.getElementById('dayExpenses').innerText = dayExpTotal + " ج.م";
+            document.getElementById('dayNetIncome').innerText = netIncome + " ج.م";
+            
+            // حساب تقسيم الـ 70% والـ 30% بناءً على الصافي الفعلي بعد الخصم اليومي المباشر
+            document.getElementById('dayDoctorShare').innerText = (incomeToDivide * 0.7).toFixed(1) + " ج.م"; 
+            document.getElementById('dayClinicShare').innerText = (incomeToDivide * 0.3).toFixed(1) + " ج.م";
+            
+            // 4. الحسبة التراكمية الإجمالية أسفل الصفحة
             let ti = 0;
             Object.values(patients).forEach(p => {
                 if (p.sessionPayments) { p.sessionPayments.forEach(pay => { ti += (parseFloat(pay.amount) || 0); }); }
             });
             let te = Object.values(expenses).reduce((s,e)=> s+(parseFloat(e.amount)||0), 0);
             document.getElementById('monthTotalIncome').innerText = ti + " ج.م"; 
-            document.getElementById('monthTotalExpenses').innerText = te + " ج.م"; 
+            document.getElementById('monthTotalExpenses').innerText = te + " ج.m"; 
             document.getElementById('monthNetProfit').innerText = (ti-te) + " ج.م";
         }
 
