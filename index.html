@@ -406,7 +406,7 @@
                 </div>
                 <div class="p-2 border rounded text-center" style="background-color: rgba(5, 191, 219, 0.12);">
                     <small class="text-primary fw-bold d-block">🏢 صافي نسبة العيادة اليوم (30%)</small>
-                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.م</h5>
+                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.m</h5>
                 </div>
             </div>
 
@@ -563,11 +563,20 @@
             </div>
 
             <div class="col-12 p-3 border rounded border-warning" style="background-color: rgba(255, 193, 7, 0.05);">
-                <label class="form-label fw-bold text-warning"><i class="bi bi-plus-circle-fill"></i> تسجيل دفعة مالية جديدة لجلسة اليوم</label>
-                <div class="input-group">
-                    <input type="number" id="newSessionPayment" class="form-control text-center fw-bold text-success" placeholder="المبلغ المدفوع اليوم">
-                    <input type="text" id="newSessionLabel" class="form-control text-center" placeholder="رقم/بند الجلسة">
-                    <button type="button" class="btn btn-warning fw-bold" onclick="addNewSessionPaymentRecord()">إضافة الدفعة 💵</button>
+                <label class="form-label fw-bold text-warning"><i class="bi bi-plus-circle-fill"></i> تسجيل دفعة مالية جديدة (حدد التاريخ والمبلغ)</label>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <input type="number" id="newSessionPayment" class="form-control text-center fw-bold text-success" placeholder="المبلغ">
+                    </div>
+                    <div class="col-6">
+                        <input type="date" id="newSessionDate" class="form-control text-center fw-bold text-primary">
+                    </div>
+                    <div class="col-12">
+                        <input type="text" id="newSessionLabel" class="form-control text-center" placeholder="رقم/بند الجلسة">
+                    </div>
+                    <div class="col-12">
+                        <button type="button" class="btn btn-warning fw-bold w-100" onclick="addNewSessionPaymentRecord()">إضافة الدفعة بالتاريخ المحدّد 💵</button>
+                    </div>
                 </div>
             </div>
 
@@ -750,16 +759,16 @@
             document.getElementById('editNextVisit').value = p.nextVisit || '';
             document.getElementById('phoneCallBtn').href = `tel:${p.phone || ''}`;
             
-            // تهيئة حقول دفع الجلسات الجديدة
+            // تهيئة حقول دفع الجلسات الجديدة وإدخال تاريخ اليوم تلقائيًا كافتراضي
             document.getElementById('newSessionPayment').value = '';
+            document.getElementById('newSessionDate').value = getSmartTodayString();
             document.getElementById('newSessionLabel').value = p.sessionNumber || '';
 
             updateNextVisitDayLabel(); 
-            displaySessionPaymentsList(id); // بناء جدول الدفعات
+            displaySessionPaymentsList(id); 
             displayXrays(id);
         }
 
-        // دالة بناء وعرض قائمة دفعات الجلسات المؤرخة
         function displaySessionPaymentsList(id) {
             let p = patients[id];
             let tbody = document.getElementById('sessionPaymentsTableBody');
@@ -767,7 +776,6 @@
             
             if(!p.sessionPayments) p.sessionPayments = [];
             
-            // حساب المجموع الكلي للدفعات وتحديث الحقول تلقائياً
             let totalPaidCalculated = 0;
             
             if(p.sessionPayments.length === 0) {
@@ -785,49 +793,48 @@
                 });
             }
             
-            // تحديث قيم الواجهة بناءً على الدفعات الفعلية المسجلة
             document.getElementById('editPaid').value = totalPaidCalculated;
             patients[id].paid = totalPaidCalculated;
             calculateEditRemaining();
         }
 
-        // دالة تسجيل دفعة جديدة في الجلسة بالتاريخ والوقت الفوري لعيادة دكتور أحمد
+        // تحديث دالة إضافة دفعة جديدة لتدعم التاريخ واليوم المدخل يدويًا
         function addNewSessionPaymentRecord() {
             let id = document.getElementById('editId').value;
             let amountInput = document.getElementById('newSessionPayment').value.trim();
+            let dateInput = document.getElementById('newSessionDate').value;
             let labelInput = document.getElementById('newSessionLabel').value.trim();
             
             if(!amountInput || isNaN(amountInput) || parseFloat(amountInput) <= 0) {
                 alert("من فضلك أدخل مبلغ دفع صالح وصحيح للجلسة!");
                 return;
             }
+            if(!dateInput) {
+                alert("من فضلك اختر التاريخ السليم لهذه الدفعة!");
+                return;
+            }
             
             let amount = parseFloat(amountInput);
             let label = labelInput ? labelInput : (document.getElementById('editSessionNumber').value || "جلسة علاجية");
             
-            // صياغة التاريخ والوقت واليوم الحالي باللغة العربية
-            let now = new Date();
-            let dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
-            let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-            let fullDateTimeStamp = `${getArabicDayName(dateStr)} ${dateStr} (${timeStr})`;
+            // جلب اسم اليوم بناءً على التاريخ المختار يدوياً
+            let fullDateTimeStamp = `${getArabicDayName(dateInput)} ${dateInput}`;
             
             if(!patients[id].sessionPayments) patients[id].sessionPayments = [];
             
-            // إضافة الدفعة للمصفوفة السحابية
             patients[id].sessionPayments.push({
                 amount: amount,
                 label: label,
                 dateTime: fullDateTimeStamp
             });
             
-            // إعادة تصفير الحقول المساعدة بالواجهة
+            // إعادة تصفير حقل المبلغ فقط والاحتفاظ بالتاريخ الافتراضي الحالي
             document.getElementById('newSessionPayment').value = '';
+            document.getElementById('newSessionDate').value = getSmartTodayString();
             
-            // تحديث الجدول فورياً
             displaySessionPaymentsList(id);
         }
 
-        // دالة حذف دفعة خاطئة من سجل المريض
         function deleteSessionPaymentRecord(id, index) {
             if(confirm("هل أنت متأكد من حذف هذه الدفعة المالية من سجل المريض نهائياً؟")) {
                 patients[id].sessionPayments.splice(index, 1);
