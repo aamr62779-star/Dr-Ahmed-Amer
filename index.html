@@ -389,7 +389,7 @@
 
         <div id="page-share">
             <div class="card p-3 mb-3 text-center">
-                <h5 class="text-primary fw-bold mb-2">📋 كشف حساب ونسب باليوم</h5>
+                <h5 class="text-primary fw-bold mb-2">📋 كشف حساب ونسب باليوم (حسب تاريخ الدفع الفعلي)</h5>
                 <div class="d-flex justify-content-center">
                     <input type="date" id="shareFilterDate" class="form-control text-center fw-bold text-primary w-70" onchange="calculateDailyShares()">
                 </div>
@@ -398,7 +398,7 @@
             <div class="card p-3 mb-3 report-card">
                 <h6 class="text-secondary fw-bold mb-3" id="shareDayTitle">أرباح يوم اليوم:</h6>
                 <div class="row text-center mb-3">
-                    <div class="col-12"><small class="text-muted">إجمالي دخل اليوم الفعال من المرضى</small><h4 class="fw-bold text-success mt-1" id="dayIncome">0 ج.م</h4></div>
+                    <div class="col-12"><small class="text-muted">إجمالي دخل اليوم الفعال المحصل من الدفعات</small><h4 class="fw-bold text-success mt-1" id="dayIncome">0 ج.م</h4></div>
                 </div>
                 <div class="p-2 border rounded text-center mb-2" style="background-color: rgba(46, 125, 50, 0.15);">
                     <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد اليوم (70%)</small>
@@ -406,14 +406,14 @@
                 </div>
                 <div class="p-2 border rounded text-center" style="background-color: rgba(5, 191, 219, 0.12);">
                     <small class="text-primary fw-bold d-block">🏢 صافي نسبة العيادة اليوم (30%)</small>
-                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.m</h5>
+                    <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.م</h5>
                 </div>
             </div>
 
             <div class="card p-3 mb-3 text-center bg-dark text-white">
                 <h5 class="fw-bold text-warning mb-3">📈 التقفيل الكلي الشامل (نظام المزامنة)</h5>
                 <div class="row g-2 mb-2">
-                    <div class="col-6 border-end border-secondary"><small class="text-light">إجمالي الإيرادات</small><h6 class="text-success fw-bold" id="monthTotalIncome">0 ج.م</h6></div>
+                    <div class="col-6 border-end border-secondary"><small class="text-light">إجمالي الإيرادات المسجلة كلياً</small><h6 class="text-success fw-bold" id="monthTotalIncome">0 ج.م</h6></div>
                     <div class="col-6"><small class="text-light">إجمالي المصروفات</small><h6 class="text-danger fw-bold" id="monthTotalExpenses">0 ج.م</h6></div>
                 </div>
                 <hr class="bg-secondary my-2">
@@ -458,7 +458,7 @@
                 <h6 class="text-secondary fw-bold mb-3" id="monthlyReportTitle">تقرير الدخل المالي:</h6>
                 <div class="row text-center mb-3">
                     <div class="col-6 border-end">
-                        <small class="text-muted d-block mb-1">📥 دخل الشهر الفعلي</small>
+                        <small class="text-muted d-block mb-1">📥 دخل الشهر الفعلي (تراكم الدفعات)</small>
                         <h5 class="fw-bold text-success" id="customMonthIncome">0 ج.م</h5>
                     </div>
                     <div class="col-6">
@@ -550,7 +550,7 @@
                 <input type="text" id="editService" class="form-control" placeholder="اختر من الأزرار أو اكتب هنا...">
                 <div class="mt-2 d-flex flex-wrap">
                     <button type="button" class="quick-service-btn" onclick="setQuickService('حشو عصب')">🦷 حشو عصب</button>
-                    <button type="button" class="quick-service-btn" onclick="setQuickService('حشو عادى/تجميلي')">✨ حشو تجميلي</button>
+                    <button type="button" class="quick-service-btn" onclick="setQuickService('حشو عدى/تجميلي')">✨ حشو تجميلي</button>
                     <button type="button" class="quick-service-btn" onclick="setQuickService('طربوش زيركون')">💎 طربوش زيركون</button>
                     <button type="button" class="quick-service-btn" onclick="setQuickService('تنظيف جير وتلميع')">🧼 تنظيف وتلميع</button>
                     <button type="button" class="quick-service-btn" onclick="setQuickService('استشارة/متابعة')">📝 استشارة</button>
@@ -601,15 +601,14 @@
                                 <th>حذف</th>
                             </tr>
                         </thead>
-                        <tbody id="sessionPaymentsTableBody">
-                            </tbody>
+                        <tbody id="sessionPaymentsTableBody"></tbody>
                     </table>
                 </div>
             </div>
             
             <div class="col-12 mt-3">
                 <label class="form-label fw-bold text-primary">📸 صور الأشعة الرقمية</label>
-                <input type="file" id="xrayInput" class="form-control" accept="image/*" multiple onchange="uploadXray()">
+                <input type="file" id="xrayInput" class="form-control" accept="image/*" multiple campaigners onchange="uploadXray()">
                 <div id="xrayGallery" class="mt-2 d-flex flex-wrap p-2 border rounded" style="background-color: var(--border-color);"></div>
             </div>
 
@@ -759,7 +758,6 @@
             document.getElementById('editNextVisit').value = p.nextVisit || '';
             document.getElementById('phoneCallBtn').href = `tel:${p.phone || ''}`;
             
-            // تهيئة حقول دفع الجلسات الجديدة وإدخال تاريخ اليوم تلقائيًا كافتراضي
             document.getElementById('newSessionPayment').value = '';
             document.getElementById('newSessionDate').value = getSmartTodayString();
             document.getElementById('newSessionLabel').value = p.sessionNumber || '';
@@ -798,7 +796,6 @@
             calculateEditRemaining();
         }
 
-        // تحديث دالة إضافة دفعة جديدة لتدعم التاريخ واليوم المدخل يدويًا
         function addNewSessionPaymentRecord() {
             let id = document.getElementById('editId').value;
             let amountInput = document.getElementById('newSessionPayment').value.trim();
@@ -817,7 +814,6 @@
             let amount = parseFloat(amountInput);
             let label = labelInput ? labelInput : (document.getElementById('editSessionNumber').value || "جلسة علاجية");
             
-            // جلب اسم اليوم بناءً على التاريخ المختار يدوياً
             let fullDateTimeStamp = `${getArabicDayName(dateInput)} ${dateInput}`;
             
             if(!patients[id].sessionPayments) patients[id].sessionPayments = [];
@@ -825,10 +821,10 @@
             patients[id].sessionPayments.push({
                 amount: amount,
                 label: label,
-                dateTime: fullDateTimeStamp
+                dateTime: fullDateTimeStamp,
+                pureDate: dateInput // حفظ التاريخ المجرد بدقة لتسهيل الفلترة والتقارير
             });
             
-            // إعادة تصفير حقل المبلغ فقط والاحتفاظ بالتاريخ الافتراضي الحالي
             document.getElementById('newSessionPayment').value = '';
             document.getElementById('newSessionDate').value = getSmartTodayString();
             
@@ -955,23 +951,64 @@
         }
         function deleteExpense(id) { if(confirm('مسح؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
 
+        // التعديل الذكي: حساب الدخل اليومي بناءً على تواريخ الدفع الفعلي من سجل الجلسات المؤرخ
         function calculateDailyShares() {
             let date = document.getElementById('shareFilterDate').value; if(!date) return;
             document.getElementById('shareDayTitle').innerText = `أرباح يوم ${getArabicDayName(date)} (${date}):`;
-            let inc = 0; Object.values(patients).forEach(p => { if((p.dateCreated||'').split('T')[0] === date) inc += (parseFloat(p.paid)||0); });
-            document.getElementById('dayIncome').innerText = inc + " ج.م"; document.getElementById('dayDoctorShare').innerText = (inc * 0.7).toFixed(1) + " ج.م"; document.getElementById('dayClinicShare').innerText = (inc * 0.3).toFixed(1) + " ج.م";
-            let ti = Object.values(patients).reduce((s,p)=> s+(parseFloat(p.paid)||0), 0); let te = Object.values(expenses).reduce((s,e)=> s+(parseFloat(e.amount)||0), 0);
-            document.getElementById('monthTotalIncome').innerText = ti + " ج.م"; document.getElementById('monthTotalExpenses').innerText = te + " ج.م"; document.getElementById('monthNetProfit').innerText = (ti-te) + " ج.م";
+            
+            let inc = 0; 
+            Object.values(patients).forEach(p => { 
+                if (p.sessionPayments) {
+                    p.sessionPayments.forEach(pay => {
+                        // الفلترة بناءً على حقل pureDate أو استخراج التاريخ من الخانة المؤرخة
+                        let payDate = pay.pureDate || (pay.dateTime ? pay.dateTime.split(' ')[1] : '');
+                        if (payDate === date) {
+                            inc += (parseFloat(pay.amount) || 0);
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('dayIncome').innerText = inc + " ج.م"; 
+            document.getElementById('dayDoctorShare').innerText = (inc * 0.7).toFixed(1) + " ج.م"; 
+            document.getElementById('dayClinicShare').innerText = (inc * 0.3).toFixed(1) + " ج.م";
+            
+            let ti = 0;
+            Object.values(patients).forEach(p => {
+                if (p.sessionPayments) {
+                    p.sessionPayments.forEach(pay => { ti += (parseFloat(pay.amount) || 0); });
+                }
+            });
+            let te = Object.values(expenses).reduce((s,e)=> s+(parseFloat(e.amount)||0), 0);
+            document.getElementById('monthTotalIncome').innerText = ti + " ج.م"; 
+            document.getElementById('monthTotalExpenses').innerText = te + " ج.م"; 
+            document.getElementById('monthNetProfit').innerText = (ti-te) + " ج.م";
         }
 
+        // التعديل الذكي: تقرير الدخل الشهري المجمع بناءً على تواريخ دفعات المريض المحددة
         function calculateCustomMonthlyReport() {
             let y = document.getElementById('monthlyYearSelect').value; let m = document.getElementById('monthlyMonthSelect').value; let pref = `${y}-${m}`;
             document.getElementById('monthlyReportTitle').innerText = `تقرير شهر ${arabicMonthsNames[m]} ${y}:`;
-            let inc = 0; Object.values(patients).forEach(p => { if((p.dateCreated||'').startsWith(pref)) inc += (parseFloat(p.paid)||0); });
+            
+            let inc = 0; 
+            Object.values(patients).forEach(p => { 
+                if (p.sessionPayments) {
+                    p.sessionPayments.forEach(pay => {
+                        let payDate = pay.pureDate || (pay.dateTime ? pay.dateTime.split(' ')[1] : '');
+                        if (payDate && payDate.startsWith(pref)) {
+                            inc += (parseFloat(pay.amount) || 0);
+                        }
+                    });
+                }
+            });
+
             let exp = 0; Object.values(expenses).forEach(e => { if((e.dateCreated||'').startsWith(pref)) exp += (parseFloat(e.amount)||0); });
             let net = Math.max(0, inc - exp);
-            document.getElementById('customMonthIncome').innerText = inc + " ج.م"; document.getElementById('customMonthExpenses').innerText = exp + " ج.م"; document.getElementById('customMonthNetProfit').innerText = net + " ج.م";
-            document.getElementById('customMonthDoctorShare').innerText = (inc * 0.7).toFixed(1) + " ج.م"; document.getElementById('customMonthClinicShare').innerText = Math.max(0, net - (inc * 0.7)).toFixed(1) + " ج.م";
+            document.getElementById('customMonthIncome').innerText = inc + " ج.م"; 
+            document.getElementById('customMonthExpenses').innerText = exp + " ج.م"; 
+            document.getElementById('customMonthNetProfit').innerText = net + " ج.م";
+            document.getElementById('customMonthDoctorShare').innerText = (inc * 0.7).toFixed(1) + " ج.م"; 
+            document.getElementById('customMonthClinicShare').innerText = Math.max(0, net - (inc * 0.7)).toFixed(1) + " ج.م";
         }
     </script>
 </body>
