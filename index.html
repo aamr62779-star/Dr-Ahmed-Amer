@@ -384,19 +384,25 @@
                         </select>
                     </div>
                 </div>
-                <div class="row g-2">
+                
+                <div class="row g-2 mb-2">
                     <div class="col-6">
                         <div class="p-2 border rounded border-success bg-white">
-                            <small class="text-muted d-block small">🟢 مستلم من الحالات:</small>
+                            <small class="text-muted d-block small" style="font-size: 11px;">🟢 مطلوب للمعمل (من الحالات):</small>
                             <span class="fw-bold text-success" id="labPtMonthlyIncomeTotal">0 ج.م</span>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="p-2 border rounded border-danger bg-white">
-                            <small class="text-muted d-block small">🔴 مدفوع للمعمل:</small>
-                            <span class="fw-bold text-danger" id="labDirectMonthlyPaidTotal">0 ج.m</span>
+                            <small class="text-muted d-block small" style="font-size: 11px;">🔴 تم دفعه للمعمل فعلياً:</small>
+                            <span class="fw-bold text-danger" id="labDirectMonthlyPaidTotal">0 ج.م</span>
                         </div>
                     </div>
+                </div>
+                
+                <div class="p-2 border rounded text-center" id="labRemainingContainer" style="background-color: #FFFDE7; border-color: #FDE68A;">
+                    <small class="text-dark fw-bold d-block"><i class="bi bi-calculator"></i> المتبقي للمعمل (حساب المديونية الحالي للشهر):</small>
+                    <h5 class="fw-bold m-0 mt-1" id="labMonthlyRemainingTotal">0 ج.م</h5>
                 </div>
             </div>
 
@@ -747,7 +753,6 @@
     <script>
         const FIREBASE_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com/";
 
-        // قمنا بإضافة كائنين منفصلين للنوعين الجديدين من حسابات المعمل
         let patients = {}; let bookings = {}; let expenses = {}; 
         let labPatientIncome = {}; let labDirectPayments = {};
         let isDebtFilterActive = false; let currentActivePage = 'patients';
@@ -1030,9 +1035,9 @@
         function deleteBooking(id) { if(confirm('مسح؟')) { delete bookings[id]; pushToServer('bookings', bookings, displayBookings); } }
 
 
-        /* ================= الدوال الجديدة كلياً لصفحة المعمل المجزأة ================= */
+        /* ================= الدوال الخاصة بصفحة المعمل والمتبقي المستحدث ================= */
         
-        // ١. حفظ إيراد المعمل المستلم من مريض (يخصم من الأرباح والتقارير)
+        // ١. حفظ إيراد المعمل المستلم من مريض
         document.getElementById('labPatientIncomeForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "labPt_" + Date.now();
@@ -1050,7 +1055,7 @@
             });
         });
 
-        // ٢. حفظ مبلغ مدفوع للمعمل مباشرة (لا يخصم من الأرباح والتقارير)
+        // ٢. حفظ مبلغ مدفوع للمعمل مباشرة
         document.getElementById('labDirectPaymentForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let id = "labDir_" + Date.now();
@@ -1067,13 +1072,13 @@
             });
         });
 
-        // عرض حسابات وجداول صفحة المعمل وتحديث الفلتر
+        // عرض حسابات وجداول صفحة المعمل وتحديث خانة المتبقي
         function displayLabs() {
             let year = document.getElementById('labYearSelect').value;
             let month = document.getElementById('labMonthSelect').value;
             let prefix = `${year}-${month}`;
 
-            // أ. عرض جدول إيرادات الحالات
+            // أ. عرض جدول إيرادات الحالات (المطلوب للمعمل)
             let ptTable = document.getElementById('labPatientIncomeTable'); ptTable.innerHTML = '';
             let ptMonthlyTotal = 0;
             Object.values(labPatientIncome).reverse().forEach(item => {
@@ -1085,7 +1090,7 @@
             });
             if(ptTable.innerHTML === '') ptTable.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-2">لا توجد بيانات مستلمة لشهر ${month}</td></tr>`;
 
-            // ب. عرض جدول المدفوعات المباشرة للمعمل
+            // ب. عرض جدول المدفوعات المباشرة للمعمل (المدفوع)
             let directTable = document.getElementById('labDirectPaymentTable'); directTable.innerHTML = '';
             let directMonthlyTotal = 0;
             Object.values(labDirectPayments).reverse().forEach(item => {
@@ -1097,9 +1102,30 @@
             });
             if(directTable.innerHTML === '') directTable.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-2">لا توجد مبالغ مدفوعة لشهر ${month}</td></tr>`;
 
-            // ج. تحديث بطاقات الإحصاء في أعلى الصفحة
+            // ج. تحديث بطاقات الإحصاء وحساب المتبقي الفعلي للمعمل
             document.getElementById('labPtMonthlyIncomeTotal').innerText = ptMonthlyTotal + " ج.م";
             document.getElementById('labDirectMonthlyPaidTotal').innerText = directMonthlyTotal + " ج.م";
+
+            let labRemaining = ptMonthlyTotal - directMonthlyTotal;
+            let remainingEl = document.getElementById('labMonthlyRemainingTotal');
+            let containerEl = document.getElementById('labRemainingContainer');
+
+            remainingEl.innerText = labRemaining + " ج.م";
+            
+            // تغيير لون الخلفية بناءً على الحساب
+            if(labRemaining > 0) {
+                containerEl.style.backgroundColor = "#FEE2E2"; // أحمر خفيف لو مديون للمعمل
+                containerEl.style.borderColor = "#FCA5A5";
+                remainingEl.className = "fw-bold m-0 mt-1 text-danger";
+            } else if(labRemaining === 0) {
+                containerEl.style.backgroundColor = "#DCFCE7"; // أخضر خفيف لو الحساب خالص تماماً
+                containerEl.style.borderColor = "#86EFAC";
+                remainingEl.className = "fw-bold m-0 mt-1 text-success";
+            } else {
+                containerEl.style.backgroundColor = "#E0F2FE"; // أزرق خفيف لو ليك فلوس عند المعمل
+                containerEl.style.borderColor = "#7DD3FC";
+                remainingEl.className = "fw-bold m-0 mt-1 text-primary";
+            }
         }
 
         function deleteLabItem(nodeName, id) {
@@ -1111,7 +1137,7 @@
         }
 
 
-        /* ================= الحسابات المالية اليومية والشهرية المحدثة بالكامل لدمج الخصم الجديد ================= */
+        /* ================= الحسابات المالية اليومية والشهرية ================= */
 
         function displayExpenses() {
             let tbody = document.getElementById('expenseTable'); tbody.innerHTML = ''; let tot = 0;
@@ -1120,12 +1146,10 @@
         }
         function deleteExpense(id) { if(confirm('مسح؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
 
-        // أرباح اليوم والشهر التراكمي (صفحة النسب)
         function calculateDailyShares() {
             let date = document.getElementById('shareFilterDate').value; if(!date) return;
             document.getElementById('shareDayTitle').innerText = `أرباح يوم ${getArabicDayName(date)} (${date}):`;
             
-            // حساب الإيرادات القادمة من دفعات جلسات المرضى
             let grossIncome = 0; 
             let detailsTbody = document.getElementById('dailyIncomeDetailsTableBody'); detailsTbody.innerHTML = ''; 
             let hasPayments = false;
@@ -1143,32 +1167,26 @@
             });
             if(!hasPayments) { detailsTbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-2">لا توجد أي متحصلات مالية مسجلة في هذا اليوم</td></tr>`; }
 
-            // حساب مصروفات اليوم العادية
             let dayExpTotal = 0;
             Object.values(expenses).forEach(e => { if (e.dateCreated === date) { dayExpTotal += (parseFloat(e.amount) || 0); } });
 
-            // ⭐ الخصم الجديد الفعال: حساب إيراد معمل الحالات الخاص باليوم المحدّد لخصمه
             let dayLabPtDeduction = 0;
             Object.values(labPatientIncome).forEach(item => { if(item.dateCreated === date) { dayLabPtDeduction += (parseFloat(item.amount) || 0); } });
 
-            // المعادلة المحدثة: الصافي الخاضع للنسبة = إيراد المريض - مصروفات اليوم - إيرادات معمل الحالات
             let netIncome = grossIncome - dayExpTotal - dayLabPtDeduction;
             let incomeToDivide = Math.max(0, netIncome);
 
             document.getElementById('dayGrossIncome').innerText = grossIncome + " ج.م";
-            document.getElementById('dayExpenses').innerText = dayExpTotal + " ج.م";
-            document.getElementById('dayLabPtDeduction').innerText = dayLabPtDeduction + " ج.م"; // تم عرضه في الواجهة
+            document.getElementById('dayExpenses').innerText = dayExpTotal + " ج.m";
+            document.getElementById('dayLabPtDeduction').innerText = dayLabPtDeduction + " ج.م"; 
             document.getElementById('dayNetIncome').innerText = netIncome + " ج.م";
             
             document.getElementById('dayDoctorShare').innerText = (incomeToDivide * 0.7).toFixed(1) + " ج.م"; 
             document.getElementById('dayClinicShare').innerText = (incomeToDivide * 0.3).toFixed(1) + " ج.م";
             
-            // التقفيل التراكمي الشامل لكامل التطبيق
             let ti = 0;
             Object.values(patients).forEach(p => { if (p.sessionPayments) { p.sessionPayments.forEach(pay => { ti += (parseFloat(pay.amount) || 0); }); } });
             let te = Object.values(expenses).reduce((s,e)=> s+(parseFloat(e.amount)||0), 0);
-            
-            // حساب إجمالي كلي للنوع الأول من معامل المرضى المخصومة
             let tLabPt = Object.values(labPatientIncome).reduce((s,l)=> s+(parseFloat(l.amount)||0), 0);
 
             document.getElementById('monthTotalIncome').innerText = ti + " ج.م"; 
@@ -1177,12 +1195,10 @@
             document.getElementById('monthNetProfit').innerText = (ti - te - tLabPt) + " ج.م";
         }
 
-        // تقرير التقفيل المالي والخصم الشهري المجمع (صفحة التقارير)
         function calculateCustomMonthlyReport() {
             let y = document.getElementById('monthlyYearSelect').value; let m = document.getElementById('monthlyMonthSelect').value; let pref = `${y}-${m}`;
             document.getElementById('monthlyReportTitle').innerText = `تقرير شهر ${arabicMonthsNames[m]} ${y}:`;
             
-            // إيرادات الدفعات لهذا الشهر
             let inc = 0; 
             Object.values(patients).forEach(p => { 
                 if (p.sessionPayments) {
@@ -1193,14 +1209,11 @@
                 }
             });
 
-            // مصروفات الشهر العادية
             let exp = 0; Object.values(expenses).forEach(e => { if((e.dateCreated||'').startsWith(pref)) exp += (parseFloat(e.amount)||0); });
             
-            // ⭐ حساب خصم معامل المرضى لهذا الشهر المحدد لخصمه
             let monthLabPtDed = 0;
             Object.values(labPatientIncome).forEach(item => { if((item.dateCreated||'').startsWith(pref)) monthLabPtDed += (parseFloat(item.amount) || 0); });
 
-            // صافي الربح للشهر = الدخل - المصروفات - معامل الحالات
             let net = Math.max(0, inc - exp - monthLabPtDed);
             
             document.getElementById('customMonthIncome').innerText = inc + " ج.م"; 
@@ -1208,7 +1221,6 @@
             document.getElementById('customMonthLabPt').innerText = monthLabPtDed + " ج.م";
             document.getElementById('customMonthNetProfit').innerText = net + " ج.م";
             
-            // نسبة دكتور أحمد الثابتة من إيرادات العيادة الفعلية (70%)
             let docShare = inc * 0.7;
             document.getElementById('customMonthDoctorShare').innerText = docShare.toFixed(1) + " ج.م"; 
             document.getElementById('customMonthClinicShare').innerText = Math.max(0, net - docShare).toFixed(1) + " ج.م";
