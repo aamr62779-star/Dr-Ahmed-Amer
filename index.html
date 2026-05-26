@@ -326,6 +326,19 @@
         </div>
 
         <div id="page-labs">
+            <div class="card p-3 mb-3 border-warning" style="background-color: #FFFBE7;">
+                <h5 class="mb-2 text-dark fw-bold"><i class="bi bi-pencil-square"></i> 📌 مديونية ثابتة قديمة (حساب الشهور السابقة)</h5>
+                <p class="text-muted small mb-2">اكتب هنا إجمالي الفلوس المتبقية للمعمل عليك من الشهور اللي فاتت عشان تفضل محفوظة وتضاف للحساب الإجمالي:</p>
+                <div class="row g-2 align-items-center">
+                    <div class="col-7">
+                        <input type="number" id="labPreviousDebtInput" class="form-control text-center fw-bold text-danger" placeholder="المديونية السابقة المتراكمة ج.م">
+                    </div>
+                    <div class="col-5">
+                        <button type="button" onclick="savePreviousDebt()" class="btn btn-warning w-100 fw-bold btn-sm py-2">حفظ المديونية السابقة 💾</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="card p-3 mb-3 border-success" style="background-color: #F0FDF4;">
                 <h5 class="mb-2 text-success fw-bold"><i class="bi bi-arrow-down-circle-fill"></i> ١. إيرادات المعمل من الحالات (تُخصم من الأرباح والتقارير)</h5>
                 <p class="text-muted small mb-2">تسجيل الفلوس اللي الحالة/المريض دفعها لك كقيمة للمعمل (ستُخصم من صافي أرباح العيادة)</p>
@@ -385,24 +398,30 @@
                     </div>
                 </div>
                 
-                <div class="row g-2 mb-2">
-                    <div class="col-6">
+                <div class="row g-3 mb-2">
+                    <div class="col-4">
+                        <div class="p-2 border rounded border-secondary bg-white">
+                            <small class="text-muted d-block" style="font-size: 10px;">📌 مديونية سابقة:</small>
+                            <span class="fw-bold text-muted" id="labStatsPreviousDebt">0 ج.م</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
                         <div class="p-2 border rounded border-success bg-white">
-                            <small class="text-muted d-block small" style="font-size: 11px;">🟢 مطلوب للمعمل (من الحالات):</small>
+                            <small class="text-muted d-block" style="font-size: 10px;">🟢 مطلوب (هذا الشهر):</small>
                             <span class="fw-bold text-success" id="labPtMonthlyIncomeTotal">0 ج.م</span>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-4">
                         <div class="p-2 border rounded border-danger bg-white">
-                            <small class="text-muted d-block small" style="font-size: 11px;">🔴 تم دفعه للمعمل فعلياً:</small>
+                            <small class="text-muted d-block" style="font-size: 10px;">🔴 مدفوع (هذا الشهر):</small>
                             <span class="fw-bold text-danger" id="labDirectMonthlyPaidTotal">0 ج.م</span>
                         </div>
                     </div>
                 </div>
                 
                 <div class="p-2 border rounded text-center" id="labRemainingContainer" style="background-color: #FFFDE7; border-color: #FDE68A;">
-                    <small class="text-dark fw-bold d-block"><i class="bi bi-calculator"></i> المتبقي للمعمل (حساب المديونية الحالي للشهر):</small>
-                    <h5 class="fw-bold m-0 mt-1" id="labMonthlyRemainingTotal">0 ج.م</h5>
+                    <small class="text-dark fw-bold d-block"><i class="bi bi-calculator-fill"></i> إجمالي المتبقي الكلي للمعمل (شامل الحساب القديم + الحالي):</small>
+                    <h4 class="fw-bold m-0 mt-1" id="labMonthlyRemainingTotal">0 ج.م</h4>
                 </div>
             </div>
 
@@ -755,6 +774,7 @@
 
         let patients = {}; let bookings = {}; let expenses = {}; 
         let labPatientIncome = {}; let labDirectPayments = {};
+        let labPreviousDebt = 0; // الرصيد الافتتاحي أو مديونية الشهور السابقة للمعمل
         let isDebtFilterActive = false; let currentActivePage = 'patients';
 
         const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
@@ -833,7 +853,9 @@
                     expenses = data.expenses || {}; 
                     labPatientIncome = data.labPatientIncome || {};
                     labDirectPayments = data.labDirectPayments || {};
+                    labPreviousDebt = parseFloat(data.labPreviousDebt) || 0;
                 } 
+                document.getElementById('labPreviousDebtInput').value = labPreviousDebt;
                 showLoading(false); switchPage('patients'); 
             }).catch(err => { console.error(err); showLoading(false); }); 
         }
@@ -1035,8 +1057,21 @@
         function deleteBooking(id) { if(confirm('مسح؟')) { delete bookings[id]; pushToServer('bookings', bookings, displayBookings); } }
 
 
-        /* ================= الدوال الخاصة بصفحة المعمل والمتبقي المستحدث ================= */
+        /* ================= الدوال الخاصة بصفحة المعمل والمتبقي المستحدث القديم والشامل ================= */
         
+        // حفظ المديونية القديمة (الافتتاحية) سحابياً
+        function savePreviousDebt() {
+            let val = parseFloat(document.getElementById('labPreviousDebtInput').value) || 0;
+            labPreviousDebt = val;
+            showLoading(true, "جاري حفظ المديونية السابقة للمعمل...");
+            fetch(`${FIREBASE_URL}labPreviousDebt.json`, { method: 'PUT', body: JSON.stringify(labPreviousDebt) })
+            .then(() => {
+                showLoading(false);
+                displayLabs();
+                alert("تم حفظ المديونية السابقة بنجاح ومزامنتها سحابياً! ✅");
+            }).catch(err => { console.error(err); showLoading(false); });
+        }
+
         // ١. حفظ إيراد المعمل المستلم من مريض
         document.getElementById('labPatientIncomeForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -1072,13 +1107,16 @@
             });
         });
 
-        // عرض حسابات وجداول صفحة المعمل وتحديث خانة المتبقي
+        // عرض حسابات وجداول صفحة المعمل وتحديث خانة المتبقي الكلي الشامل
         function displayLabs() {
             let year = document.getElementById('labYearSelect').value;
             let month = document.getElementById('labMonthSelect').value;
             let prefix = `${year}-${month}`;
 
-            // أ. عرض جدول إيرادات الحالات (المطلوب للمعمل)
+            // تحديث بطاقة المديونية السابقة في العرض الثابت
+            document.getElementById('labStatsPreviousDebt').innerText = labPreviousDebt + " ج.م";
+
+            // أ. عرض جدول إيرادات الحالات (المطلوب للمعمل هذا الشهر)
             let ptTable = document.getElementById('labPatientIncomeTable'); ptTable.innerHTML = '';
             let ptMonthlyTotal = 0;
             Object.values(labPatientIncome).reverse().forEach(item => {
@@ -1090,7 +1128,7 @@
             });
             if(ptTable.innerHTML === '') ptTable.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-2">لا توجد بيانات مستلمة لشهر ${month}</td></tr>`;
 
-            // ب. عرض جدول المدفوعات المباشرة للمعمل (المدفوع)
+            // ب. عرض جدول المدفوعات المباشرة للمعمل (المدفوع هذا الشهر)
             let directTable = document.getElementById('labDirectPaymentTable'); directTable.innerHTML = '';
             let directMonthlyTotal = 0;
             Object.values(labDirectPayments).reverse().forEach(item => {
@@ -1102,27 +1140,28 @@
             });
             if(directTable.innerHTML === '') directTable.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-2">لا توجد مبالغ مدفوعة لشهر ${month}</td></tr>`;
 
-            // ج. تحديث بطاقات الإحصاء وحساب المتبقي الفعلي للمعمل
+            // ج. تحديث بطاقات الإحصاء وحساب المتبقي الكلي الشامل (القديم + الحالي)
             document.getElementById('labPtMonthlyIncomeTotal').innerText = ptMonthlyTotal + " ج.م";
             document.getElementById('labDirectMonthlyPaidTotal').innerText = directMonthlyTotal + " ج.م";
 
-            let labRemaining = ptMonthlyTotal - directMonthlyTotal;
+            // المعادلة المحدثة: الحساب القديم يدوياً مضاف عليه (مطلوب الشهر - مدفوع الشهر)
+            let labRemaining = labPreviousDebt + (ptMonthlyTotal - directMonthlyTotal);
             let remainingEl = document.getElementById('labMonthlyRemainingTotal');
             let containerEl = document.getElementById('labRemainingContainer');
 
             remainingEl.innerText = labRemaining + " ج.م";
             
-            // تغيير لون الخلفية بناءً على الحساب
+            // تغيير لون الخلفية بناءً على الحساب الإجمالي الشامل
             if(labRemaining > 0) {
-                containerEl.style.backgroundColor = "#FEE2E2"; // أحمر خفيف لو مديون للمعمل
+                containerEl.style.backgroundColor = "#FEE2E2"; // أحمر خفيف لو مديون للمعمل في المجمل
                 containerEl.style.borderColor = "#FCA5A5";
                 remainingEl.className = "fw-bold m-0 mt-1 text-danger";
             } else if(labRemaining === 0) {
-                containerEl.style.backgroundColor = "#DCFCE7"; // أخضر خفيف لو الحساب خالص تماماً
+                containerEl.style.backgroundColor = "#DCFCE7"; // أخضر خفيف لو الحساب خالص تماماً وصفر
                 containerEl.style.borderColor = "#86EFAC";
                 remainingEl.className = "fw-bold m-0 mt-1 text-success";
             } else {
-                containerEl.style.backgroundColor = "#E0F2FE"; // أزرق خفيف لو ليك فلوس عند المعمل
+                containerEl.style.backgroundColor = "#E0F2FE"; // أزرق خفيف لو المعمل هو اللي مديون لك بفلوس زيادة
                 containerEl.style.borderColor = "#7DD3FC";
                 remainingEl.className = "fw-bold m-0 mt-1 text-primary";
             }
@@ -1177,7 +1216,7 @@
             let incomeToDivide = Math.max(0, netIncome);
 
             document.getElementById('dayGrossIncome').innerText = grossIncome + " ج.م";
-            document.getElementById('dayExpenses').innerText = dayExpTotal + " ج.m";
+            document.getElementById('dayExpenses').innerText = dayExpTotal + " ج.م";
             document.getElementById('dayLabPtDeduction').innerText = dayLabPtDeduction + " ج.م"; 
             document.getElementById('dayNetIncome').innerText = netIncome + " ج.م";
             
