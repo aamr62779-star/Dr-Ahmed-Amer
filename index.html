@@ -9,13 +9,13 @@
     <style>
         :root {
             /* تصميم سماوي مبهج وفاتح بالكامل */
-            --brand-blue: #0284C7; /* أزرق سماوي عميق للنصوص الهامة */
-            --brand-cyan: #38BDF8; /* سماوي فاتح زاهي */
-            --brand-light: #F0F9FF; /* خلفية سماوية ناعمة جداً */
+            --brand-blue: #0284C7; 
+            --brand-cyan: #38BDF8; 
+            --brand-light: #F0F9FF; 
             --text-dark: #0369A1;
             --bg-main: #F0F9FF;
             --bg-card: #ffffff;
-            --text-main: #1E293B; /* رمادي داكن جداً ليكون الكلام واضحاً جداً */
+            --text-main: #1E293B; 
             --border-color: rgba(56, 189, 248, 0.25);
             --nav-bg: #ffffff;
         }
@@ -40,7 +40,7 @@
         .form-control, .form-select {
             background-color: var(--bg-card);
             color: var(--text-main);
-            border: 1px solid #BAE6FD; /* حدود سماوية واضحة */
+            border: 1px solid #BAE6FD; 
         }
         .form-control:focus, .form-select:focus {
             background-color: var(--bg-card);
@@ -73,7 +73,7 @@
             margin-bottom: 5px;
         }
         
-        #appContent, #page-patients, #page-appointments, #page-bookings, #page-labs, #page-expenses, #page-share, #page-monthly, #patientProfile { display: none; }
+        #appContent, #page-patients, #page-monthly-patients, #page-appointments, #page-bookings, #page-labs, #page-expenses, #page-share, #page-monthly, #patientProfile { display: none; }
         .xray-thumb, .invoice-thumb { width: 90px; height: 90px; object-fit: cover; border-radius: 12px; margin: 5px; cursor: pointer; border: 2px solid var(--brand-cyan); }
         .invoice-thumb { border-color: #ef4444; }
         
@@ -90,14 +90,13 @@
             padding: 12px 0; 
             border-top: 1px solid var(--border-color);
         }
-        .nav-item-btn { background: none; border: none; color: #64748B; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 14%; transition: all 0.2s ease; }
-        .nav-item-btn i { font-size: 18px; margin-bottom: 3px; }
+        .nav-item-btn { background: none; border: none; color: #64748B; font-size: 9px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 12%; transition: all 0.2s ease; }
+        .nav-item-btn i { font-size: 16px; margin-bottom: 3px; }
         .nav-item-btn.active { color: var(--brand-blue); transform: translateY(-2px); }
         .nav-item-btn.active i { color: var(--brand-blue); }
         
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(240, 249, 255, 0.95); z-index: 2000; display: flex; justify-content: center; align-items: center; font-weight: bold; }
 
-        /* تعديل الجداول لتكون واضحة وفاتحة تماماً وبدون لون أسود */
         .table { color: var(--text-main) !important; }
         .table-custom-header { background-color: #E0F2FE !important; color: #0369A1 !important; font-weight: bold; }
         .table-primary { background-color: #E0F2FE !important; color: #0369A1 !important; }
@@ -218,6 +217,55 @@
                             </tr>
                         </thead>
                         <tbody id="patientTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-monthly-patients">
+            <div class="card p-3 mb-3 text-center border-info" style="background-color: #F0F9FF;">
+                <h5 class="text-primary fw-bold mb-2"><i class="bi bi-calendar3"></i> تصفية واستعراض المرضى حسب الشهور</h5>
+                <p class="text-muted small mb-3">اختر الشهر والسنة لعرض الحالات المسجلة فيه والضغط على الاسم لفتح ملف المريض مباشرة</p>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <select id="ptYearSelect" class="form-select text-center fw-bold text-primary" onchange="displayMonthlyPatients()">
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <select id="ptMonthSelect" class="form-select text-center fw-bold text-primary" onchange="displayMonthlyPatients()">
+                            <option value="01">يناير (01)</option>
+                            <option value="02">فبراير (02)</option>
+                            <option value="03">مارس (03)</option>
+                            <option value="04">أبريل (04)</option>
+                            <option value="05" selected>مايو (05)</option>
+                            <option value="06">يونيو (06)</option>
+                            <option value="07">يوليو (07)</option>
+                            <option value="08">أغسطس (08)</option>
+                            <option value="09">سبتمبر (09)</option>
+                            <option value="10">أكتوبر (10)</option>
+                            <option value="11">نوفمبر (11)</option>
+                            <option value="12">ديسمبر (12)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-2 text-secondary fw-bold" id="monthlyCountLabel" style="font-size: 14px;"></div>
+            </div>
+
+            <div class="card p-2">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0" style="font-size: 13px;">
+                        <thead>
+                            <tr class="table-custom-header">
+                                <th>اسم المريض (اضغط للفتح)</th>
+                                <th>تاريخ التسجيل</th>
+                                <th>الحالة المالية</th>
+                                <th>ملف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthlyPatientsTableBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -402,7 +450,7 @@
                     </div>
                     <div class="col-6">
                         <small class="text-muted d-block">📤 مصروفات اليوم</small>
-                        <h5 class="fw-bold text-danger mt-1" id="dayExpenses">0 ج.m</h5>
+                        <h5 class="fw-bold text-danger mt-1" id="dayExpenses">0 ج.م</h5>
                     </div>
                     <div class="col-12 mt-2 border-top pt-2">
                         <small class="text-dark fw-bold d-block">💰 صافي الدخل الخاضع للنسبة</small>
@@ -510,6 +558,7 @@
 
         <div class="nav-bottom" id="mainNavbar">
             <button class="nav-item-btn active" onclick="switchPage('patients')"><i class="bi bi-people-fill"></i>المرضى</button>
+            <button class="nav-item-btn" onclick="switchPage('monthly-patients')"><i class="bi bi-calendar3"></i>مرضى الشهر</button>
             <button class="nav-item-btn" onclick="switchPage('appointments')"><i class="bi bi-calendar-event-fill"></i>المتابعات</button>
             <button class="nav-item-btn" onclick="switchPage('bookings')"><i class="bi bi-telephone-inbound-fill"></i>الحجوزات</button>
             <button class="nav-item-btn" onclick="switchPage('labs')"><i class="bi bi-box-seam-fill"></i>المعمل</button>
@@ -648,7 +697,7 @@
     <script>
         const FIREBASE_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com/";
 
-        let patients = {}; let bookings = {}; let labs = {}; let expenses = {}; let isDebtFilterActive = false;
+        let patients = {}; let bookings = {}; let labs = {}; let expenses = {}; let isDebtFilterActive = false; let currentActivePage = 'patients';
 
         const arabicDays = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
         const arabicMonthsNames = {
@@ -718,6 +767,8 @@
                 document.getElementById('monthlyMonthSelect').value = (now.getMonth() + 1).toString().padStart(2, '0');
                 document.getElementById('labYearSelect').value = now.getFullYear().toString();
                 document.getElementById('labMonthSelect').value = (now.getMonth() + 1).toString().padStart(2, '0');
+                document.getElementById('ptYearSelect').value = now.getFullYear().toString();
+                document.getElementById('ptMonthSelect').value = (now.getMonth() + 1).toString().padStart(2, '0');
                 showLoading(true, "جاري فتح الملفات السحابية لوحدة المعالجة..."); syncDataFromServer();
             } else { document.getElementById('loginError').style.display = 'block'; document.getElementById('passwordInput').value = ''; }
         }
@@ -727,19 +778,23 @@
         function pushToServer(node, updatedData, callback) { showLoading(true, "جاري المزامنة المشتركة أونلاين..."); fetch(`${FIREBASE_URL}${node}.json`, { method: 'PUT', body: JSON.stringify(updatedData) }).then(res => res.json()).then(() => { showLoading(false); if(callback) callback(); }).catch(err => { console.error(err); showLoading(false); }); }
 
         function switchPage(pageName) {
-            document.getElementById('page-patients').style.display = 'none'; document.getElementById('page-appointments').style.display = 'none';
-            document.getElementById('page-bookings').style.display = 'none'; document.getElementById('page-labs').style.display = 'none';
-            document.getElementById('page-expenses').style.display = 'none'; document.getElementById('page-share').style.display = 'none';
-            document.getElementById('page-monthly').style.display = 'none'; document.getElementById('patientProfile').style.display = 'none';
+            currentActivePage = pageName;
+            document.getElementById('page-patients').style.display = 'none'; document.getElementById('page-monthly-patients').style.display = 'none';
+            document.getElementById('page-appointments').style.display = 'none'; document.getElementById('page-bookings').style.display = 'none'; 
+            document.getElementById('page-labs').style.display = 'none'; document.getElementById('page-expenses').style.display = 'none'; 
+            document.getElementById('page-share').style.display = 'none'; document.getElementById('page-monthly').style.display = 'none'; 
+            document.getElementById('patientProfile').style.display = 'none';
+            
             let buttons = document.querySelectorAll('.nav-item-btn'); buttons.forEach(b => b.classList.remove('active'));
 
             if(pageName === 'patients') { document.getElementById('page-patients').style.display = 'block'; buttons[0].classList.add('active'); displayPatients(); } 
-            else if(pageName === 'appointments') { document.getElementById('page-appointments').style.display = 'block'; buttons[1].classList.add('active'); displayDailyAppointments(); } 
-            else if(pageName === 'bookings') { document.getElementById('page-bookings').style.display = 'block'; buttons[2].classList.add('active'); displayBookings(); } 
-            else if(pageName === 'labs') { document.getElementById('page-labs').style.display = 'block'; buttons[3].classList.add('active'); displayLabs(); } 
-            else if(pageName === 'expenses') { document.getElementById('page-expenses').style.display = 'block'; buttons[4].classList.add('active'); displayExpenses(); } 
-            else if(pageName === 'share') { document.getElementById('page-share').style.display = 'block'; buttons[5].classList.add('active'); calculateDailyShares(); } 
-            else if(pageName === 'monthly') { document.getElementById('page-monthly').style.display = 'block'; buttons[6].classList.add('active'); calculateCustomMonthlyReport(); }
+            else if(pageName === 'monthly-patients') { document.getElementById('page-monthly-patients').style.display = 'block'; buttons[1].classList.add('active'); displayMonthlyPatients(); }
+            else if(pageName === 'appointments') { document.getElementById('page-appointments').style.display = 'block'; buttons[2].classList.add('active'); displayDailyAppointments(); } 
+            else if(pageName === 'bookings') { document.getElementById('page-bookings').style.display = 'block'; buttons[3].classList.add('active'); displayBookings(); } 
+            else if(pageName === 'labs') { document.getElementById('page-labs').style.display = 'block'; buttons[4].classList.add('active'); displayLabs(); } 
+            else if(pageName === 'expenses') { document.getElementById('page-expenses').style.display = 'block'; buttons[5].classList.add('active'); displayExpenses(); } 
+            else if(pageName === 'share') { document.getElementById('page-share').style.display = 'block'; buttons[6].classList.add('active'); calculateDailyShares(); } 
+            else if(pageName === 'monthly') { document.getElementById('page-monthly').style.display = 'block'; buttons[7].classList.add('active'); calculateCustomMonthlyReport(); }
         }
 
         function toggleDebtFilter() {
@@ -772,8 +827,47 @@
             });
         }
 
+        // دالة عرض وتصفية مرضى الشهر المحدّد بالكامل
+        function displayMonthlyPatients() {
+            let tbody = document.getElementById('monthlyPatientsTableBody'); tbody.innerHTML = '';
+            let selectedYear = document.getElementById('ptYearSelect').value;
+            let selectedMonth = document.getElementById('ptMonthSelect').value;
+            let prefix = `${selectedYear}-${selectedMonth}`;
+            
+            let count = 0;
+            let keys = Object.keys(patients).reverse();
+            
+            keys.forEach(id => {
+                let p = patients[id];
+                let pDate = p.dateCreated || new Date(parseInt(p.id.split('_')[1])).toISOString().split('T')[0];
+                
+                if(pDate && pDate.startsWith(prefix)) {
+                    count++;
+                    let remVal = parseFloat(p.remaining) || 0;
+                    let financialBadge = remVal <= 0 ? `<span class="status-badge-paid"><i class="bi bi-check-circle-fill"></i> خالص</span>` : `<span class="status-badge-debt">مديونية: ${remVal} ج.م</span>`;
+                    let phoneHtml = p.phone ? `<br><a href="tel:${p.phone}" class="phone-call-link" style="font-size:11px;"><i class="bi bi-telephone-outbound-fill"></i> ${p.phone}</a>` : '';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong class="patient-clickable-link" onclick="openPatientProfile('${id}')">${p.name}</strong>${phoneHtml}</td>
+                            <td class="text-muted" style="font-size:11px;">${getArabicDayName(pDate)}<br>${pDate}</td>
+                            <td>${financialBadge}</td>
+                            <td><button type="button" class="btn btn-sm btn-primary fw-bold" onclick="openPatientProfile('${id}')">👁️</button></td>
+                        </tr>`;
+                }
+            });
+            
+            document.getElementById('monthlyCountLabel').innerText = `📊 إجمالي الحالات المسجلة في هذا الشهر: ${count} مريض`;
+            if(count === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">لا توجد حالات مسجلة في هذا الشهر حتى الآن</td></tr>`;
+            }
+        }
+
         function openPatientProfile(id) {
-            document.getElementById('page-patients').style.display = 'none'; document.getElementById('patientProfile').style.display = 'block';
+            document.getElementById('page-patients').style.display = 'none';
+            document.getElementById('page-monthly-patients').style.display = 'none';
+            document.getElementById('patientProfile').style.display = 'block';
+            
             let p = patients[id]; document.getElementById('profileTitle').innerText = `الملف السحابي: ${p.name}`;
             document.getElementById('editId').value = id; document.getElementById('editName').value = p.name;
             document.getElementById('editService').value = p.service || ''; document.getElementById('editTotal').value = p.total || 0;
@@ -894,7 +988,11 @@
 
         function deleteXray(id, idx) { if(confirm('حذف؟')) { patients[id].xrays.splice(idx, 1); pushToServer('patients', patients, () => { displayXrays(id); }); } }
         function deletePatientRecord() { if(confirm('حذف نهائي؟')) { delete patients[document.getElementById('editId').value]; pushToServer('patients', patients, backToMain); } }
-        function backToMain() { switchPage('patients'); }
+        
+        function backToMain() { 
+            // الرجوع التلقائي للصفحة التي جاء منها الطبيب (المرضى أو مرضى الشهر)
+            switchPage(currentActivePage); 
+        }
 
         function displayDailyAppointments() {
             let selectedDate = document.getElementById('appointmentFilterDate').value; let tbody = document.getElementById('dailyAppointmentsTable'); tbody.innerHTML = '';
