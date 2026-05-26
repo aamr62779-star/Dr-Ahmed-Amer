@@ -8,26 +8,16 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         :root {
-            --brand-blue: #0A4D68;
-            --brand-cyan: #05BFDB;
-            --brand-light: #F0F8FF;
-            --text-dark: #088395;
-            --bg-main: #F0F8FF;
+            /* تصميم سماوي مبهج وفاتح بالكامل */
+            --brand-blue: #0284C7; /* أزرق سماوي عميق للنصوص الهامة */
+            --brand-cyan: #38BDF8; /* سماوي فاتح زاهي */
+            --brand-light: #F0F9FF; /* خلفية سماوية ناعمة جداً */
+            --text-dark: #0369A1;
+            --bg-main: #F0F9FF;
             --bg-card: #ffffff;
-            --text-main: #333333;
-            --border-color: rgba(5, 191, 219, 0.15);
+            --text-main: #1E293B; /* رمادي داكن جداً ليكون الكلام واضحاً جداً */
+            --border-color: rgba(56, 189, 248, 0.25);
             --nav-bg: #ffffff;
-        }
-
-        [data-theme="dark"] {
-            --brand-blue: #0A4D68;
-            --brand-cyan: #05BFDB;
-            --bg-main: #0B1320;
-            --bg-card: #152033;
-            --text-main: #E2E8F0;
-            --border-color: rgba(5, 191, 219, 0.3);
-            --nav-bg: #152033;
-            --text-dark: #05BFDB;
         }
 
         body { 
@@ -41,34 +31,32 @@
         
         .card { 
             border-radius: 16px; 
-            box-shadow: 0 6px 16px rgba(10, 77, 104, 0.07); 
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.06); 
             border: 1px solid var(--border-color);
             background-color: var(--bg-card);
             color: var(--text-main);
-            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .form-control, .form-select {
             background-color: var(--bg-card);
             color: var(--text-main);
-            border: 1px solid var(--border-color);
+            border: 1px solid #BAE6FD; /* حدود سماوية واضحة */
         }
         .form-control:focus, .form-select:focus {
             background-color: var(--bg-card);
             color: var(--text-main);
-            border-color: var(--brand-cyan);
-            box-shadow: 0 0 0 0.25rem rgba(5, 191, 219, 0.25);
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25);
         }
         
-        .text-primary { color: var(--brand-cyan) !important; }
-        [data-theme="light"] .text-primary { color: var(--brand-blue) !important; }
+        .text-primary { color: var(--brand-blue) !important; }
         .text-secondary { color: var(--text-dark) !important; }
         
-        .btn-primary { background-color: var(--brand-blue); border: none; }
-        .btn-primary:hover { background-color: #083C52; }
+        .btn-primary { background-color: var(--brand-blue); border: none; font-weight: bold; }
+        .btn-primary:hover { background-color: #0369A1; }
         
-        .btn-success { background-color: var(--brand-cyan); border: none; color: #fff; }
-        .btn-success:hover { background-color: #04A9C2; color: #fff; }
+        .btn-success { background-color: #0EA5E9; border: none; color: #fff; font-weight: bold; }
+        .btn-success:hover { background-color: #0284C7; color: #fff; }
         
         .login-container { max-width: 400px; margin: 60px auto; padding: 30px !important; }
         
@@ -76,7 +64,7 @@
             max-width: 140px;
             height: auto;
             margin-bottom: 15px;
-            filter: drop-shadow(0px 4px 8px rgba(5, 191, 219, 0.3));
+            filter: drop-shadow(0px 4px 6px rgba(56, 189, 248, 0.4));
         }
 
         .clinic-logo-header {
@@ -87,7 +75,7 @@
         
         #appContent, #page-patients, #page-appointments, #page-bookings, #page-labs, #page-expenses, #page-share, #page-monthly, #patientProfile { display: none; }
         .xray-thumb, .invoice-thumb { width: 90px; height: 90px; object-fit: cover; border-radius: 12px; margin: 5px; cursor: pointer; border: 2px solid var(--brand-cyan); }
-        .invoice-thumb { border-color: #dc3545; }
+        .invoice-thumb { border-color: #ef4444; }
         
         .nav-bottom { 
             position: fixed; 
@@ -95,51 +83,44 @@
             left: 0; 
             right: 0; 
             background-color: var(--nav-bg); 
-            box-shadow: 0 -4px 20px rgba(10, 77, 104, 0.12); 
+            box-shadow: 0 -4px 16px rgba(2, 132, 199, 0.08); 
             z-index: 1000; 
             display: flex; 
             justify-content: space-around; 
             padding: 12px 0; 
             border-top: 1px solid var(--border-color);
-            transition: background-color 0.3s ease;
         }
-        .nav-item-btn { background: none; border: none; color: #88A4B0; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 14%; transition: all 0.2s ease; }
+        .nav-item-btn { background: none; border: none; color: #64748B; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 14%; transition: all 0.2s ease; }
         .nav-item-btn i { font-size: 18px; margin-bottom: 3px; }
-        .nav-item-btn.active { color: var(--brand-cyan); transform: translateY(-2px); }
-        [data-theme="light"] .nav-item-btn.active { color: var(--brand-blue); }
-        .nav-item-btn.active i { color: var(--brand-cyan); }
+        .nav-item-btn.active { color: var(--brand-blue); transform: translateY(-2px); }
+        .nav-item-btn.active i { color: var(--brand-blue); }
         
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 19, 32, 0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; font-weight: bold; }
-        [data-theme="light"] .loading-overlay { background: rgba(240, 248, 255, 0.9); }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(240, 249, 255, 0.95); z-index: 2000; display: flex; justify-content: center; align-items: center; font-weight: bold; }
 
+        /* تعديل الجداول لتكون واضحة وفاتحة تماماً وبدون لون أسود */
         .table { color: var(--text-main) !important; }
-        .table-dark { background-color: var(--brand-blue) !important; color: #fff !important; }
-        .table-primary { background-color: rgba(5, 191, 219, 0.15) !important; color: var(--text-main) !important; }
-        .table-info { background-color: var(--border-color) !important; color: var(--text-main) !important; }
+        .table-custom-header { background-color: #E0F2FE !important; color: #0369A1 !important; font-weight: bold; }
+        .table-primary { background-color: #E0F2FE !important; color: #0369A1 !important; }
+        .table-info { background-color: #F0F9FF !important; color: #0369A1 !important; }
         
-        .patient-clickable-link { color: var(--brand-cyan); cursor: pointer; text-decoration: none; font-weight: 600; }
-        [data-theme="light"] .patient-clickable-link { color: var(--brand-blue); }
-        .patient-clickable-link:hover { text-decoration: underline; }
+        .patient-clickable-link { color: var(--brand-blue); cursor: pointer; text-decoration: none; font-weight: 600; }
+        .patient-clickable-link:hover { text-decoration: underline; color: #0369A1; }
         
-        .phone-call-link { color: #4FACFE; text-decoration: none; font-weight: 500; display: inline-block; margin-top: 2px; }
-        [data-theme="light"] .phone-call-link { color: #2196F3; }
+        .phone-call-link { color: #0284C7; text-decoration: none; font-weight: 500; display: inline-block; margin-top: 2px; }
         .phone-call-link:hover { text-decoration: underline; }
         
-        .day-badge { background-color: rgba(5, 191, 219, 0.12); color: var(--brand-cyan); padding: 5px 12px; border-radius: 8px; font-weight: bold; font-size: 13px; display: inline-block; margin-top: 5px; }
-        .report-card { border-right: 5px solid var(--brand-cyan); background-color: var(--bg-card); }
+        .day-badge { background-color: #E0F2FE; color: #0369A1; padding: 5px 12px; border-radius: 8px; font-weight: bold; font-size: 13px; display: inline-block; margin-top: 5px; }
+        .report-card { border-right: 5px solid var(--brand-blue); background-color: var(--bg-card); }
         
-        .status-badge-paid { background-color: #2E7D32; color: #E8F5E9; font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 4px; }
-        [data-theme="light"] .status-badge-paid { background-color: #E8F5E9; color: #2E7D32; }
-        .status-badge-debt { background-color: #C62828; color: #FFEBEE; font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 4px; }
-        [data-theme="light"] .status-badge-debt { background-color: #FFEBEE; color: #C62828; }
+        .status-badge-paid { background-color: #DCFCE7; color: #166534; font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 4px; }
+        .status-badge-debt { background-color: #FEE2E2; color: #991B1B; font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 4px; }
         
-        .session-badge { background-color: #F57F17; color: #FFF8E1; border: 1px solid #FFECB3; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: bold; display: inline-block; }
-        [data-theme="light"] .session-badge { background-color: #FFF8E1; color: #F57F17; }
+        .session-badge { background-color: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: bold; display: inline-block; }
         
         .quick-service-btn {
-            background-color: var(--bg-card);
-            border: 1px solid var(--brand-cyan);
-            color: var(--text-main);
+            background-color: #F0F9FF;
+            border: 1px solid #38BDF8;
+            color: #0369A1;
             font-size: 11px;
             font-weight: 600;
             padding: 5px 10px;
@@ -148,30 +129,9 @@
             transition: all 0.2s ease;
         }
         .quick-service-btn:active, .quick-service-btn:hover {
-            background-color: var(--brand-cyan);
+            background-color: var(--brand-blue);
             color: white;
         }
-
-        .top-action-btn {
-            position: absolute;
-            top: 15px;
-            background-color: var(--bg-card);
-            border: 1px solid var(--brand-cyan);
-            color: var(--text-main);
-            height: 40px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            z-index: 1010;
-            transition: all 0.3s ease;
-            padding: 0 12px;
-            font-weight: bold;
-        }
-        #themeBtn { left: 15px; width: 40px; border-radius: 50%; font-size: 18px; }
 
         .btn-whatsapp-followup { background-color: #25D366; color: white; border: none; font-weight: bold; }
         .btn-whatsapp-followup:hover { background-color: #1ebd58; color: white; }
@@ -179,25 +139,23 @@
         .btn-whatsapp-care:hover { background-color: #0a6b5f; color: white; }
     </style>
 </head>
-<body class="container" data-theme="dark">
-
-    <button type="button" class="top-action-btn" onclick="toggleTheme()" id="themeBtn" title="تبديل وضع الإضاءة">☀️</button>
+<body class="container">
 
     <div id="loadingOverlay" class="loading-overlay" style="display: none;">
         <div class="text-center">
-            <div class="spinner-border text-info" role="status"></div>
+            <div class="spinner-border text-primary" role="status"></div>
             <div class="mt-2 text-primary" id="loadingText">جاري التحديث السحابي لـ Amer Dent...</div>
         </div>
     </div>
 
     <div id="loginScreen" class="card p-4 text-center login-container">
         <svg class="clinic-logo" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
-            <rect width="100%" height="100%" fill="#000000" rx="40"/>
-            <path d="M190 220 C180 180, 240 140, 270 210 C290 250, 280 280, 240 280 C200 280, 200 260, 190 220 Z" fill="none" stroke="#05BFDB" stroke-width="12" stroke-linecap="round"/>
-            <path d="M140 240 C130 350, 180 430, 210 450 C240 430, 250 380, 230 350 C210 320, 150 310, 140 240 Z" fill="none" stroke="#0A4D68" stroke-width="14" stroke-linecap="round"/>
-            <path d="M220 285 C230 250, 280 250, 290 285 C295 310, 280 340, 260 360 C240 340, 215 310, 220 285 Z" fill="none" stroke="#05BFDB" stroke-width="10" stroke-linecap="round"/>
-            <text x="310" y="310" font-family="'Segoe UI', Helvetica, Arial" font-weight="900" font-size="52" fill="#05BFDB" letter-spacing="2">AMER <tspan fill="#0A4D68">DENT</tspan></text>
-            <text x="312" y="355" font-family="'Segoe UI', Helvetica, Arial" font-weight="bold" font-size="20" fill="#05BFDB" letter-spacing="1">DR.AHMED HASSAN</text>
+            <rect width="100%" height="100%" fill="#F0F9FF" rx="40"/>
+            <path d="M190 220 C180 180, 240 140, 270 210 C290 250, 280 280, 240 280 C200 280, 200 260, 190 220 Z" fill="none" stroke="#38BDF8" stroke-width="12" stroke-linecap="round"/>
+            <path d="M140 240 C130 350, 180 430, 210 450 C240 430, 250 380, 230 350 C210 320, 150 310, 140 240 Z" fill="none" stroke="#0284C7" stroke-width="14" stroke-linecap="round"/>
+            <path d="M220 285 C230 250, 280 250, 290 285 C295 310, 280 340, 260 360 C240 340, 215 310, 220 285 Z" fill="none" stroke="#38BDF8" stroke-width="10" stroke-linecap="round"/>
+            <text x="310" y="310" font-family="'Segoe UI', Helvetica, Arial" font-weight="900" font-size="52" fill="#38BDF8" letter-spacing="2">AMER <tspan fill="#0284C7">DENT</tspan></text>
+            <text x="312" y="355" font-family="'Segoe UI', Helvetica, Arial" font-weight="bold" font-size="20" fill="#0369A1" letter-spacing="1">DR.AHMED HASSAN</text>
         </svg>
         <h4 class="text-primary fw-bold mb-2">AMER DENT</h4>
         <p class="text-muted small">نظام إدارة العيادة الذكي</p>
@@ -211,12 +169,12 @@
     <div id="appContent">
         <div class="text-center mb-3">
             <svg class="clinic-logo-header" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#000000" rx="40"/>
-                <path d="M190 220 C180 180, 240 140, 270 210 C290 250, 280 280, 240 280 C200 280, 200 260, 190 220 Z" fill="none" stroke="#05BFDB" stroke-width="12" stroke-linecap="round"/>
-                <path d="M140 240 C130 350, 180 430, 210 450 C240 430, 250 380, 230 350 C210 320, 150 310, 140 240 Z" fill="none" stroke="#0A4D68" stroke-width="14" stroke-linecap="round"/>
-                <path d="M220 285 C230 250, 280 250, 290 285 C295 310, 280 340, 260 360 C240 340, 215 310, 220 285 Z" fill="none" stroke="#05BFDB" stroke-width="10" stroke-linecap="round"/>
-                <text x="310" y="310" font-family="'Segoe UI', Helvetica, Arial" font-weight="900" font-size="52" fill="#05BFDB" letter-spacing="2">AMER <tspan fill="#0A4D68">DENT</tspan></text>
-                <text x="312" y="355" font-family="'Segoe UI', Helvetica, Arial" font-weight="bold" font-size="20" fill="#05BFDB" letter-spacing="1">DR.AHMED HASSAN</text>
+                <rect width="100%" height="100%" fill="#F0F9FF" rx="40"/>
+                <path d="M190 220 C180 180, 240 140, 270 210 C290 250, 280 280, 240 280 C200 280, 200 260, 190 220 Z" fill="none" stroke="#38BDF8" stroke-width="12" stroke-linecap="round"/>
+                <path d="M140 240 C130 350, 180 430, 210 450 C240 430, 250 380, 230 350 C210 320, 150 310, 140 240 Z" fill="none" stroke="#0284C7" stroke-width="14" stroke-linecap="round"/>
+                <path d="M220 285 C230 250, 280 250, 290 285 C295 310, 280 340, 260 360 C240 340, 215 310, 220 285 Z" fill="none" stroke="#38BDF8" stroke-width="10" stroke-linecap="round"/>
+                <text x="310" y="310" font-family="'Segoe UI', Helvetica, Arial" font-weight="900" font-size="52" fill="#38BDF8" letter-spacing="2">AMER <tspan fill="#0284C7">DENT</tspan></text>
+                <text x="312" y="355" font-family="'Segoe UI', Helvetica, Arial" font-weight="bold" font-size="20" fill="#0369A1" letter-spacing="1">DR.AHMED HASSAN</text>
             </svg>
             <h4 class="text-primary fw-bold mb-0">AMER DENT</h4>
             <p class="text-muted small" style="font-size: 11px;">د. أحمد حسن عامر - نظام الإدارة السحابي 🌐</p>
@@ -250,8 +208,8 @@
             <div class="card p-2">
                 <div class="table-responsive">
                     <table class="table table-striped align-middle mb-0" style="font-size: 13px;">
-                        <thead class="table-dark">
-                            <tr>
+                        <thead>
+                            <tr class="table-custom-header">
                                 <th>الاسم ورقم التواصل</th>
                                 <th>الزيارة</th>
                                 <th>المدفوع</th>
@@ -278,8 +236,8 @@
                 <h6 class="p-2 text-secondary fw-bold" id="appointmentDayLabel">زيارات اليوم:</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered align-middle mb-0" style="font-size: 13px;">
-                        <thead class="table-primary">
-                            <tr>
+                        <thead>
+                            <tr class="table-custom-header">
                                 <th>المريض (اضغط للفتح)</th>
                                 <th>الشغل ورقم الجلسة اليوم</th>
                                 <th>اتصال سريع</th>
@@ -308,8 +266,8 @@
                 <h6 class="p-2 text-secondary fw-bold">📋 قائمة الحجوزات القادمة:</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped align-middle mb-0" style="font-size: 12px;">
-                        <thead class="table-info">
-                            <tr>
+                        <thead>
+                            <tr class="table-info">
                                 <th>الاسم ورقم الموبايل</th>
                                 <th>يوم وتاريخ الحجز</th>
                                 <th>الإجراء والتحويل</th>
@@ -338,7 +296,7 @@
                 </form>
             </div>
 
-            <div class="card p-3 mb-3 text-center border-info" style="background-color: rgba(5, 191, 219, 0.05);">
+            <div class="card p-3 mb-3 text-center border-info" style="background-color: #F0F9FF;">
                 <h6 class="text-primary fw-bold mb-2">🔍 عرض فواتير وتصفية حسابات المعمل بالشهور</h6>
                 <div class="row g-2">
                     <div class="col-6">
@@ -365,7 +323,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="mt-3 p-2 border rounded border-danger" style="background-color: rgba(220, 53, 69, 0.1);">
+                <div class="mt-3 p-2 border rounded border-danger" style="background-color: #FEF2F2;">
                     <small class="text-muted d-block fw-bold mb-1">🔴 إجمالي مديونية المعامل للشهر المحدد:</small>
                     <h4 class="text-danger fw-bold m-0" id="labMonthlyTotalDebtLabel">0 ج.م</h4>
                 </div>
@@ -374,8 +332,8 @@
             <div class="card p-2">
                 <div class="table-responsive">
                     <table class="table table-striped align-middle mb-0" style="font-size: 13px;">
-                        <thead class="table-dark">
-                            <tr>
+                        <thead>
+                            <tr class="table-custom-header">
                                 <th>المعمل والحالة</th>
                                 <th>التاريخ</th>
                                 <th>المتبقي له</th>
@@ -405,15 +363,15 @@
                     <div class="col-12 mt-2"><button type="submit" class="btn btn-danger w-100 fw-bold py-2">إضافة بند المصروف والفاتورة 💸</button></div>
                 </form>
             </div>
-            <div class="card p-3 mb-3 text-center" style="background-color: rgba(220, 53, 69, 0.1);">
+            <div class="card p-3 mb-3 text-center" style="background-color: #FEF2F2;">
                 <h6 class="text-muted mb-1">إجمالي مصروفات العيادة المسجلة كلياً</h6>
                 <h4 class="text-danger fw-bold" id="totalExpensesLabel">0 ج.م</h4>
             </div>
             <div class="card p-2">
                 <div class="table-responsive">
                     <table class="table table-striped align-middle mb-0" style="font-size: 13px;">
-                        <thead class="table-dark">
-                            <tr>
+                        <thead>
+                            <tr class="table-custom-header">
                                 <th>البند والتاريخ</th>
                                 <th>المبلغ</th>
                                 <th>الفاتورة</th>
@@ -444,7 +402,7 @@
                     </div>
                     <div class="col-6">
                         <small class="text-muted d-block">📤 مصروفات اليوم</small>
-                        <h5 class="fw-bold text-danger mt-1" id="dayExpenses">0 ج.م</h5>
+                        <h5 class="fw-bold text-danger mt-1" id="dayExpenses">0 ج.m</h5>
                     </div>
                     <div class="col-12 mt-2 border-top pt-2">
                         <small class="text-dark fw-bold d-block">💰 صافي الدخل الخاضع للنسبة</small>
@@ -452,11 +410,11 @@
                     </div>
                 </div>
 
-                <div class="p-2 border rounded text-center mb-2" style="background-color: rgba(46, 125, 50, 0.15);">
+                <div class="p-2 border rounded text-center mb-2" style="background-color: #DCFCE7;">
                     <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد (70% من الصافي)</small>
                     <h4 class="text-success fw-bold m-0 mt-1" id="dayDoctorShare">0 ج.م</h4>
                 </div>
-                <div class="p-2 border rounded text-center" style="background-color: rgba(5, 191, 219, 0.12);">
+                <div class="p-2 border rounded text-center" style="background-color: #E0F2FE;">
                     <small class="text-primary fw-bold d-block">🏢 صافي حصة العيادة (30% من الصافي)</small>
                     <h5 class="text-primary fw-bold m-0 mt-1" id="dayClinicShare">0 ج.م</h5>
                 </div>
@@ -466,8 +424,8 @@
                 <h6 class="text-primary fw-bold mb-3"><i class="bi bi-wallet2"></i> متحصلات الخزينة لليوم المحدد:</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped align-middle mb-0 text-center" style="font-size: 12px;">
-                        <thead class="table-dark">
-                            <tr>
+                        <thead>
+                            <tr class="table-custom-header">
                                 <th>اسم المريض</th>
                                 <th>الجلسة / البند</th>
                                 <th>المبلغ المسدد</th>
@@ -478,16 +436,16 @@
                 </div>
             </div>
 
-            <div class="card p-3 mb-3 text-center bg-dark text-white">
-                <h5 class="fw-bold text-warning mb-3">📈 التقفيل التراكمي الشامل للعيادة</h5>
+            <div class="card p-3 mb-3 text-center bg-white border border-warning">
+                <h5 class="fw-bold text-dark mb-3">📈 التقفيل التراكمي الشامل للعيادة</h5>
                 <div class="row g-2 mb-2">
-                    <div class="col-6 border-end border-secondary"><small class="text-light">إجمالي الإيرادات كلياً</small><h6 class="text-success fw-bold" id="monthTotalIncome">0 ج.م</h6></div>
-                    <div class="col-6"><small class="text-light">إجمالي المصروفات كلياً</small><h6 class="text-danger fw-bold" id="monthTotalExpenses">0 ج.م</h6></div>
+                    <div class="col-6 border-end"><small class="text-muted">إجمالي الإيرادات كلياً</small><h6 class="text-success fw-bold" id="monthTotalIncome">0 ج.م</h6></div>
+                    <div class="col-6"><small class="text-muted">إجمالي المصروفات كلياً</small><h6 class="text-danger fw-bold" id="monthTotalExpenses">0 ج.م</h6></div>
                 </div>
-                <hr class="bg-secondary my-2">
-                <div class="p-2 border border-warning rounded" style="background-color: #1A1A1A;">
-                    <small class="text-warning fw-bold d-block">💰 أرباح العيادة التراكمية بعد المصاريف</small>
-                    <h2 class="text-warning fw-bold m-0 mt-1" id="monthNetProfit">0 ج.م</h2>
+                <hr class="my-2">
+                <div class="p-2 border border-warning rounded" style="background-color: #FFFDE7;">
+                    <small class="text-dark fw-bold d-block">💰 أرباح العيادة التراكمية بعد المصاريف</small>
+                    <h2 class="text-primary fw-bold m-0 mt-1" id="monthNetProfit">0 ج.م</h2>
                 </div>
             </div>
         </div>
@@ -539,11 +497,11 @@
                     <h3 class="text-primary fw-bold m-0 mt-1" id="customMonthNetProfit">0 ج.م</h3>
                 </div>
                 <hr>
-                <div class="p-2 border rounded text-center mb-2" style="background-color: rgba(46, 125, 50, 0.15);">
+                <div class="p-2 border rounded text-center mb-2" style="background-color: #DCFCE7;">
                     <small class="text-success fw-bold d-block">👨‍⚕️ صافي نسبة د. أحمد من الإيراد (70%)</small>
                     <h4 class="text-success fw-bold m-0 mt-1" id="customMonthDoctorShare">0 ج.م</h4>
                 </div>
-                <div class="p-2 border rounded text-center" style="background-color: rgba(5, 191, 219, 0.12);">
+                <div class="p-2 border rounded text-center" style="background-color: #E0F2FE;">
                     <small class="text-primary fw-bold d-block">🏢 صافي حصة العيادة بعد المصاريف</small>
                     <h5 class="text-primary fw-bold m-0 mt-1" id="customMonthClinicShare">0 ج.م</h5>
                 </div>
@@ -565,7 +523,7 @@
         <button onclick="backToMain()" class="btn btn-outline-secondary btn-sm mb-3" style="max-width: 100px;">← رجوع</button>
         <h4 class="text-primary fw-bold mb-3" id="profileTitle">ملف المريض</h4>
         
-        <div class="alert p-3 mb-3 border-success text-center" style="background-color: rgba(37, 211, 102, 0.1);">
+        <div class="alert p-3 mb-3 border-success text-center" style="background-color: #DCFCE7;">
             <h6 class="fw-bold text-success mb-2"><i class="bi bi-whatsapp"></i> نظام تواصل Amer Dent الذكي عبر واتساب</h6>
             <div class="d-flex flex-column gap-2">
                 <button type="button" onclick="sendWhatsAppFollowUp()" class="btn btn-whatsapp-followup py-2 shadow-sm">
@@ -630,7 +588,7 @@
                 <input type="number" id="editTotal" class="form-control fw-bold text-primary text-center" oninput="calculateEditRemaining()" placeholder="أدخل إجمالي تكلفة العلاج الكاملة">
             </div>
 
-            <div class="col-12 p-3 border rounded border-warning" style="background-color: rgba(255, 193, 7, 0.05);">
+            <div class="col-12 p-3 border rounded border-warning" style="background-color: #FFFDE7;">
                 <label class="form-label fw-bold text-warning"><i class="bi bi-plus-circle-fill"></i> تسجيل دفعة مالية جديدة (حدد التاريخ والمبلغ)</label>
                 <div class="row g-2">
                     <div class="col-6">
@@ -661,8 +619,8 @@
                 <label class="form-label fw-bold text-secondary"><i class="bi bi-clock-history"></i> سجل دفعات الجلسات المؤرخ للمريض</label>
                 <div class="table-responsive border rounded">
                     <table class="table table-sm table-striped align-middle text-center mb-0" style="font-size: 12px;">
-                        <thead class="table-info">
-                            <tr>
+                        <thead>
+                            <tr class="table-info">
                                 <th>بند / رقم الجلسة</th>
                                 <th>المبلغ المدفوع</th>
                                 <th>تاريخ ووقت الدفع</th>
@@ -736,12 +694,6 @@
             if(phone.startsWith("01")) { phone = "20" + phone; }
             let url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
-        }
-
-        function toggleTheme() {
-            let body = document.body; let btn = document.getElementById('themeBtn');
-            if (body.getAttribute('data-theme') === 'dark') { body.setAttribute('data-theme', 'light'); btn.innerText = '🌙'; } 
-            else { body.setAttribute('data-theme', 'dark'); btn.innerText = '☀️'; }
         }
 
         function setQuickService(serviceName) { document.getElementById('editService').value = serviceName; }
@@ -973,10 +925,8 @@
         }
         function deleteBooking(id) { if(confirm('مسح؟')) { delete bookings[id]; pushToServer('bookings', bookings, displayBookings); } }
 
-        // دالة حساب متبقي المعمل الحالي
         function calculateLabRemaining() { document.getElementById('labRemaining').value = (parseFloat(document.getElementById('labTotal').value) || 0) - (parseFloat(document.getElementById('labPaid').value) || 0); }
         
-        // حفظ طلبية معمل جديدة بالتاريخ
         document.getElementById('labForm').addEventListener('submit', function(e) {
             e.preventDefault(); 
             let id = "lab_" + Date.now(); 
@@ -996,7 +946,6 @@
             });
         });
 
-        // عرض حسابات المعمل المفلترة شهرياً
         function displayLabs() { 
             let tbody = document.getElementById('labTable'); tbody.innerHTML = ''; 
             let y = document.getElementById('labYearSelect').value; 
@@ -1008,13 +957,13 @@
             
             let hasData = false;
             filteredLabs.forEach(l => { 
-                let lDate = l.dateCreated || getSmartTodayString(); // حماية للحالات القديمة
+                let lDate = l.dateCreated || getSmartTodayString();
                 if(lDate.startsWith(prefix)) {
                     hasData = true;
                     let remAmt = parseFloat(l.remaining) || 0;
                     monthlyDebtTotal += remAmt;
                     
-                    tbody.innerHTML += `<tr><td><strong>${l.name}</strong><br><small class="text-muted">${l.caseDesc||''}</small></td><td style="font-size:11px;">${lDate}</td><td class="text-danger fw-bold">${remAmt} ج.م</td><td><button class="btn btn-sm btn-outline-danger" onclick="deleteLab('${l.id}')">X</button></td></tr>`; 
+                    tbody.innerHTML += `<tr><td><strong>${l.name}</strong><br><small class="text-muted">${l.caseDesc||''}</small></td><td>${lDate}</td><td class="text-danger fw-bold">${remAmt} ج.م</td><td><button class="btn btn-sm btn-outline-danger" onclick="deleteLab('${l.id}')">X</button></td></tr>`; 
                 }
             }); 
             
