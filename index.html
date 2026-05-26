@@ -330,16 +330,54 @@
                     <div class="col-6"><input type="number" id="labTotal" class="form-control" placeholder="الحساب الإجمالي" oninput="calculateLabRemaining()"></div>
                     <div class="col-6"><input type="number" id="labPaid" class="form-control" placeholder="المبلغ المدفوع له" oninput="calculateLabRemaining()"></div>
                     <div class="col-12"><input type="number" id="labRemaining" class="form-control text-center fw-bold text-danger" placeholder="المتبقي للمعمل" readonly></div>
-                    <div class="col-12"><button type="submit" class="btn btn-primary w-100 fw-bold py-2">حفظ حـساب المعمل</button></div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted mb-0">تاريخ الطلبية:</label>
+                        <input type="date" id="labDate" class="form-control fw-bold text-center text-primary" required>
+                    </div>
+                    <div class="col-12 mt-2"><button type="submit" class="btn btn-primary w-100 fw-bold py-2">حفظ حـساب المعمل 💾</button></div>
                 </form>
             </div>
+
+            <div class="card p-3 mb-3 text-center border-info" style="background-color: rgba(5, 191, 219, 0.05);">
+                <h6 class="text-primary fw-bold mb-2">🔍 عرض فواتير وتصفية حسابات المعمل بالشهور</h6>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <select id="labYearSelect" class="form-select text-center fw-bold text-primary" onchange="displayLabs()">
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <select id="labMonthSelect" class="form-select text-center fw-bold text-primary" onchange="displayLabs()">
+                            <option value="01">يناير (01)</option>
+                            <option value="02">فبراير (02)</option>
+                            <option value="03">مارس (03)</option>
+                            <option value="04">أبريل (04)</option>
+                            <option value="05" selected>مايو (05)</option>
+                            <option value="06">يونيو (06)</option>
+                            <option value="07">يوليو (07)</option>
+                            <option value="08">أغسطس (08)</option>
+                            <option value="09">سبتمبر (09)</option>
+                            <option value="10">أكتوبر (10)</option>
+                            <option value="11">نوفمبر (11)</option>
+                            <option value="12">ديسمبر (12)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-3 p-2 border rounded border-danger" style="background-color: rgba(220, 53, 69, 0.1);">
+                    <small class="text-muted d-block fw-bold mb-1">🔴 إجمالي مديونية المعامل للشهر المحدد:</small>
+                    <h4 class="text-danger fw-bold m-0" id="labMonthlyTotalDebtLabel">0 ج.م</h4>
+                </div>
+            </div>
+
             <div class="card p-2">
                 <div class="table-responsive">
-                    <table class="table table-striped align-middle mb-0">
+                    <table class="table table-striped align-middle mb-0" style="font-size: 13px;">
                         <thead class="table-dark">
                             <tr>
-                                <th>المعمل</th>
-                                <th>الحالة</th>
+                                <th>المعمل والحالة</th>
+                                <th>التاريخ</th>
                                 <th>المتبقي له</th>
                                 <th>تحكم</th>
                             </tr>
@@ -722,8 +760,12 @@
                 let dynamicToday = getSmartTodayString();
                 document.getElementById('dateCreated').value = dynamicToday; document.getElementById('appointmentFilterDate').value = dynamicToday;
                 document.getElementById('expDate').value = dynamicToday; document.getElementById('shareFilterDate').value = dynamicToday;
-                let now = new Date(); document.getElementById('monthlyYearSelect').value = now.getFullYear().toString();
+                document.getElementById('labDate').value = dynamicToday;
+                let now = new Date(); 
+                document.getElementById('monthlyYearSelect').value = now.getFullYear().toString();
                 document.getElementById('monthlyMonthSelect').value = (now.getMonth() + 1).toString().padStart(2, '0');
+                document.getElementById('labYearSelect').value = now.getFullYear().toString();
+                document.getElementById('labMonthSelect').value = (now.getMonth() + 1).toString().padStart(2, '0');
                 showLoading(true, "جاري فتح الملفات السحابية لوحدة المعالجة..."); syncDataFromServer();
             } else { document.getElementById('loginError').style.display = 'block'; document.getElementById('passwordInput').value = ''; }
         }
@@ -801,9 +843,7 @@
             let p = patients[id];
             let tbody = document.getElementById('sessionPaymentsTableBody');
             tbody.innerHTML = '';
-            
             if(!p.sessionPayments) p.sessionPayments = [];
-            
             let totalPaidCalculated = 0;
             
             if(p.sessionPayments.length === 0) {
@@ -820,7 +860,6 @@
                         </tr>`;
                 });
             }
-            
             document.getElementById('editPaid').value = totalPaidCalculated;
             patients[id].paid = totalPaidCalculated;
             calculateEditRemaining();
@@ -832,32 +871,18 @@
             let dateInput = document.getElementById('newSessionDate').value;
             let labelInput = document.getElementById('newSessionLabel').value.trim();
             
-            if(!amountInput || isNaN(amountInput) || parseFloat(amountInput) <= 0) {
-                alert("من فضلك أدخل مبلغ دفع صالح وصحيح للجلسة!");
-                return;
-            }
-            if(!dateInput) {
-                alert("من فضلك اختر التاريخ السليم لهذه الدفعة!");
-                return;
-            }
+            if(!amountInput || isNaN(amountInput) || parseFloat(amountInput) <= 0) { alert("من فضلك أدخل مبلغ دفع صالح وصحيح للجلسة!"); return; }
+            if(!dateInput) { alert("من فضلك اختر التاريخ السليم لهذه الدفعة!"); return; }
             
             let amount = parseFloat(amountInput);
             let label = labelInput ? labelInput : (document.getElementById('editSessionNumber').value || "جلسة علاجية");
-            
             let fullDateTimeStamp = `${getArabicDayName(dateInput)} ${dateInput}`;
             
             if(!patients[id].sessionPayments) patients[id].sessionPayments = [];
-            
-            patients[id].sessionPayments.push({
-                amount: amount,
-                label: label,
-                dateTime: fullDateTimeStamp,
-                pureDate: dateInput
-            });
+            patients[id].sessionPayments.push({ amount: amount, label: label, dateTime: fullDateTimeStamp, pureDate: dateInput });
             
             document.getElementById('newSessionPayment').value = '';
             document.getElementById('newSessionDate').value = getSmartTodayString();
-            
             displaySessionPaymentsList(id);
         }
 
@@ -875,10 +900,7 @@
             document.getElementById('editRemaining').value = rem; 
             
             let id = document.getElementById('editId').value;
-            if(id && patients[id]) {
-                patients[id].total = total;
-                patients[id].remaining = rem;
-            }
+            if(id && patients[id]) { patients[id].total = total; patients[id].remaining = rem; }
         }
 
         function savePatientChanges() {
@@ -892,7 +914,6 @@
             patients[id].nextVisit = document.getElementById('editNextVisit').value; 
             patients[id].sessionNumber = document.getElementById('editSessionNumber').value;
             patients[id].dateCreated = document.getElementById('editDateCreated').value;
-            
             pushToServer('patients', patients, () => { backToMain(); });
         }
 
@@ -913,7 +934,7 @@
         }
 
         function displayXrays(id) {
-            let gallery = document.getElementById('xrayGallery'); gallery.innerHTML = ''; let xrays = Math.max(0, patients[id].xrays || []);
+            let gallery = document.getElementById('xrayGallery'); gallery.innerHTML = '';
             let xrayArr = patients[id].xrays || [];
             if(xrayArr.length === 0) { gallery.innerHTML = '<span class="text-muted small p-2">لا توجد أشعات</span>'; return; }
             xrayArr.forEach((imgSrc, idx) => { gallery.innerHTML += `<div class="position-relative d-inline-block"><img src="${imgSrc}" class="xray-thumb" onclick="window.open('${imgSrc}')"><button type="button" class="btn btn-danger btn-sm position-absolute top-0 start-0 m-1" onclick="deleteXray('${id}', ${idx})">X</button></div>`; });
@@ -952,12 +973,56 @@
         }
         function deleteBooking(id) { if(confirm('مسح؟')) { delete bookings[id]; pushToServer('bookings', bookings, displayBookings); } }
 
+        // دالة حساب متبقي المعمل الحالي
         function calculateLabRemaining() { document.getElementById('labRemaining').value = (parseFloat(document.getElementById('labTotal').value) || 0) - (parseFloat(document.getElementById('labPaid').value) || 0); }
+        
+        // حفظ طلبية معمل جديدة بالتاريخ
         document.getElementById('labForm').addEventListener('submit', function(e) {
-            e.preventDefault(); let id = "lab_" + Date.now(); labs[id] = { id, name: document.getElementById('labName').value, caseDesc: document.getElementById('labCase').value, total: parseFloat(document.getElementById('labTotal').value)||0, paid: parseFloat(document.getElementById('labPaid').value)||0, remaining: parseFloat(document.getElementById('labRemaining').value)||0 };
-            pushToServer('labs', labs, () => { document.getElementById('labForm').reset(); displayLabs(); });
+            e.preventDefault(); 
+            let id = "lab_" + Date.now(); 
+            labs[id] = { 
+                id, 
+                name: document.getElementById('labName').value, 
+                caseDesc: document.getElementById('labCase').value, 
+                total: parseFloat(document.getElementById('labTotal').value)||0, 
+                paid: parseFloat(document.getElementById('labPaid').value)||0, 
+                remaining: parseFloat(document.getElementById('labRemaining').value)||0,
+                dateCreated: document.getElementById('labDate').value
+            };
+            pushToServer('labs', labs, () => { 
+                document.getElementById('labForm').reset(); 
+                document.getElementById('labDate').value = getSmartTodayString();
+                displayLabs(); 
+            });
         });
-        function displayLabs() { let tbody = document.getElementById('labTable'); tbody.innerHTML = ''; Object.values(labs).reverse().forEach(l => { tbody.innerHTML += `<tr><td><strong>${l.name}</strong></td><td><small>${l.caseDesc||''}</small></td><td class="text-danger fw-bold">${l.remaining} ج.م</td><td><button class="btn btn-sm btn-outline-danger" onclick="deleteLab('${l.id}')">X</button></td></tr>`; }); }
+
+        // عرض حسابات المعمل المفلترة شهرياً
+        function displayLabs() { 
+            let tbody = document.getElementById('labTable'); tbody.innerHTML = ''; 
+            let y = document.getElementById('labYearSelect').value; 
+            let m = document.getElementById('labMonthSelect').value; 
+            let prefix = `${y}-${m}`;
+            
+            let monthlyDebtTotal = 0;
+            let filteredLabs = Object.values(labs).reverse();
+            
+            let hasData = false;
+            filteredLabs.forEach(l => { 
+                let lDate = l.dateCreated || getSmartTodayString(); // حماية للحالات القديمة
+                if(lDate.startsWith(prefix)) {
+                    hasData = true;
+                    let remAmt = parseFloat(l.remaining) || 0;
+                    monthlyDebtTotal += remAmt;
+                    
+                    tbody.innerHTML += `<tr><td><strong>${l.name}</strong><br><small class="text-muted">${l.caseDesc||''}</small></td><td style="font-size:11px;">${lDate}</td><td class="text-danger fw-bold">${remAmt} ج.م</td><td><button class="btn btn-sm btn-outline-danger" onclick="deleteLab('${l.id}')">X</button></td></tr>`; 
+                }
+            }); 
+            
+            if(!hasData) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-2">لا توجد طلبيات معمل مسجلة لهذا الشهر</td></tr>`;
+            }
+            document.getElementById('labMonthlyTotalDebtLabel').innerText = monthlyDebtTotal + " ج.م";
+        }
         function deleteLab(id) { if(confirm('مسح؟')) { delete labs[id]; pushToServer('labs', labs, displayLabs); } }
 
         document.getElementById('expenseForm').addEventListener('submit', function(e) {
@@ -983,7 +1048,6 @@
         }
         function deleteExpense(id) { if(confirm('مسح؟')) { delete expenses[id]; pushToServer('expenses', expenses, displayExpenses); } }
 
-        // التحديث الذكي لحساب النسب اليومية بعد خصم المصروفات اليومية مباشرة
         function calculateDailyShares() {
             let date = document.getElementById('shareFilterDate').value; if(!date) return;
             document.getElementById('shareDayTitle').innerText = `أرباح يوم ${getArabicDayName(date)} (${date}):`;
@@ -991,10 +1055,8 @@
             let grossIncome = 0; 
             let detailsTbody = document.getElementById('dailyIncomeDetailsTableBody');
             detailsTbody.innerHTML = ''; 
-
             let hasPayments = false;
 
-            // 1. حساب إجمالي الإيراد الخام لليوم المختار
             Object.values(patients).forEach(p => { 
                 if (p.sessionPayments) {
                     p.sessionPayments.forEach(pay => {
@@ -1003,52 +1065,32 @@
                             let pAmt = parseFloat(pay.amount) || 0;
                             grossIncome += pAmt; 
                             hasPayments = true;
-
-                            detailsTbody.innerHTML += `
-                                <tr>
-                                    <td><strong class="patient-clickable-link" onclick="openPatientProfile('${p.id}')">${p.name}</strong></td>
-                                    <td class="text-muted">${pay.label || 'دفعة جلسة'}</td>
-                                    <td class="text-success fw-bold">${pAmt} ج.م</td>
-                                </tr>`;
+                            detailsTbody.innerHTML += `<tr><td><strong class="patient-clickable-link" onclick="openPatientProfile('${p.id}')">${p.name}</strong></td><td class="text-muted">${pay.label || 'دفعة جلسة'}</td><td class="text-success fw-bold">${pAmt} ج.م</td></tr>`;
                         }
                     });
                 }
             });
 
-            if(!hasPayments) {
-                detailsTbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-2">لا توجد أي متحصلات مالية مسجلة في هذا اليوم</td></tr>`;
-            }
+            if(!hasPayments) { detailsTbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-2">لا توجد أي متحصلات مالية مسجلة في هذا اليوم</td></tr>`; }
 
-            // 2. حساب إجمالي مصروفات نفس اليوم المحدد
             let dayExpTotal = 0;
-            Object.values(expenses).forEach(e => {
-                if (e.dateCreated === date) {
-                    dayExpTotal += (parseFloat(e.amount) || 0);
-                }
-            });
+            Object.values(expenses).forEach(e => { if (e.dateCreated === date) { dayExpTotal += (parseFloat(e.amount) || 0); } });
 
-            // 3. حساب صافي الدخل اليومي الخاضع للنسبة بعد خصم مصاريف اليوم
             let netIncome = grossIncome - dayExpTotal;
-            
-            // في حال كانت المصاريف أكبر من الإيراد، نمنع الأرقام السالبة في توزيع النسب الفردية
             let incomeToDivide = Math.max(0, netIncome);
 
             document.getElementById('dayGrossIncome').innerText = grossIncome + " ج.م";
             document.getElementById('dayExpenses').innerText = dayExpTotal + " ج.م";
             document.getElementById('dayNetIncome').innerText = netIncome + " ج.م";
             
-            // حساب تقسيم الـ 70% والـ 30% بناءً على الصافي الفعلي بعد الخصم اليومي المباشر
             document.getElementById('dayDoctorShare').innerText = (incomeToDivide * 0.7).toFixed(1) + " ج.م"; 
             document.getElementById('dayClinicShare').innerText = (incomeToDivide * 0.3).toFixed(1) + " ج.م";
             
-            // 4. الحسبة التراكمية الإجمالية أسفل الصفحة
             let ti = 0;
-            Object.values(patients).forEach(p => {
-                if (p.sessionPayments) { p.sessionPayments.forEach(pay => { ti += (parseFloat(pay.amount) || 0); }); }
-            });
+            Object.values(patients).forEach(p => { if (p.sessionPayments) { p.sessionPayments.forEach(pay => { ti += (parseFloat(pay.amount) || 0); }); } });
             let te = Object.values(expenses).reduce((s,e)=> s+(parseFloat(e.amount)||0), 0);
             document.getElementById('monthTotalIncome').innerText = ti + " ج.م"; 
-            document.getElementById('monthTotalExpenses').innerText = te + " ج.m"; 
+            document.getElementById('monthTotalExpenses').innerText = te + " ج.م"; 
             document.getElementById('monthNetProfit').innerText = (ti-te) + " ج.م";
         }
 
