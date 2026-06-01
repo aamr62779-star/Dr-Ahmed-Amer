@@ -1,54 +1,3 @@
-from flask import Flask, request, redirect, url_for, render_template_string
-import os
-import sqlite3
-from datetime import datetime
-
-app = Flask(__name__)
-app.secret_key = "dr_amer_clinic_final_secure_key"
-
-# مسارات حفظ الملفات وقاعدة البيانات لعيادة الدكتور أحمد
-UPLOAD_FOLDER = 'static/uploads/xrays'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-DB_NAME = 'clinic.db'
-
-# ---------------------------------------------------------
-# تهيئة قاعدة البيانات وإنشاء الجداول المبسطة (بدون خريطة أسنان)
-# ---------------------------------------------------------
-def get_db_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-def init_db():
-    conn = get_db_connection()
-    # جدول المرضى المبسط والخالي من تعقيد خريطة الأسنان
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS patients (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            patient_name TEXT,
-            age_category TEXT,
-            service TEXT,
-            paid REAL,
-            remaining REAL,
-            date_added TEXT
-        )
-    ''')
-    # جدول المصاريف المؤمّن بالكامل
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS expenses (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            expense_title TEXT,
-            expense_amount REAL,
-            date_added TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
-# ---------------------------------------------------------
-# الواجهة الأمامية (HTML) مدمجة بالكامل وبدون خريطة الأسنان التفاعلية
-# ---------------------------------------------------------
-HTML_TEMPLATE = '''
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -56,14 +5,14 @@ HTML_TEMPLATE = '''
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dr. Amer’s Clinic</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #2c3e50; padding: 20px; margin: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #2c3e50; padding: 15px; margin: 0; }
         .container { max-width: 1100px; margin: 0 auto; }
         header { background: #34495e; color: white; padding: 15px 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         header h1 { margin: 0; font-size: 24px; }
         
         /* لوحة الحسابات الشهرية */
-        .dashboard { display: flex; gap: 15px; margin-bottom: 25px; }
-        .card { flex: 1; padding: 20px; border-radius: 8px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .dashboard { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .card { flex: 1; min-width: 200px; padding: 20px; border-radius: 8px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .card.revenue { background-color: #2ecc71; }
         .card.expenses { background-color: #e74c3c; }
         .card.net { background-color: #3498db; }
@@ -71,8 +20,8 @@ HTML_TEMPLATE = '''
         .card p { margin: 0; font-size: 24px; font-weight: bold; }
 
         .row { display: flex; gap: 20px; flex-wrap: wrap; }
-        .col-7 { flex: 1.8; min-width: 500px; }
-        .col-5 { flex: 1.2; min-width: 350px; }
+        .col-7 { flex: 1.8; min-width: 320px; }
+        .col-5 { flex: 1.2; min-width: 320px; }
 
         .box { background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border-top: 4px solid #3498db; margin-bottom: 20px; }
         .box.expense-box { border-top-color: #e74c3c; }
@@ -91,6 +40,9 @@ HTML_TEMPLATE = '''
         th, td { border: 1px solid #e0e0e0; padding: 10px; text-align: center; }
         th { background-color: #f4f6f7; color: #34495e; font-weight: bold; }
         tr:nth-child(even) { background-color: #fafbfc; }
+        
+        .clear-btn { background: #95a5a6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 10px; float: left; }
+        .clear-btn:hover { background: #7f8c8d; }
     </style>
 </head>
 <body>
@@ -103,15 +55,15 @@ HTML_TEMPLATE = '''
     <div class="dashboard">
         <div class="card revenue">
             <h3>إيرادات الشهر الإجمالية</h3>
-            <p>{{ "%.2f"|format(total_revenue) }} ج.م</p>
+            <p id="total-revenue">0.00 ج.م</p>
         </div>
         <div class="card expenses">
-            <h3>مصروفات العيادة الكلية (هذا الشهر)</h3>
-            <p>{{ "%.2f"|format(total_expenses) }} ج.م</p>
+            <h3>مصروفات العيادة (هذا الشهر)</h3>
+            <p id="total-expenses">0.00 ج.م</p>
         </div>
         <div class="card net">
             <h3>صافي الربح الشهري</h3>
-            <p>{{ "%.2f"|format(net_monthly_profit) }} ج.م</p>
+            <p id="net-monthly_profit">0.00 ج.م</p>
         </div>
     </div>
 
@@ -119,35 +71,35 @@ HTML_TEMPLATE = '''
         <div class="col-5">
             <div class="box">
                 <h2>تسجيل مريض جديد</h2>
-                <form action="/save_patient" method="POST" enctype="multipart/form-data">
+                <form id="patient-form" onsubmit="savePatient(event)">
                     <div class="form-group">
                         <label>اسم المريض:</label>
-                        <input type="text" name="patient_name" required placeholder="أدخل اسم المريض">
+                        <input type="text" id="p-name" required placeholder="أدخل اسم المريض">
                     </div>
                     <div class="form-group">
                         <label>العمر (الفئة):</label>
-                        <select name="age_category">
+                        <select id="p-age">
                             <option value="بالغ">بالغ</option>
                             <option value="طفل">طفل</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>الخدمة / الإجراء الطبي:</label>
-                        <input type="text" name="service" required placeholder="مثال: حشو تجميلي، زيركون، علاج عصب">
+                        <input type="text" id="p-service" required placeholder="مثال: حشو تجميلي، زيركون، علاج عصب">
                     </div>
                     <div class="form-group" style="display: flex; gap: 10px;">
                         <div style="flex: 1;">
                             <label>المدفوع:</label>
-                            <input type="number" step="0.01" name="paid" value="0">
+                            <input type="number" step="0.01" id="p-paid" value="0">
                         </div>
                         <div style="flex: 1;">
                             <label>المتبقي:</label>
-                            <input type="number" step="0.01" name="remaining" value="0">
+                            <input type="number" step="0.01" id="p-remaining" value="0">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>إرفاق صور الأشعة:</label>
-                        <input type="file" name="xray_images" multiple accept="image/*">
+                        <label>إرفاق صور الأشعة (اسم الملف فقط):</label>
+                        <input type="file" id="p-xray" multiple accept="image/*">
                     </div>
                     <button type="submit" class="btn-submit">حفظ ملف المريض</button>
                 </form>
@@ -155,14 +107,14 @@ HTML_TEMPLATE = '''
 
             <div class="box box-expense-box">
                 <h2>إضافة بند مصروفات</h2>
-                <form action="/add_expense" method="POST">
+                <form id="expense-form" onsubmit="saveExpense(event)">
                     <div class="form-group">
                         <label>بند المصروف:</label>
-                        <input type="text" name="expense_title" required placeholder="مثال: أدوات، خامات، إيجار...">
+                        <input type="text" id="e-title" required placeholder="مثال: أدوات، خامات، إيجار...">
                     </div>
                     <div class="form-group">
                         <label>المبلغ المدفوع:</label>
-                        <input type="number" step="0.01" name="expense_amount" required placeholder="0.00">
+                        <input type="number" step="0.01" id="e-amount" required placeholder="0.00">
                     </div>
                     <button type="submit" class="btn-submit btn-expense">تسجيل وحفظ المصروف</button>
                 </form>
@@ -181,27 +133,12 @@ HTML_TEMPLATE = '''
                                 <th>الإجراء الطبي</th>
                                 <th>المدفوع</th>
                                 <th>المتبقي</th>
+                                <th>الأشعة</th>
                                 <th>التاريخ</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {% if patients %}
-                                {% for p in patients %}
-                                <tr>
-                                    <td><strong>{{ p.patient_name }}</strong></td>
-                                    <td>{{ p.age_category }}</td>
-                                    <td>{{ p.service }}</td>
-                                    <td style="color: #2ecc71; font-weight: bold;">{{ p.paid }} ج.م</td>
-                                    <td style="color: #e74c3c; font-weight: bold;">{{ p.remaining }} ج.م</td>
-                                    <td style="font-size: 11px; color: #7f8c8d;">{{ p.date_added.split(' ')[0] if p.date_added else '' }}</td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td>
-                                end<tr>
-                            {% endif %}
-                        </tbody>
+                        <tbody id="patients-table-body">
+                            </tbody>
                     </table>
                 </div>
             </div>
@@ -217,159 +154,164 @@ HTML_TEMPLATE = '''
                                 <th>التاريخ والوقت</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {% if expenses %}
-                                {% for e in expenses %}
-                                <tr>
-                                    <td><strong>{{ e.expense_title }}</strong></td>
-                                    <td style="color: #e74c3c; font-weight: bold;">{{ e.expense_amount }} ج.م</td>
-                                    <td style="font-size: 11px; color: #7f8c8d;">{{ e.date_added }}</td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="3" style="color: #95a5a6;">لم يتم تسجيل أي مصروفات حتى الآن.</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
+                        <tbody id="expenses-table-body">
+                            </tbody>
                     </table>
                 </div>
+                <button class="clear-btn" onclick="clearAllData()">مسح كل البيانات لتهيئة الدورة</button>
             </div>
         </div>
     </div>
 </div>
 
+<script>
+    // جلب البيانات المخزنة في متصفح الموبايل أو الجهاز فوراً عند فتح الرابط
+    let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
+    let expenses = JSON.parse(localStorage.getItem('clinic_expenses')) || [];
+
+    // دالة تحديث الحسابات الشهرية وعرض الجداول فوراً
+    function updateApp() {
+        const now = new Date();
+        const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0'); // صيغة YYYY-MM
+
+        let totalRevenue = 0;
+        let totalExpenses = 0;
+
+        // تفريغ الجداول قبل التحديث
+        const pBody = document.getElementById('patients-table-body');
+        const eBody = document.getElementById('expenses-table-body');
+        pBody.innerHTML = '';
+        eBody.innerHTML = '';
+
+        // 1. معالجة وعرض جدول المرضى + حساب الإيرادات للشهر الحالي
+        if (patients.length === 0) {
+            pBody.innerHTML = `<tr><td colspan="7" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
+        } else {
+            patients.forEach(p => {
+                // فلترة وحساب إيرادات الشهر الحالي فقط
+                if (p.date_added.startsWith(currentMonthStr)) {
+                    totalRevenue += parseFloat(p.paid || 0);
+                }
+
+                // عرض السجل في الجدول
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${p.patient_name}</strong></td>
+                    <td>${p.age_category}</td>
+                    <td>${p.service}</td>
+                    <td style="color: #2ecc71; font-weight: bold;">${parseFloat(p.paid).toFixed(2)} ج.م</td>
+                    <td style="color: #e74c3c; font-weight: bold;">${parseFloat(p.remaining).toFixed(2)} ج.m</td>
+                    <td style="font-size: 11px; color: #7f8c8d;">${p.xrays}</td>
+                    <td style="font-size: 11px; color: #7f8c8d;">${p.date_added.split(' ')[0]}</td>
+                `;
+                pBody.appendChild(row);
+            });
+        }
+
+        // 2. معالجة وعرض جدول المصروفات + حساب إجمالي مصروفات الشهر الحالي لضمان العمولات
+        if (expenses.length === 0) {
+            eBody.innerHTML = `<tr><td colspan="3" style="color: #95a5a6;">لم يتم تسجيل أي مصروفات حتى الآن.</td></tr>`;
+        } else {
+            expenses.forEach(e => {
+                if (e.date_added.startsWith(currentMonthStr)) {
+                    totalExpenses += parseFloat(e.expense_amount || 0);
+                }
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${e.expense_title}</strong></td>
+                    <td style="color: #e74c3c; font-weight: bold;">${parseFloat(e.expense_amount).toFixed(2)} ج.م</td>
+                    <td style="font-size: 11px; color: #7f8c8d;">${e.date_added}</td>
+                `;
+                eBody.appendChild(row);
+            });
+        }
+
+        // 3. تحديث كروت الحسابات العلوية فوراً وبدون شقلبة أرقام
+        const netProfit = totalRevenue - totalExpenses;
+        document.getElementById('total-revenue').innerText = totalRevenue.toFixed(2) + ' ج.م';
+        document.getElementById('total-expenses').innerText = totalExpenses.toFixed(2) + ' ج.م';
+        document.getElementById('net-monthly_profit').innerText = netProfit.toFixed(2) + ' ج.م';
+    }
+
+    // دالة حفظ بيانات ملف المريض الجديد
+    function savePatient(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('p-name').value.strip ? document.getElementById('p-name').value.strip() : document.getElementById('p-name').value;
+        const age = document.getElementById('p-age').value;
+        const service = document.getElementById('p-service').value;
+        
+        let paid = parseFloat(document.getElementById('p-paid').value);
+        let remaining = parseFloat(document.getElementById('p-remaining').value);
+        if (isNaN(paid)) paid = 0.0;
+        if (isNaN(remaining)) remaining = 0.0;
+
+        // رصد أسماء ملفات الأشعة المرفقة
+        const xrayInput = document.getElementById('p-xray');
+        let xrayNames = [];
+        for (let i = 0; i < xrayInput.files.length; i++) {
+            xrayNames.push(xrayInput.files[i].name);
+        }
+        const xraysString = xrayNames.length > 0 ? xrayNames.join(', ') : 'لا يوجد';
+
+        // تنسيق الوقت والتاريخ الحالي
+        const now = new Date();
+        const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+        // إضافة الكائن للمصفوفة وحفظه محلياً في الذاكرة
+        patients.unshift({
+            patient_name: name,
+            age_category: age,
+            service: service,
+            paid: paid,
+            remaining: remaining,
+            xrays: xraysString,
+            date_added: dateStr
+        });
+
+        localStorage.setItem('clinic_patients', JSON.stringify(patients));
+        document.getElementById('patient-form').reset();
+        updateApp();
+    }
+
+    // دالة تسجيل وحفظ بند المصروفات الجديد [تم الإصلاح الفوري للتسجيل والـ Commit في المتصفح]
+    function saveExpense(event) {
+        event.preventDefault();
+
+        const title = document.getElementById('e-title').value;
+        let amount = parseFloat(document.getElementById('e-amount').value);
+        if (isNaN(amount) || amount <= 0) amount = 0.0;
+
+        if (!title || amount === 0) return;
+
+        const now = new Date();
+        const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+        // حفظ بند المصروف فوراً في مصفوفة المتصفح
+        expenses.unshift({
+            expense_title: title,
+            expense_amount: amount,
+            date_added: dateStr
+        });
+
+        localStorage.setItem('clinic_expenses', JSON.stringify(expenses));
+        document.getElementById('expense-form').reset();
+        updateApp(); // تشغيل الحسبة فوراً لعرض النواتج الجديدة في الكروت الملونة
+    }
+
+    // دالة تصفير تتيح لك تهيئة الذاكرة إذا أردت بدء صفحة بيضاء جديدة
+    function clearAllData() {
+        if (confirm('هل أنت متأكد من مسح جميع سجلات المرضى والمصروفات نهائياً من هذا الجهاز؟')) {
+            localStorage.clear();
+            patients = [];
+            expenses = [];
+            updateApp();
+        }
+    }
+
+    // تشغيل البرنامج تلقائياً وبناء الجداول بمجرد فتح الدكتور للرابط على جيت هاب
+    updateApp();
+</script>
 </body>
 </html>
-'''
-
-# ---------------------------------------------------------
-# 1. الراوت الرئيسي: حساب الإحصائيات الشهرية وعرض الواجهة
-# ---------------------------------------------------------
-@app.route('/')
-def index():
-    try:
-        conn = get_db_connection()
-        current_month = datetime.now().strftime('%Y-%m')
-
-        # جلب البيانات لملء الجداول
-        patients = conn.execute('SELECT * FROM patients ORDER BY id DESC').fetchall()
-        expenses = conn.execute('SELECT * FROM expenses ORDER BY id DESC').fetchall()
-
-        # حساب الحسبة الشهرية الإجمالية بدقة لضمان العمولات
-        total_revenue = conn.execute(
-            "SELECT SUM(paid) FROM patients WHERE date_added LIKE ?", (f"{current_month}%",)
-        ).fetchone()[0] or 0.0
-
-        total_expenses = conn.execute(
-            "SELECT SUM(expense_amount) FROM expenses WHERE date_added LIKE ?", (f"{current_month}%",)
-        ).fetchone()[0] or 0.0
-
-        net_monthly_profit = total_revenue - total_expenses
-        conn.close()
-
-        return render_template_string(HTML_TEMPLATE, 
-                                      patients=patients, 
-                                      expenses=expenses, 
-                                      total_revenue=total_revenue, 
-                                      total_expenses=total_expenses, 
-                                      net_monthly_profit=net_monthly_profit)
-    except Exception as e:
-        return f"🚨 تنبيه أمان: هناك مشكلة في السيرفر المحلي: {e}"
-
-# ---------------------------------------------------------
-# 2. دالة حفظ ملف المريض الآمنة
-# ---------------------------------------------------------
-@app.route('/save_patient', methods=['POST'])
-def save_patient():
-    try:
-        patient_name = request.form.get('patient_name', '').strip()
-        age_category = request.form.get('age_category', 'بالغ')
-        service = request.form.get('service', '').strip()
-        
-        # حماية حسابات المريض من قيم النصوص غير الصالحة أو الفراغات
-        paid_raw = request.form.get('paid', '0').strip()
-        remaining_raw = request.form.get('remaining', '0').strip()
-        
-        try:
-            paid = float(paid_raw) if paid_raw else 0.0
-        except ValueError:
-            paid = 0.0
-
-        try:
-            remaining = float(remaining_raw) if remaining_raw else 0.0
-        except ValueError:
-            remaining = 0.0
-
-        if not patient_name:
-            return redirect(url_for('index'))
-
-        # حفظ صور الأشعة المتعددة بأمان
-        xray_files = request.files.getlist('xray_images')
-        for file in xray_files:
-            if file and file.filename != '':
-                if not os.path.exists(app.config['UPLOAD_FOLDER']):
-                    os.makedirs(app.config['UPLOAD_FOLDER'])
-                filename = f"{patient_name}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{file.filename}"
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
-        today_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        conn = get_db_connection()
-        conn.execute('''
-            INSERT INTO patients (patient_name, age_category, service, paid, remaining, date_added)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (patient_name, age_category, service, paid, remaining, today_date))
-        conn.commit()
-        conn.close()
-
-        return redirect(url_for('index'))
-
-    except Exception as e:
-        print(f"خطأ تم احتواؤه في المريض: {e}")
-        return redirect(url_for('index'))
-
-# ---------------------------------------------------------
-# 3. دالة إضافة المصاريف [تم الإصلاح والـ Commit الفوري بنجاح]
-# ---------------------------------------------------------
-@app.route('/add_expense', methods=['POST'])
-def add_expense():
-    try:
-        expense_title = request.form.get('expense_title', '').strip()
-        expense_amount_raw = request.form.get('expense_amount', '0').strip()
-        
-        # طوق نجاة صارم لمنع سقوط السيرفر وتحويل الفراغات لـ صفر
-        try:
-            expense_amount = float(expense_amount_raw) if expense_amount_raw else 0.0
-        except ValueError:
-            expense_amount = 0.0
-
-        if not expense_title or expense_amount <= 0:
-            return redirect(url_for('index'))
-
-        today_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
-        # الاتصال بالحفظ الفوري والتثبيت لضمان التسجيل بدون تهنيج
-        conn = get_db_connection()
-        conn.execute('''
-            INSERT INTO expenses (expense_title, expense_amount, date_added)
-            VALUES (?, ?, ?)
-        ''', (expense_title, expense_amount, today_date))
-        conn.commit()  # تثبيت الحفظ فوراً في الداتابيز لضمان تسجيله
-        conn.close()
-
-        return redirect(url_for('index'))
-        
-    except Exception as e:
-        print(f"خطأ تم منعه واحتواؤه في المصاريف: {e}")
-        return redirect(url_for('index'))
-
-# ---------------------------------------------------------
-# التشغيل التلقائي الآمن للبرنامج والداتابيز
-# ---------------------------------------------------------
-if __name__ == '__main__':
-    init_db()
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-        
-    # تشغيل السيرفر المحلي للعيادة
-    app.run(debug=True, port=5000)
