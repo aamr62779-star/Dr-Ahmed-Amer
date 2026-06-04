@@ -20,41 +20,97 @@
             color: white; 
             padding: 15px 20px; 
             border-radius: 8px; 
-            text-align: center; 
-            margin-bottom: 15px; 
+            margin-bottom: 25px; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-        }
-        header h1 { margin: 0; font-size: 24px; }
-
-        /* شريط التنقل بين الصفحات */
-        .nav-bar {
             display: flex;
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
         }
-        .nav-btn {
-            flex: 1;
-            padding: 12px;
+        header h1 { margin: 0; font-size: 22px; }
+
+        /* ☰ زر القائمة الجانبية في الهيدر */
+        .menu-btn {
+            background: #2980b9;
+            color: white;
             border: none;
-            background: #f1f5f9;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .menu-btn:hover { background: #1f618d; }
+
+        /* 📋 تصميم القائمة الجانبية المنسدلة الحديثة */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -280px; /* مخفية خارج الشاشة يميناً */
+            width: 280px;
+            height: 100%;
+            background: #ffffff;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 10px;
+            box-sizing: border-box;
+        }
+        .sidebar.open {
+            right: 0; /* تظهر عند التفعيل */
+        }
+        .sidebar-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2980b9;
+            border-bottom: 2px solid #eef5f9;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: #95a5a6;
+            cursor: pointer;
+        }
+        .sidebar-btn {
+            padding: 14px 18px;
+            border: none;
+            background: #f8fafc;
             color: #55677d;
             font-size: 15px;
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
+            text-align: right;
+            margin-bottom: 10px;
             transition: all 0.2s;
-            text-align: center;
         }
-        .nav-btn:hover { background: #e2e8f0; }
-        .nav-btn.active {
+        .sidebar-btn:hover { background: #e2e8f0; color: #2c3e50; }
+        .sidebar-btn.active {
             background: #3498db;
             color: white;
-            box-shadow: 0 3px 6px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 3px 6px rgba(52, 152, 219, 0.2);
         }
+
+        /* الطبقة المظلمة الخلفية للقائمة */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+        }
+        .sidebar-overlay.show { display: block; }
 
         .row { display: flex; gap: 20px; flex-wrap: wrap; }
         .col-12 { flex: 1; width: 100%; }
@@ -163,7 +219,7 @@
             overflow-y: auto;
         }
 
-        /* تصميم القائمة المنسدلة المخصصة الذكية */
+        /* تصميم القائمة المنسدلة المخصصة للخدمات الطبية */
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -209,22 +265,32 @@
 
 <!-- 🏥 شاشة البرنامج الرئيسية -->
 <div class="container" id="app-screen" style="display: none;">
+    
     <header>
         <h1>Dr. Amer’s Clinic - إدارة العيادة الذكية</h1>
+        <!-- زر فتح القائمة الجانبية -->
+        <button class="menu-btn" onclick="toggleSidebar(event)">☰ القائمة الرئيسية</button>
     </header>
 
-    <!-- 📱 شريط التنقل المبسط -->
-    <div class="nav-bar">
-        <button class="nav-btn active" id="btn-patients" onclick="switchPage('patients')">صفحة المرضى</button>
-        <button class="nav-btn" id="btn-expenses" onclick="switchPage('expenses')">حسابات ومصروفات</button>
+    <!-- 👥 خلفية داكنة للقائمة الجانبية عند ظهورها -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 📋 القائمة الجانبية المحدثة -->
+    <div id="app-sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <span>صفحات النظام</span>
+            <button class="close-sidebar-btn" onclick="toggleSidebar()">✕</button>
+        </div>
+        <button class="sidebar-btn active" id="sidebar-btn-patients" onclick="switchPage('patients')">👥 صفحة المرضى والتسجيل</button>
+        <button class="sidebar-btn" id="sidebar-btn-expenses" onclick="switchPage('expenses')">💰 حسابات ومصروفات العيادة</button>
     </div>
 
-    <!-- 1️⃣ صفحة المرضى الرئيسية -->
+    <!-- 1️⃣ صفحة المرضى الرئيسية (تظهر مباشرة أول واجهة) -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
                 
-                <!-- 🟢 صندوق الإدخال العلوي المبسط -->
+                <!-- 🟢 صندوق الإدخال العلوي المبسط لتسجيل مريض جديد -->
                 <div class="box old-box">
                     <h2>إضافة وتسجيل مريض جديد بالتاريخ</h2>
                     <form id="old-patient-form" onsubmit="saveOldPatient(event)">
@@ -343,7 +409,7 @@
             </div>
         </div>
 
-        <!-- 🦷 الخانة المحدثة: دمج كامل بين الاختيار بالسهم أو الكتابة اليدوية الحرة فوراً -->
+        <!-- 🦷 الخانة المدمجة: اختيار بالسهم أو كتابة يدوية حرة فوراً -->
         <div class="form-group" style="position: relative;">
             <label>الخدمة الطبية للاسنان (اختار أو اكتب مباشرة):</label>
             <div style="display: flex; width: 100%;">
@@ -400,13 +466,28 @@
         if (e.key === 'Enter') validateLogin();
     });
 
-    // دالة التبديل بين صفحة المرضى والمصروفات
-    function switchPage(pageName) {
-        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active-page'));
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    // 📱 فتح وإغلاق القائمة الجانبية
+    function toggleSidebar(event) {
+        if (event) event.stopPropagation();
+        const sidebar = document.getElementById('app-sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+    }
 
+    // دالة التبديل بين الصفحات من خلال القائمة الجانبية
+    function switchPage(pageName) {
+        // إخفاء وعرض الصفحات
+        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active-page'));
         document.getElementById('page-' + pageName).classList.add('active-page');
-        document.getElementById('btn-' + pageName).classList.add('active');
+
+        // تحديد الزر النشط داخل القائمة الجانبية
+        document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('sidebar-btn-' + pageName).classList.add('active');
+        
+        // إغلاق القائمة الجانبية تلقائياً بعد الاختيار
+        toggleSidebar();
         
         updateApp();
     }
@@ -424,7 +505,7 @@
 
         // عرض جدول سجل المرضى بالأعمدة المدمجة
         if (patients.length === 0) {
-            pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مريض مسجل حتى الآن.</td></tr>`;
+            pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
         } else {
             patients.forEach((p, index) => {
                 const row = document.createElement('tr');
@@ -485,20 +566,20 @@
         updateApp();
     }
 
-    // 🔘 فتح / إغلاق القائمة المنسدلة المخصصة عند الضغط على السهم
+    // 🔘 فتح / إغلاق القائمة المنسدلة للخدمات عند الضغط على السهم
     function toggleServicesDropdown(event) {
         event.stopPropagation();
         const menu = document.getElementById('services-dropdown-menu');
         menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
     }
 
-    // 🎯 عند اختيار خدمة من القائمة يتم إدخالها في الخانة مباشرة وإغلاق القائمة
+    // 🎯 عند اختيار خدمة يتم إدخالها في الخانة مباشرة وإغلاق القائمة
     function selectServiceItem(value) {
         document.getElementById('modal-p-service').value = value;
         document.getElementById('services-dropdown-menu').style.display = 'none';
     }
 
-    // إغلاق القائمة المنسدلة تلقائياً لو ضغطت في أي مكان آخر بالخطأ
+    // إغلاق أي قائمة منسدلة مفتوحة لو ضغطت في أي مكان حُر بالخطأ
     document.addEventListener('click', function() {
         const menu = document.getElementById('services-dropdown-menu');
         if (menu) menu.style.display = 'none';
