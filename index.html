@@ -179,7 +179,7 @@
     </div>
 </div>
 
-<!-- 🏥 شاشة البرنامج الرئيسية (تفتح بعد الباسورد مباشرة) -->
+<!-- 🏥 شاشة البرنامج الرئيسية -->
 <div class="container" id="app-screen" style="display: none;">
     <header>
         <h1>Dr. Amer’s Clinic - إدارة العيادة الذكية</h1>
@@ -196,7 +196,7 @@
         <div class="row">
             <div class="col-12">
                 
-                <!-- 🟢 صندوق الإدخال العلوي المبسط بدون خانات مادية -->
+                <!-- 🟢 صندوق الإدخال العلوي المبسط -->
                 <div class="box old-box">
                     <h2>إضافة وتسجيل مريض جديد بالتاريخ</h2>
                     <form id="old-patient-form" onsubmit="saveOldPatient(event)">
@@ -218,16 +218,17 @@
                     </form>
                 </div>
 
-                <!-- جدول عرض السجل الكامل بالمواصفات المطلوبة -->
+                <!-- جدول عرض السجل الكامل بالمواصفات الجديدة المدمجة والمالية -->
                 <div class="box">
-                    <h2>صفحة المرضى - السجل العام</h2>
+                    <h2>صفحة المرضى - السجل العام والمالي</h2>
                     <div style="overflow-x:auto;">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>الاسم</th>
-                                    <th>رقم المريض</th>
+                                    <th>الاسم ورقم المريض</th>
                                     <th>الزيارة</th>
+                                    <th>المدفوع</th>
+                                    <th>المتبقي</th>
                                     <th>الملف</th>
                                 </tr>
                             </thead>
@@ -281,7 +282,7 @@
 
 </div>
 
-<!-- 📂 نافذة ملف المريض المنبثقة (Modal) المحفوظ فيها الخانات المادية والطبية -->
+<!-- 📂 نافذة ملف المريض المنبثقة (Modal) -->
 <div id="patient-modal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
@@ -302,7 +303,7 @@
             <input type="date" id="modal-p-date">
         </div>
 
-        <!-- 💰 الخانات المادية مخصصة هنا داخل الملف بالكامل -->
+        <!-- 💰 الخانات المادية -->
         <div style="display: flex; gap: 10px;">
             <div class="form-group" style="flex: 1;">
                 <label>المدفوع (ج.م):</label>
@@ -314,9 +315,19 @@
             </div>
         </div>
 
+        <!-- 🦷 الخانة الذكية المحدثة: قائمة الخدمات المنسدلة مع إمكانية الكتابة اليدوية -->
         <div class="form-group">
-            <label>التشخيص / خطة العلاج والملاحظات الطبية:</label>
-            <textarea id="modal-p-notes" rows="4" placeholder="اكتب هنا الإجراءات الطبية أو الملاحظات الطبية..."></textarea>
+            <label>اختر الخدمة الطبية (أو اكتبها بنفسك):</label>
+            <input type="text" id="modal-p-service" list="services-options" placeholder="اضغط على السهم للاختيار أو اكتب هنا مباشرة...">
+            <datalist id="services-options">
+                <option value="حشو عادى">
+                <option value="حشو عصب">
+                <option value="تركيبات">
+                <option value="حشو عصب اطفال">
+                <option value="تنظيف وتلميع الاسنان">
+                <option value="خلع عادى">
+                <option value="خلع جراحى">
+            </datalist>
         </div>
 
         <div class="form-group">
@@ -334,7 +345,7 @@
 </div>
 
 <script>
-    // وضع تاريخ اليوم كقيمة افتراضية مسبقة لتسهيل العمل اليومي
+    // وضع تاريخ اليوم كقيمة افتراضية مسبقة
     document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
 
     // 🛡️ دالة التحقق من الرقم السري
@@ -379,16 +390,20 @@
         
         pBody.innerHTML = ''; eBody.innerHTML = '';
 
-        // عرض جدول سجل المرضى بالأعمدة الأربعة المطلوبة
+        // عرض جدول سجل المرضى بالأعمدة المدمجة
         if (patients.length === 0) {
-            pBody.innerHTML = `<tr><td colspan="4" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
+            pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
         } else {
             patients.forEach((p, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><strong>${p.patient_name || p.name || ''}</strong></td>
-                    <td>${p.phone || '—'}</td>
+                    <td>
+                        <strong>${p.patient_name || p.name || ''}</strong>
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 4px;">${p.phone || '—'}</div>
+                    </td>
                     <td style="color: #2980b9; font-weight: bold;">${p.date_added || ''}</td>
+                    <td style="color: #2ecc71; font-weight: bold;">${parseFloat(p.paid || 0).toFixed(2)} ج.م</td>
+                    <td style="color: #e74c3c; font-weight: bold;">${parseFloat(p.remaining || 0).toFixed(2)} ج.م</td>
                     <td><span class="eye-icon" onclick="openPatientFile(${index})" title="فتح الملف">👁️</span></td>
                 `;
                 pBody.appendChild(row);
@@ -411,7 +426,7 @@
         }
     }
 
-    // 💾 حفظ المريض من الصندوق العلوي (يبدأ الحساب افتراضياً بصفر حتى تفتحه وتعدله)
+    // 💾 حفظ المريض من الصندوق العلوي
     function saveOldPatient(event) {
         event.preventDefault();
         const name = document.getElementById('old-p-name').value.trim();
@@ -426,7 +441,7 @@
             date_added: customDate,
             paid: 0,
             remaining: 0,
-            notes: '',
+            service: '',
             xrays: 'لا يوجد'
         });
 
@@ -450,7 +465,7 @@
         document.getElementById('modal-p-date').value = p.date_added || '';
         document.getElementById('modal-p-paid').value = p.paid || 0;
         document.getElementById('modal-p-remaining').value = p.remaining || 0;
-        document.getElementById('modal-p-notes').value = p.notes || '';
+        document.getElementById('modal-p-service').value = p.service || p.notes || ''; // يدعم نقل البيانات القديمة إن وُجدت
         document.getElementById('modal-xrays-list').innerText = p.xrays || 'لا توجد أشعة مرفوعة';
         document.getElementById('modal-p-xray').value = ''; 
 
@@ -462,7 +477,7 @@
         document.getElementById('patient-modal').style.display = 'none';
     }
 
-    // 💾 حفظ التعديلات والملاحظات والحسابات الجديدة جوة ملف المريض
+    // 💾 حفظ التعديلات والخدمة المحددة جوة ملف المريض
     function savePatientFileChanges() {
         const index = document.getElementById('modal-patient-index').value;
         if (index === '') return;
@@ -472,7 +487,7 @@
         const updatedDate = document.getElementById('modal-p-date').value;
         const updatedPaid = parseFloat(document.getElementById('modal-p-paid').value) || 0;
         const updatedRemaining = parseFloat(document.getElementById('modal-p-remaining').value) || 0;
-        const updatedNotes = document.getElementById('modal-p-notes').value.trim();
+        const updatedService = document.getElementById('modal-p-service').value.trim();
         
         const xrayInput = document.getElementById('modal-p-xray');
         let currentXrays = patients[index].xrays || 'لا يوجد';
@@ -497,7 +512,7 @@
         patients[index].date_added = updatedDate;
         patients[index].paid = updatedPaid;
         patients[index].remaining = updatedRemaining;
-        patients[index].notes = updatedNotes;
+        patients[index].service = updatedService;
         patients[index].xrays = currentXrays;
 
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
