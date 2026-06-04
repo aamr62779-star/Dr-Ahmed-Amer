@@ -2,67 +2,40 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة عيادة د. عامر - النظام الكامل</title>
+    <title>برنامج عيادة د. عامر - السجل الأساسي</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         body { font-family: Tahoma; background: #eef5f9; padding: 10px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 5px; margin-bottom: 20px; }
-        .nav button { padding: 10px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: bold; }
-        .section { display: none; }
-        .active { display: block; }
-        input { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button.add { background: #27ae60; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button.add { background: #27ae60; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        th { background: #f8f9fa; color: #2980b9; }
-        .calc-box { background: #fdf2e9; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #fae5d3; }
+        th { background: #3498db; color: white; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="text-align:center; color: #2c3e50;">نظام إدارة العيادة الموحد</h2>
+    <h2 style="text-align:center;">👥 سجل حضور المرضى</h2>
     
-    <div class="nav">
-        <button onclick="show('patients')">👥 المرضى</button>
-        <button onclick="show('labs')">🧪 المعامل</button>
-        <button onclick="show('expenses')">💰 المصروفات</button>
-        <button onclick="show('percentages')">📊 النسب</button>
-    </div>
-
-    <div id="patients" class="section active">
-        <h3>تسجيل مريض جديد</h3>
+    <div class="section">
         <input type="text" id="pName" placeholder="اسم المريض">
-        <input type="number" id="pAmount" placeholder="المبلغ المدفوع">
-        <button class="add" onclick="save('patients', {name: document.getElementById('pName').value, amount: document.getElementById('pAmount').value})">حفظ المريض</button>
-        <table id="t-patients"><thead><tr><th>الاسم</th><th>المبلغ</th></tr></thead><tbody></tbody></table>
-    </div>
-
-    <div id="labs" class="section">
-        <h3>حسابات المعامل</h3>
-        <input type="text" id="lName" placeholder="اسم المعمل">
-        <input type="number" id="lAmount" placeholder="المبلغ">
-        <button class="add" onclick="save('labs', {name: document.getElementById('lName').value, amount: document.getElementById('lAmount').value})">حفظ الدفعة</button>
-        <table id="t-labs"><thead><tr><th>المعمل</th><th>المبلغ</th></tr></thead><tbody></tbody></table>
-    </div>
-
-    <div id="expenses" class="section">
-        <h3>المصروفات</h3>
-        <input type="text" id="eName" placeholder="بند المصروف">
-        <input type="number" id="eAmount" placeholder="المبلغ">
-        <button class="add" onclick="save('expenses', {name: document.getElementById('eName').value, amount: document.getElementById('eAmount').value})">حفظ المصروف</button>
-        <table id="t-expenses"><thead><tr><th>البند</th><th>المبلغ</th></tr></thead><tbody></tbody></table>
-    </div>
-
-    <div id="percentages" class="section">
-        <h3>📊 حساب نسب دكتور عامر والعيادة</h3>
-        <div class="calc-box">
-            <p>إجمالي دخل العيادة من المرضى: <strong id="totalIncome">0</strong> ج.م</p>
-            <p style="color: #27ae60;">نصيب دكتور عامر (70%): <strong id="drShare">0</strong> ج.م</p>
-            <p style="color: #e67e22;">نصيب العيادة (30%): <strong id="clinicShare">0</strong> ج.م</p>
-        </div>
+        <input type="text" id="pPhone" placeholder="رقم الهاتف">
+        <input type="date" id="pDate">
+        <button class="add" onclick="savePatient()">حفظ في سجل العيادة</button>
+        
+        <table id="t-patients">
+            <thead>
+                <tr>
+                    <th>اسم المريض</th>
+                    <th>رقم الهاتف</th>
+                    <th>تاريخ الحضور</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 </div>
 
@@ -71,49 +44,35 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function show(id) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
+    // ضبط التاريخ الحالي تلقائياً
+    document.getElementById('pDate').valueAsDate = new Date();
 
-    function save(node, data) {
-        if(Object.values(data).every(v => v)) {
-            db.ref(node).push(data);
-            document.querySelectorAll('input').forEach(i => i.value = '');
+    function savePatient() {
+        const name = document.getElementById('pName').value;
+        const phone = document.getElementById('pPhone').value;
+        const date = document.getElementById('pDate').value;
+
+        if(name && phone && date) {
+            db.ref('patients').push({name, phone, date});
+            document.getElementById('pName').value = '';
+            document.getElementById('pPhone').value = '';
         }
     }
 
-    // مزامنة وعرض البيانات + حساب النسب
-    const mapping = {
-        patients: ['name', 'amount'],
-        labs: ['name', 'amount'],
-        expenses: ['name', 'amount']
-    };
-
-    Object.keys(mapping).forEach(node => {
-        db.ref(node).on('value', (snapshot) => {
-            const tbody = document.querySelector(`#t-${node} tbody`);
-            if(tbody) tbody.innerHTML = '';
-            let total = 0;
-            snapshot.forEach((child) => {
-                const data = child.val();
-                if(tbody) {
-                    let row = '<tr>';
-                    mapping[node].forEach(k => row += `<td>${data[k] || ''}</td>`);
-                    row += '</tr>';
-                    tbody.innerHTML += row;
-                }
-                // حساب إجمالي الدخل من المرضى فقط
-                if(node === 'patients') total += parseFloat(data.amount || 0);
-            });
-            
-            if(node === 'patients') {
-                document.getElementById('totalIncome').innerText = total;
-                document.getElementById('drShare').innerText = (total * 0.70).toFixed(2);
-                document.getElementById('clinicShare').innerText = (total * 0.30).toFixed(2);
-            }
+    // عرض البيانات فورياً من السيرفر
+    db.ref('patients').on('value', (snapshot) => {
+        const tbody = document.querySelector('#t-patients tbody');
+        tbody.innerHTML = '';
+        snapshot.forEach((child) => {
+            const data = child.val();
+            tbody.innerHTML += `<tr>
+                <td>${data.name}</td>
+                <td>${data.phone}</td>
+                <td>${data.date}</td>
+            </tr>`;
         });
     });
 </script>
+
 </body>
 </html>
