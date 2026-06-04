@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dr. Amer’s Clinic</title>
     <style>
+        /* تصميم مخصص باللون الأزرق السماوي والأبيض مريح للعين */
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: #eef5f9; 
@@ -13,6 +14,7 @@
             margin: 0; 
         }
         .container { max-width: 1100px; margin: 0 auto; }
+        
         header { 
             background: #3498db; 
             color: white; 
@@ -23,6 +25,8 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
         }
         header h1 { margin: 0; font-size: 24px; }
+        
+        /* لوحة الحسابات الشهرية الملونة */
         .dashboard { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
         .card { 
             flex: 1; 
@@ -52,10 +56,12 @@
             margin-bottom: 20px; 
         }
         .box.expense-box { border-top-color: #e74c3c; }
+        
         h2 { font-size: 18px; margin-top: 0; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #eee; color: #2980b9; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #34495e; }
-        input[type="text"], input[type="number"], select { 
+        
+        input[type="text"], input[type="number"], input[type="password"], select { 
             width: 100%; 
             padding: 10px; 
             border: 1px solid #bdc3c7; 
@@ -64,6 +70,12 @@
             font-size: 15px; 
             background-color: #fff;
         }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            background-color: #f7faff;
+        }
+        
         .btn-submit { 
             background-color: #3498db; 
             color: white; 
@@ -74,18 +86,46 @@
             width: 100%; 
             font-size: 16px; 
             font-weight: bold; 
+            transition: background 0.2s;
         }
+        .btn-submit:hover { background-color: #2980b9; }
         .btn-expense { background-color: #e74c3c; }
+        .btn-expense:hover { background-color: #c0392b; }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; background: white; }
         th, td { border: 1px solid #e2e8f0; padding: 11px; text-align: center; }
         th { background-color: #e8f2f9; color: #2980b9; font-weight: bold; }
         tr:nth-child(even) { background-color: #fcfdfe; }
-        .clear-btn { background: #95a5a6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 10px; float: left; }
+        
+        .clear-btn { 
+            background: #95a5a6; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            margin-top: 10px; 
+            float: left; 
+        }
+        .clear-btn:hover { background: #7f8c8d; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div id="login-screen" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
+    <div class="box" style="width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
+        <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول للعيادة</h2>
+        <div class="form-group" style="text-align: right;">
+            <label>أدخل الرقم السري:</label>
+            <input type="password" id="app-password" placeholder="••••" style="text-align: center; font-size: 20px; letter-spacing: 6px;">
+        </div>
+        <p id="login-error" style="color: #e74c3c; font-size: 14px; display: none; margin-bottom: 15px; font-weight: bold;">الرقم السري غير صحيح! حاول مرة أخرى.</p>
+        <button onclick="validateLogin()" class="btn-submit">دخول للبرنامج</button>
+    </div>
+</div>
+
+<div class="container" id="app-screen" style="display: none;">
     <header>
         <h1>Dr. Amer’s Clinic - إدارة العيادة الذكية</h1>
     </header>
@@ -123,7 +163,7 @@
                     </div>
                     <div class="form-group">
                         <label>الخدمة / الإجراء الطبي:</label>
-                        <input type="text" id="p-service" required placeholder="مثال: حشو تجميلي...">
+                        <input type="text" id="p-service" required placeholder="مثال: حشو تجميلي، زيركون، علاج عصب">
                     </div>
                     <div class="form-group" style="display: flex; gap: 10px;">
                         <div style="flex: 1;">
@@ -136,7 +176,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>إرفاق صور الأشعة:</label>
+                        <label>إرفاق صور الأشعة (اسم الملف):</label>
                         <input type="file" id="p-xray" multiple accept="image/*">
                     </div>
                     <button type="submit" class="btn-submit">حفظ ملف المريض</button>
@@ -148,7 +188,7 @@
                 <form id="expense-form" onsubmit="saveExpense(event)">
                     <div class="form-group">
                         <label>بند المصروف:</label>
-                        <input type="text" id="e-title" required placeholder="مثال: أدوات، خامات...">
+                        <input type="text" id="e-title" required placeholder="مثال: أدوات، خامات، إيجار...">
                     </div>
                     <div class="form-group">
                         <label>المبلغ المدفوع:</label>
@@ -201,7 +241,33 @@
 </div>
 
 <script>
-    // 🛡️ خاصية الاسترجاع التلقائي: تبحث في كل الأسماء المحتملة التي قد تكون بياناتك القديمة مخزنة تحتها
+    // 🛡️ دالة التحقق من الرقم السري
+    function validateLogin() {
+        const enteredPassword = document.getElementById('app-password').value;
+        
+        // ⚙️ هنا الرقم السري الحالي (1234) تقدر تغيره لأي رقم يعجبك
+        const correctPassword = "1234"; 
+
+        if (enteredPassword === correctPassword) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'block';
+            updateApp(); // تشغيل وجلب البيانات فوراً بعد الدخول الصحيح
+        } else {
+            document.getElementById('login-error').style.style.display = 'block';
+            document.getElementById('login-error').style.display = 'block';
+            document.getElementById('app-password').value = '';
+            document.getElementById('app-password').focus();
+        }
+    }
+
+    // تشغيل الدخول عند الضغط على زرار Enter في كيبورد الموبايل أو الكمبيوتر لتسهيل العمل
+    document.getElementById('app-password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            validateLogin();
+        }
+    });
+
+    // جلب البيانات من الذاكرة المحلية الآمنة للمتصفح (خاصية الاسترجاع التلقائي)
     let patients = JSON.parse(localStorage.getItem('clinic_patients')) || 
                    JSON.parse(localStorage.getItem('patients')) || 
                    JSON.parse(localStorage.getItem('patientsData')) || [];
@@ -210,7 +276,6 @@
                    JSON.parse(localStorage.getItem('expenses')) || 
                    JSON.parse(localStorage.getItem('expensesData')) || [];
 
-    // حفظها بالاسم الجديد فوراً لتوحيد القاعدة
     localStorage.setItem('clinic_patients', JSON.stringify(patients));
     localStorage.setItem('clinic_expenses', JSON.stringify(expenses));
 
@@ -221,6 +286,8 @@
 
         const pBody = document.getElementById('patients-table-body');
         const eBody = document.getElementById('expenses-table-body');
+        if(!pBody || !eBody) return; // الحماية في حالة عدم تسجيل الدخول بعد
+        
         pBody.innerHTML = ''; eBody.innerHTML = '';
 
         if (patients.length === 0) {
@@ -311,8 +378,6 @@
             updateApp();
         }
     }
-
-    updateApp();
 </script>
 </body>
 </html>
