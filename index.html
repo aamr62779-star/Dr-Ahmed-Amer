@@ -125,12 +125,13 @@
         }
         .box.expense-box { border-top-color: #e74c3c; }
         .box.old-box { border-top-color: #2ecc71; } 
+        .box.monthly-box { border-top-color: #9b59b6; } /* لون بنفسجي مميز لصفحة الشهور */
         
         h2 { font-size: 18px; margin-top: 0; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #eee; color: #2980b9; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #34495e; }
         
-        input[type="text"], input[type="number"], input[type="password"], input[type="date"], textarea { 
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"], select, textarea { 
             width: 100%; 
             padding: 10px; 
             border: 1px solid #bdc3c7; 
@@ -140,7 +141,7 @@
             background-color: #fff;
             font-family: inherit;
         }
-        input:focus, textarea:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #3498db;
             background-color: #f7faff;
@@ -169,7 +170,6 @@
         th { background-color: #e8f2f9; color: #2980b9; font-weight: bold; }
         tr:nth-child(even) { background-color: #fcfdfe; }
         
-        /* نمط اسم المريض القابل للضغط */
         .patient-clickable-name {
             color: #2c3e50;
             cursor: pointer;
@@ -181,7 +181,6 @@
             text-decoration: underline;
         }
 
-        /* نمط رقم الهاتف المخصص للاتصال الفوري */
         .phone-call-link {
             color: #7f8c8d;
             text-decoration: none;
@@ -192,7 +191,7 @@
             transition: color 0.15s;
         }
         .phone-call-link:hover {
-            color: #2ecc71; /* يتحول للأخضر عند تمرير الماوس إشارة للاتصال */
+            color: #2ecc71; 
             text-decoration: underline;
         }
 
@@ -246,7 +245,6 @@
             overflow-y: auto;
         }
 
-        /* تصميم القائمة المنسدلة المخصصة للخدمات الطبية */
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -274,7 +272,6 @@
             font-weight: bold;
         }
 
-        /* تصميم أسطر سجل الدفعات */
         .payment-item {
             display: flex;
             justify-content: space-between;
@@ -298,7 +295,6 @@
 </head>
 <body>
 
-<!-- 🔑 شاشة قفل تسجيل الدخول -->
 <div id="login-screen" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
     <div class="box" style="width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
         <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول للعيادة</h2>
@@ -311,7 +307,6 @@
     </div>
 </div>
 
-<!-- 🏥 شاشة البرنامج الرئيسية -->
 <div class="container" id="app-screen" style="display: none;">
     
     <header>
@@ -327,10 +322,10 @@
             <button class="close-sidebar-btn" onclick="toggleSidebar()">✕</button>
         </div>
         <button class="sidebar-btn active" id="sidebar-btn-patients" onclick="switchPage('patients')">👥 صفحة المرضى والتسجيل</button>
+        <button class="sidebar-btn" id="sidebar-btn-monthly" onclick="switchPage('monthly')">📅 سجل المرضى الشهري</button>
         <button class="sidebar-btn" id="sidebar-btn-expenses" onclick="switchPage('expenses')">💰 حسابات ومصروفات العيادة</button>
     </div>
 
-    <!-- 1️⃣ صفحة المرضى الرئيسية -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
@@ -388,7 +383,62 @@
         </div>
     </div>
 
-    <!-- 2️⃣ صفحة حسابات ومصروفات المستقلة -->
+    <div id="page-monthly" class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="box monthly-box">
+                    <h2>📅 سجل المرضى والأرشيف الشهري</h2>
+                    
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 150px;">
+                            <label>اختر الشهر لمشاهدة حالاته:</label>
+                            <select id="monthly-month-select" onchange="updateApp()">
+                                <option value="1">يناير (01)</option>
+                                <option value="2">فبراير (02)</option>
+                                <option value="3">مارس (03)</option>
+                                <option value="4">أبريل (04)</option>
+                                <option value="5">مايو (05)</option>
+                                <option value="6">يونيو (06)</option>
+                                <option value="7">يوليو (07)</option>
+                                <option value="8">أغسطس (08)</option>
+                                <option value="9">سبتمبر (09)</option>
+                                <option value="10">أكتوبر (10)</option>
+                                <option value="11">نوفمبر (11)</option>
+                                <option value="12">ديسمبر (12)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 150px;">
+                            <label>اختر السنة:</label>
+                            <select id="monthly-year-select" onchange="updateApp()">
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                                <option value="2029">2029</option>
+                                <option value="2030">2030</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الاسم ورقم المريض</th>
+                                    <th>تاريخ الزيارة</th>
+                                    <th>إجمالي المدفوع</th>
+                                    <th>المتبقي الكلي</th>
+                                    <th>الملف</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthly-patients-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="page-expenses" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -429,7 +479,6 @@
 
 </div>
 
-<!-- 📂 نافذة ملف المريض المنبثقة (Modal) -->
 <div id="patient-modal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
@@ -513,8 +562,14 @@
 </div>
 
 <script>
-    document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('new-payment-date').value = new Date().toISOString().split('T')[0];
+    // تهيئة الشهور والتواريخ التلقائية عند التحميل الأول للبرنامج
+    const currentToday = new Date();
+    document.getElementById('old-p-date').value = currentToday.toISOString().split('T')[0];
+    document.getElementById('new-payment-date').value = currentToday.toISOString().split('T')[0];
+    
+    // ضبط قوائم الفلترة الشهرية تلقائياً على الشهر والسنة الحاليين
+    document.getElementById('monthly-month-select').value = currentToday.getMonth() + 1;
+    document.getElementById('monthly-year-select').value = currentToday.getFullYear();
 
     let tempPaymentsList = [];
     let showDebtsOnly = false;
@@ -584,26 +639,36 @@
 
     function updateApp() {
         const pBody = document.getElementById('patients-table-body');
+        const mBody = document.getElementById('monthly-patients-table-body');
         const eBody = document.getElementById('expenses-table-body');
-        if(!pBody || !eBody) return; 
         
-        pBody.innerHTML = ''; eBody.innerHTML = '';
+        if(pBody) pBody.innerHTML = ''; 
+        if(mBody) mBody.innerHTML = '';
+        if(eBody) eBody.innerHTML = '';
 
+        // قيم الفلترة والبحث المباشر
         const searchInput = document.getElementById('search-patient-input');
         const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
+        const targetMonth = parseInt(document.getElementById('monthly-month-select').value);
+        const targetYear = parseInt(document.getElementById('monthly-year-select').value);
+
         let visiblePatientsCount = 0;
+        let monthlyPatientsCount = 0;
 
         if (patients.length === 0) {
-            pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
+            if(pBody) pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
+            if(mBody) mBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
         } else {
             patients.forEach((p, index) => {
-                const pName = (p.patient_name || p.name || '').toLowerCase();
-                
-                if (searchQuery && !pName.includes(searchQuery)) {
-                    return; 
-                }
+                // استخراج الشهر والسنة لكل مريض بطريقة آمنة
+                const dateParts = p.date_added ? p.date_added.split('-') : [];
+                const pYear = dateParts[0] ? parseInt(dateParts[0]) : 0;
+                const pMonth = dateParts[1] ? parseInt(dateParts[1]) : 0;
 
+                const pName = (p.patient_name || p.name || '').toLowerCase();
+
+                // الحسابات المالية للمريض
                 let totalPaid = 0;
                 if (p.payments && p.payments.length > 0) {
                     totalPaid = p.payments.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
@@ -615,18 +680,10 @@
                 if (isNaN(totalAmount)) {
                     totalAmount = totalPaid + parseFloat(p.remaining || 0);
                 }
-
                 let remainingTotal = totalAmount - totalPaid;
 
-                if (showDebtsOnly && remainingTotal <= 0) {
-                    return; 
-                }
-
-                visiblePatientsCount++;
-
-                const row = document.createElement('tr');
-                // تم تعديل السطر بالأسفل لإتاحة الضغط على الاسم لفتح الملف والضغط على الرقم للاتصال
-                row.innerHTML = `
+                // بناء صف الجدول الموحد هيدروليكياً
+                const generateRowHTML = () => `
                     <td>
                         <strong class="patient-clickable-name" onclick="openPatientFile(${index})" title="اضغط لفتح ملف المريض">${p.patient_name || p.name || ''}</strong>
                         <div style="font-size: 13px; margin-top: 5px;">
@@ -638,25 +695,51 @@
                     <td style="color: #e74c3c; font-weight: bold;">${remainingTotal.toFixed(2)} ج.م</td>
                     <td><span class="eye-icon" onclick="openPatientFile(${index})" title="فتح الملف">👁️</span></td>
                 `;
-                pBody.appendChild(row);
+
+                // 1️⃣ بناء السجل العام الرئيسي (مع فلاتر البحث والدين)
+                let skipMainTable = false;
+                if (searchQuery && !pName.includes(searchQuery)) skipMainTable = true;
+                if (showDebtsOnly && remainingTotal <= 0) skipMainTable = true;
+
+                if (!skipMainTable && pBody) {
+                    visiblePatientsCount++;
+                    const row = document.createElement('tr');
+                    row.innerHTML = generateRowHTML();
+                    pBody.appendChild(row);
+                }
+
+                // 2️⃣ بناء الجدول الشهري (إذا تطابق شهر المريض مع الشهر المختار)
+                if (pYear === targetYear && pMonth === targetMonth && mBody) {
+                    monthlyPatientsCount++;
+                    const row = document.createElement('tr');
+                    row.innerHTML = generateRowHTML();
+                    mBody.appendChild(row);
+                }
             });
 
-            if (visiblePatientsCount === 0) {
+            // رسائل التنبيه في حالة عدم وجود نتائج
+            if (visiblePatientsCount === 0 && pBody) {
                 pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا توجد نتائج تطابق البحث أو الفلترة المالية الحالية.</td></tr>`;
+            }
+            if (monthlyPatientsCount === 0 && mBody) {
+                mBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا توجد حالات مسجلة في هذا الشهر المختار بعد.</td></tr>`;
             }
         }
 
+        // 3️⃣ بناء جدول المصروفات
         if (expenses.length === 0) {
-            eBody.innerHTML = `<tr><td colspan="3" style="color: #95a5a6;">لم يتم تسجيل أي مصروفات حتى الآن.</td></tr>`;
+            if(eBody) eBody.innerHTML = `<tr><td colspan="3" style="color: #95a5a6;">لم يتم تسجيل أي مصروفات حتى الآن.</td></tr>`;
         } else {
             expenses.forEach(e => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${e.expense_title || e.title || ''}</strong></td>
-                    <td style="color: #e74c3c; font-weight: bold;">${parseFloat(e.expense_amount || e.amount || 0).toFixed(2)} ج.م</td>
-                    <td style="font-size: 11px; color: #7f8c8d;">${e.date_added || ''}</td>
-                `;
-                eBody.appendChild(row);
+                if(eBody) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${e.expense_title || e.title || ''}</strong></td>
+                        <td style="color: #e74c3c; font-weight: bold;">${parseFloat(e.expense_amount || e.amount || 0).toFixed(2)} ج.م</td>
+                        <td style="font-size: 11px; color: #7f8c8d;">${e.date_added || ''}</td>
+                    `;
+                    eBody.appendChild(row);
+                }
             });
         }
     }
@@ -755,7 +838,7 @@
         const dateStr = dateInput.value;
 
         if (amount <= 0 || !dateStr) {
-            alert('الرجاء إدخل مبلغ صحيح وتحديد تاريخ الدفعة.');
+            alert('الرجاء إدخال مبلغ صحيح وتحديد تاريخ الدفعة.');
             return;
         }
 
@@ -782,6 +865,7 @@
 
     function renderPaymentsList() {
         const historyContainer = document.getElementById('modal-payments-history-list');
+        if(!historyContainer) return;
         historyContainer.innerHTML = '';
 
         let totalPaid = 0;
