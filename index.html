@@ -74,7 +74,7 @@
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #34495e; }
         
-        input[type="text"], input[type="number"], input[type="password"], input[type="date"], textarea { 
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"], select, textarea { 
             width: 100%; 
             padding: 10px; 
             border: 1px solid #bdc3c7; 
@@ -84,7 +84,7 @@
             background-color: #fff;
             font-family: inherit;
         }
-        input:focus, textarea:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #3498db;
             background-color: #f7faff;
@@ -315,19 +315,26 @@
             </div>
         </div>
 
-        <!-- 🦷 الخانة الذكية المحدثة: قائمة الخدمات المنسدلة مع إمكانية الكتابة اليدوية -->
+        <!-- 🦷 القائمة المنسدلة الذكية والمضمونة بنسبة 100% بسهم صريح -->
         <div class="form-group">
-            <label>اختر الخدمة الطبية (أو اكتبها بنفسك):</label>
-            <input type="text" id="modal-p-service" list="services-options" placeholder="اضغط على السهم للاختيار أو اكتب هنا مباشرة...">
-            <datalist id="services-options">
-                <option value="حشو عادى">
-                <option value="حشو عصب">
-                <option value="تركيبات">
-                <option value="حشو عصب اطفال">
-                <option value="تنظيف وتلميع الاسنان">
-                <option value="خلع عادى">
-                <option value="خلع جراحى">
-            </datalist>
+            <label>اختر الخدمة الطبية للاسنان:</label>
+            <select id="modal-p-service-select" onchange="toggleCustomServiceInput()">
+                <option value="">-- اضغط هنا للاختيار من القائمة --</option>
+                <option value="حشو عادى">حشو عادى</option>
+                <option value="حشو عصب">حشو عصب</option>
+                <option value="تركيبات">تركيبات</option>
+                <option value="حشو عصب اطفال">حشو عصب اطفال</option>
+                <option value="تنظيف وتلميع الاسنان">تنظيف وتلميع الاسنان</option>
+                <option value="خلع عادى">خلع عادى</option>
+                <option value="خلع جراحى">خلع جراحى</option>
+                <option value="custom_option">أخرى (كتابة خدمة مخصصة)...</option>
+            </select>
+        </div>
+
+        <!-- خانة الكتابة اليدوية المخفية (تظهر فقط لو اختار "أخرى") -->
+        <div class="form-group" id="custom-service-wrapper" style="display: none;">
+            <label style="color: #e67e22;">اكتب الخدمة الطبية المخصصة:</label>
+            <input type="text" id="modal-p-service-custom" placeholder="اكتب الإجراء الطبي هنا...">
         </div>
 
         <div class="form-group">
@@ -453,6 +460,19 @@
         updateApp();
     }
 
+    // التحكم في ظهور خانة الكتابة اليدوية عند اختيار "أخرى"
+    function toggleCustomServiceInput() {
+        const selectElement = document.getElementById('modal-p-service-select');
+        const wrapper = document.getElementById('custom-service-wrapper');
+        
+        if (selectElement.value === 'custom_option') {
+            wrapper.style.display = 'block';
+            document.getElementById('modal-p-service-custom').focus();
+        } else {
+            wrapper.style.display = 'none';
+        }
+    }
+
     // 📁 فتح ملف المريض المنبثق عند الضغط على العين 👁️
     function openPatientFile(index) {
         const p = patients[index];
@@ -465,9 +485,31 @@
         document.getElementById('modal-p-date').value = p.date_added || '';
         document.getElementById('modal-p-paid').value = p.paid || 0;
         document.getElementById('modal-p-remaining').value = p.remaining || 0;
-        document.getElementById('modal-p-service').value = p.service || p.notes || ''; // يدعم نقل البيانات القديمة إن وُجدت
         document.getElementById('modal-xrays-list').innerText = p.xrays || 'لا توجد أشعة مرفوعة';
         document.getElementById('modal-p-xray').value = ''; 
+
+        // معالجة عرض الخدمة الطبية المحفوظة بذكاء
+        const savedService = p.service || p.notes || '';
+        const selectElement = document.getElementById('modal-p-service-select');
+        const customInput = document.getElementById('modal-p-service-custom');
+        const wrapper = document.getElementById('custom-service-wrapper');
+
+        const standardServices = ["حشو عادى", "حشو عصب", "تركيبات", "حشو عصب اطفال", "تنظيف وتلميع الاسنان", "خلع عادى", "خلع جراحى"];
+
+        if (savedService === '') {
+            selectElement.value = '';
+            wrapper.style.display = 'none';
+            customInput.value = '';
+        } else if (standardServices.includes(savedService)) {
+            selectElement.value = savedService;
+            wrapper.style.display = 'none';
+            customInput.value = '';
+        } else {
+            // لو مكتوبة بالإيد قبل كدة، بنخلي الاختيار "أخرى" وبنظهر الكلام في المربع المخصص
+            selectElement.value = 'custom_option';
+            wrapper.style.display = 'block';
+            customInput.value = savedService;
+        }
 
         document.getElementById('patient-modal').style.display = 'flex';
     }
@@ -487,7 +529,15 @@
         const updatedDate = document.getElementById('modal-p-date').value;
         const updatedPaid = parseFloat(document.getElementById('modal-p-paid').value) || 0;
         const updatedRemaining = parseFloat(document.getElementById('modal-p-remaining').value) || 0;
-        const updatedService = document.getElementById('modal-p-service').value.trim();
+        
+        // تحديد الخدمة المراد حفظها بناءً على الاختيار
+        const selectElement = document.getElementById('modal-p-service-select');
+        let finalService = '';
+        if (selectElement.value === 'custom_option') {
+            finalService = document.getElementById('modal-p-service-custom').value.trim();
+        } else {
+            finalService = selectElement.value;
+        }
         
         const xrayInput = document.getElementById('modal-p-xray');
         let currentXrays = patients[index].xrays || 'لا يوجد';
@@ -512,7 +562,7 @@
         patients[index].date_added = updatedDate;
         patients[index].paid = updatedPaid;
         patients[index].remaining = updatedRemaining;
-        patients[index].service = updatedService;
+        patients[index].service = finalService;
         patients[index].xrays = currentXrays;
 
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
