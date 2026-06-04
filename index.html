@@ -74,7 +74,7 @@
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #34495e; }
         
-        input[type="text"], input[type="number"], input[type="password"], input[type="date"], select, textarea { 
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"], textarea { 
             width: 100%; 
             padding: 10px; 
             border: 1px solid #bdc3c7; 
@@ -84,7 +84,7 @@
             background-color: #fff;
             font-family: inherit;
         }
-        input:focus, select:focus, textarea:focus {
+        input:focus, textarea:focus {
             outline: none;
             border-color: #3498db;
             background-color: #f7faff;
@@ -161,6 +161,34 @@
             border-top: 5px solid #3498db;
             max-height: 90vh;
             overflow-y: auto;
+        }
+
+        /* تصميم القائمة المنسدلة المخصصة الذكية */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%; right: 0; left: 0;
+            background: #fff;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 10005;
+            max-height: 220px;
+            overflow-y: auto;
+            margin-top: 2px;
+        }
+        .dropdown-item {
+            padding: 11px 15px;
+            cursor: pointer;
+            text-align: right;
+            font-size: 14px;
+            color: #2c3e50;
+            transition: background 0.1s;
+        }
+        .dropdown-item:hover {
+            background-color: #e8f2f9;
+            color: #2980b9;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -315,26 +343,23 @@
             </div>
         </div>
 
-        <!-- 🦷 القائمة المنسدلة الذكية والمضمونة بنسبة 100% بسهم صريح -->
-        <div class="form-group">
-            <label>اختر الخدمة الطبية للاسنان:</label>
-            <select id="modal-p-service-select" onchange="toggleCustomServiceInput()">
-                <option value="">-- اضغط هنا للاختيار من القائمة --</option>
-                <option value="حشو عادى">حشو عادى</option>
-                <option value="حشو عصب">حشو عصب</option>
-                <option value="تركيبات">تركيبات</option>
-                <option value="حشو عصب اطفال">حشو عصب اطفال</option>
-                <option value="تنظيف وتلميع الاسنان">تنظيف وتلميع الاسنان</option>
-                <option value="خلع عادى">خلع عادى</option>
-                <option value="خلع جراحى">خلع جراحى</option>
-                <option value="custom_option">أخرى (كتابة خدمة مخصصة)...</option>
-            </select>
-        </div>
-
-        <!-- خانة الكتابة اليدوية المخفية (تظهر فقط لو اختار "أخرى") -->
-        <div class="form-group" id="custom-service-wrapper" style="display: none;">
-            <label style="color: #e67e22;">اكتب الخدمة الطبية المخصصة:</label>
-            <input type="text" id="modal-p-service-custom" placeholder="اكتب الإجراء الطبي هنا...">
+        <!-- 🦷 الخانة المحدثة: دمج كامل بين الاختيار بالسهم أو الكتابة اليدوية الحرة فوراً -->
+        <div class="form-group" style="position: relative;">
+            <label>الخدمة الطبية للاسنان (اختار أو اكتب مباشرة):</label>
+            <div style="display: flex; width: 100%;">
+                <input type="text" id="modal-p-service" placeholder="اكتب الخدمة هنا أو اضغط السهم للاختيار..." style="border-radius: 0 6px 6px 0; border-left: none; flex: 1;">
+                <button type="button" onclick="toggleServicesDropdown(event)" style="background: #e8f2f9; border: 1px solid #bdc3c7; border-radius: 6px 0 0 6px; width: 45px; cursor: pointer; color: #2980b9; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; outline: none;">▼</button>
+            </div>
+            <!-- القائمة المنبثقة المضمونة -->
+            <div id="services-dropdown-menu" class="dropdown-menu">
+                <div class="dropdown-item" onclick="selectServiceItem('حشو عادى')">حشو عادى</div>
+                <div class="dropdown-item" onclick="selectServiceItem('حشو عصب')">حشو عصب</div>
+                <div class="dropdown-item" onclick="selectServiceItem('تركيبات')">تركيبات</div>
+                <div class="dropdown-item" onclick="selectServiceItem('حشو عصب اطفال')">حشو عصب اطفال</div>
+                <div class="dropdown-item" onclick="selectServiceItem('تنظيف وتلميع الاسنان')">تنظيف وتلميع الاسنان</div>
+                <div class="dropdown-item" onclick="selectServiceItem('خلع عادى')">خلع عادى</div>
+                <div class="dropdown-item" onclick="selectServiceItem('خلع جراحى')">خلع جراحى</div>
+            </div>
         </div>
 
         <div class="form-group">
@@ -399,7 +424,7 @@
 
         // عرض جدول سجل المرضى بالأعمدة المدمجة
         if (patients.length === 0) {
-            pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
+            pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مريض مسجل حتى الآن.</td></tr>`;
         } else {
             patients.forEach((p, index) => {
                 const row = document.createElement('tr');
@@ -460,18 +485,24 @@
         updateApp();
     }
 
-    // التحكم في ظهور خانة الكتابة اليدوية عند اختيار "أخرى"
-    function toggleCustomServiceInput() {
-        const selectElement = document.getElementById('modal-p-service-select');
-        const wrapper = document.getElementById('custom-service-wrapper');
-        
-        if (selectElement.value === 'custom_option') {
-            wrapper.style.display = 'block';
-            document.getElementById('modal-p-service-custom').focus();
-        } else {
-            wrapper.style.display = 'none';
-        }
+    // 🔘 فتح / إغلاق القائمة المنسدلة المخصصة عند الضغط على السهم
+    function toggleServicesDropdown(event) {
+        event.stopPropagation();
+        const menu = document.getElementById('services-dropdown-menu');
+        menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
     }
+
+    // 🎯 عند اختيار خدمة من القائمة يتم إدخالها في الخانة مباشرة وإغلاق القائمة
+    function selectServiceItem(value) {
+        document.getElementById('modal-p-service').value = value;
+        document.getElementById('services-dropdown-menu').style.display = 'none';
+    }
+
+    // إغلاق القائمة المنسدلة تلقائياً لو ضغطت في أي مكان آخر بالخطأ
+    document.addEventListener('click', function() {
+        const menu = document.getElementById('services-dropdown-menu');
+        if (menu) menu.style.display = 'none';
+    });
 
     // 📁 فتح ملف المريض المنبثق عند الضغط على العين 👁️
     function openPatientFile(index) {
@@ -485,31 +516,13 @@
         document.getElementById('modal-p-date').value = p.date_added || '';
         document.getElementById('modal-p-paid').value = p.paid || 0;
         document.getElementById('modal-p-remaining').value = p.remaining || 0;
+        
+        // عرض الخدمة المكتوبة أو المختارة مباشرة داخل المربع الحُر
+        document.getElementById('modal-p-service').value = p.service || p.notes || '';
+        document.getElementById('services-dropdown-menu').style.display = 'none';
+
         document.getElementById('modal-xrays-list').innerText = p.xrays || 'لا توجد أشعة مرفوعة';
         document.getElementById('modal-p-xray').value = ''; 
-
-        // معالجة عرض الخدمة الطبية المحفوظة بذكاء
-        const savedService = p.service || p.notes || '';
-        const selectElement = document.getElementById('modal-p-service-select');
-        const customInput = document.getElementById('modal-p-service-custom');
-        const wrapper = document.getElementById('custom-service-wrapper');
-
-        const standardServices = ["حشو عادى", "حشو عصب", "تركيبات", "حشو عصب اطفال", "تنظيف وتلميع الاسنان", "خلع عادى", "خلع جراحى"];
-
-        if (savedService === '') {
-            selectElement.value = '';
-            wrapper.style.display = 'none';
-            customInput.value = '';
-        } else if (standardServices.includes(savedService)) {
-            selectElement.value = savedService;
-            wrapper.style.display = 'none';
-            customInput.value = '';
-        } else {
-            // لو مكتوبة بالإيد قبل كدة، بنخلي الاختيار "أخرى" وبنظهر الكلام في المربع المخصص
-            selectElement.value = 'custom_option';
-            wrapper.style.display = 'block';
-            customInput.value = savedService;
-        }
 
         document.getElementById('patient-modal').style.display = 'flex';
     }
@@ -530,14 +543,8 @@
         const updatedPaid = parseFloat(document.getElementById('modal-p-paid').value) || 0;
         const updatedRemaining = parseFloat(document.getElementById('modal-p-remaining').value) || 0;
         
-        // تحديد الخدمة المراد حفظها بناءً على الاختيار
-        const selectElement = document.getElementById('modal-p-service-select');
-        let finalService = '';
-        if (selectElement.value === 'custom_option') {
-            finalService = document.getElementById('modal-p-service-custom').value.trim();
-        } else {
-            finalService = selectElement.value;
-        }
+        // جلب الكلام المكتوب داخل الخانة (سواء تم اختياره بالسهم أو كتابته يدوياً)
+        const updatedService = document.getElementById('modal-p-service').value.trim();
         
         const xrayInput = document.getElementById('modal-p-xray');
         let currentXrays = patients[index].xrays || 'لا يوجد';
@@ -562,7 +569,7 @@
         patients[index].date_added = updatedDate;
         patients[index].paid = updatedPaid;
         patients[index].remaining = updatedRemaining;
-        patients[index].service = finalService;
+        patients[index].service = updatedService;
         patients[index].xrays = currentXrays;
 
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
