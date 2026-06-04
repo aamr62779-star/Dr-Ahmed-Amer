@@ -127,6 +127,7 @@
         .box.old-box { border-top-color: #2ecc71; } 
         .box.monthly-box { border-top-color: #9b59b6; }
         .box.followup-box { border-top-color: #00a3e0; }
+        .box.reservation-box { border-top-color: #f39c12; }
         
         h2 { font-size: 18px; margin-top: 0; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #eee; color: #2980b9; }
         .form-group { margin-bottom: 15px; }
@@ -342,6 +343,7 @@
             <button class="close-sidebar-btn" onclick="toggleSidebar()">✕</button>
         </div>
         <button class="sidebar-btn active" id="sidebar-btn-patients" onclick="switchPage('patients')">👥 صفحة المرضى والتسجيل</button>
+        <button class="sidebar-btn" id="sidebar-btn-reservations" onclick="switchPage('reservations')">📅 قائمة الحجوزات الجديدة</button>
         <button class="sidebar-btn" id="sidebar-btn-followups" onclick="switchPage('followups')">📋 جدول متابعات الحالات</button>
         <button class="sidebar-btn" id="sidebar-btn-monthly" onclick="switchPage('monthly')">📅 سجل المرضى الشهري</button>
         <button class="sidebar-btn" id="sidebar-btn-expenses" onclick="switchPage('expenses')">💰 حسابات ومصروفات العيادة</button>
@@ -401,6 +403,50 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <!-- 📌 صفحة الحجوزات المسبقة الجديدة -->
+    <div id="page-reservations" class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="box reservation-box">
+                    <h2>📅 تسجيل حجز مسبق جديد (مريض لم يحضر بعد)</h2>
+                    <form id="reservation-form" onsubmit="saveNewReservation(event)">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1.5; min-width: 220px;">
+                                <label>اسم المريض:</label>
+                                <input type="text" id="res-p-name" required placeholder="اكتب اسم المريض صاحب الحجز">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label>رقم تليفونه:</label>
+                                <input type="text" id="res-p-phone" placeholder="اكتب رقم الهاتف هنا">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 180px;">
+                                <label>تاريخ الحجز (تحدده بنفسك):</label>
+                                <input type="date" id="res-p-date" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit" style="margin-top: 5px; background-color: #f39c12;">تأكيد وحفظ الحجز المسبق</button>
+                    </form>
+                </div>
+
+                <div class="box" style="border-top-color: #3498db;">
+                    <h2>📋 قائمة المواعيد المحجوزة الحالية</h2>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>اسم المريض ورقم تليفونه</th>
+                                    <th>تاريخ الحجز المحدد</th>
+                                    <th>حالة الحضور والتحكم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservations-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -617,6 +663,9 @@
     const currentToday = new Date();
     document.getElementById('old-p-date').value = currentToday.toISOString().split('T')[0];
     document.getElementById('new-payment-date').value = currentToday.toISOString().split('T')[0];
+    if (document.getElementById('res-p-date')) {
+        document.getElementById('res-p-date').value = currentToday.toISOString().split('T')[0];
+    }
     
     document.getElementById('monthly-month-select').value = currentToday.getMonth() + 1;
     document.getElementById('monthly-year-select').value = currentToday.getFullYear();
@@ -665,6 +714,7 @@
 
     let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
     let expenses = JSON.parse(localStorage.getItem('clinic_expenses')) || [];
+    let reservations = JSON.parse(localStorage.getItem('clinic_reservations')) || [];
 
     function getArabicDayName(dateString) {
         if (!dateString) return '';
@@ -687,12 +737,9 @@
         updateApp();
     }
 
-    /* 🗑️ دالة حذف المريض الذكية مع رسالة تأكيد بأمان */
     function deletePatient(event, index) {
         if (event) event.stopPropagation(); 
-        
         const patientName = patients[index].patient_name || patients[index].name || 'هذا المريض';
-        
         if (confirm(`⚠️ هل أنت متأكد تماماً من حذف المريض (${patientName}) نهائياً بجميع بياناته وحساباته وجلساته من النظام؟`)) {
             patients.splice(index, 1);
             localStorage.setItem('clinic_patients', JSON.stringify(patients));
@@ -700,16 +747,70 @@
         }
     }
 
+    /* 📅 دوال إدارة الحجوزات المسبقة الجديدة */
+    function saveNewReservation(event) {
+        event.preventDefault();
+        const name = document.getElementById('res-p-name').value.trim();
+        const phone = document.getElementById('res-p-phone').value.trim();
+        const resDate = document.getElementById('res-p-date').value;
+
+        if (!name || !resDate) return;
+
+        reservations.push({ name: name, phone: phone, date: resDate });
+        localStorage.setItem('clinic_reservations', JSON.stringify(reservations));
+        
+        document.getElementById('reservation-form').reset();
+        document.getElementById('res-p-date').value = new Date().toISOString().split('T')[0];
+        updateApp();
+    }
+
+    function deleteReservation(index) {
+        if (confirm('هل أنت متأكد من إلغاء وحذف هذا الحجز؟')) {
+            reservations.splice(index, 1);
+            localStorage.setItem('clinic_reservations', JSON.stringify(reservations));
+            updateApp();
+        }
+    }
+
+    function confirmAttendance(index) {
+        const res = reservations[index];
+        if (!res) return;
+
+        // تحويل البيانات تلقائياً لقائمة المرضى الرسمية وتثبيت تاريخ الزيارة بنفس تاريخ الحجز
+        patients.unshift({
+            patient_name: res.name,
+            phone: res.phone,
+            date_added: res.date,
+            total_amount: 0,
+            paid: 0,
+            remaining: 0,
+            payments: [],
+            service: '',
+            next_visit: '',
+            xrays: 'لا يوجد'
+        });
+        localStorage.setItem('clinic_patients', JSON.stringify(patients));
+
+        // حذف الحجز من قائمة الانتظار
+        reservations.splice(index, 1);
+        localStorage.setItem('clinic_reservations', JSON.stringify(reservations));
+
+        alert(`✅ تم تأكيد حضور المريض (${res.name})، وتم إنشاء ملف كشف رسمي له في السجل العام بنجاح!`);
+        updateApp();
+    }
+
     function updateApp() {
         const pBody = document.getElementById('patients-table-body');
         const mBody = document.getElementById('monthly-patients-table-body');
         const eBody = document.getElementById('expenses-table-body');
         const fBody = document.getElementById('followups-table-body');
+        const rBody = document.getElementById('reservations-table-body');
         
         if(pBody) pBody.innerHTML = ''; 
         if(mBody) mBody.innerHTML = '';
         if(eBody) eBody.innerHTML = '';
         if(fBody) fBody.innerHTML = '';
+        if(rBody) rBody.innerHTML = '';
 
         const searchInput = document.getElementById('search-patient-input');
         const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
@@ -722,6 +823,31 @@
         let followUpsCount = 0;
 
         const todayStr = new Date().toISOString().split('T')[0];
+
+        // عرض جدول الحجوزات
+        if (rBody) {
+            if (reservations.length === 0) {
+                rBody.innerHTML = `<tr><td colspan="3" style="color: #95a5a6;">لا توجد أي حجوزات قادمة مسجلة حالياً.</td></tr>`;
+            } else {
+                reservations.forEach((r, idx) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <strong>${r.name}</strong>
+                            <div style="font-size: 13px; margin-top: 4px;">
+                                ${r.phone ? `<a href="tel:${r.phone}" class="phone-call-link">📞 ${r.phone}</a>` : '—'}
+                            </div>
+                        </td>
+                        <td style="color: #2980b9; font-weight: bold;">${r.date}</td>
+                        <td>
+                            <button onclick="confirmAttendance(${idx})" style="background-color: #2ecc71; color: white; border: none; padding: 6px 14px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; margin-left: 8px; transition: background 0.2s;">✅ تم الحضور للعيادة</button>
+                            <button onclick="deleteReservation(${idx})" style="background-color: #e74c3c; color: white; border: none; padding: 6px 14px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; transition: background 0.2s;">🗑️ إلغاء الحجز</button>
+                        </td>
+                    `;
+                    rBody.appendChild(row);
+                });
+            }
+        }
 
         if (patients.length === 0) {
             if(pBody) pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
@@ -1102,9 +1228,9 @@
     }
 
     function clearAllData() {
-        if (confirm('هل أنت متأكد من مسح جميع سجلات المرضى والمصروفات نهائياً لتهيئة الدورة؟')) {
+        if (confirm('هل أنت متأكد من مسح جميع سجلات المرضى والمصروفات والحجوزات نهائياً لتهيئة الدورة؟')) {
             localStorage.clear();
-            patients = []; expenses = [];
+            patients = []; expenses = []; reservations = [];
             updateApp();
         }
     }
