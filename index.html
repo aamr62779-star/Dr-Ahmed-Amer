@@ -26,7 +26,7 @@
         }
         header h1 { margin: 0; font-size: 24px; }
 
-        /* شريط التنقل بين الصفحات المتبقية */
+        /* شريط التنقل بين الصفحات */
         .nav-bar {
             display: flex;
             background: #fff;
@@ -68,13 +68,13 @@
             margin-bottom: 20px; 
         }
         .box.expense-box { border-top-color: #e74c3c; }
-        .box.old-box { border-top-color: #2ecc71; } /* لون أخضر هادئ ومميز لصندوق الإدخال */
+        .box.old-box { border-top-color: #2ecc71; } 
         
         h2 { font-size: 18px; margin-top: 0; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #eee; color: #2980b9; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #34495e; }
         
-        input[type="text"], input[type="number"], input[type="password"], input[type="date"] { 
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"], textarea { 
             width: 100%; 
             padding: 10px; 
             border: 1px solid #bdc3c7; 
@@ -82,8 +82,9 @@
             box-sizing: border-box; 
             font-size: 15px; 
             background-color: #fff;
+            font-family: inherit;
         }
-        input:focus {
+        input:focus, textarea:focus {
             outline: none;
             border-color: #3498db;
             background-color: #f7faff;
@@ -127,6 +128,41 @@
 
         .page-content { display: none; }
         .page-content.active-page { display: block; }
+
+        /* تجميل اسم المريض ليوحي بالضغط */
+        .patient-link {
+            color: #3498db;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .patient-link:hover {
+            color: #2980b9;
+        }
+
+        /* نافذة ملف المريض المنبثقة (Modal) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background: #fff;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-top: 5px solid #3498db;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -179,15 +215,15 @@
                 </div>
 
                 <div class="box">
-                    <h2>صفحة المرضى - السجل الكامل للعيادة</h2>
+                    <h2>صفحة المرضى - اضغط على اسم المريض لفتح ملفه</h2>
                     <div style="overflow-x:auto;">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>الاسم</th>
+                                    <th>الاسم (اضغط لفتح الملف)</th>
                                     <th>الرقم (الهاتف)</th>
                                     <th>التاريخ المحدد</th>
-                                    <th>النوع الإداري</th>
+                                    <th>ملاحظات سريعة</th>
                                 </tr>
                             </thead>
                             <tbody id="patients-table-body"></tbody>
@@ -239,6 +275,45 @@
 
 </div>
 
+<div id="patient-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
+        <input type="hidden" id="modal-patient-index">
+        
+        <div class="form-group">
+            <label>اسم المريض:</label>
+            <input type="text" id="modal-p-name">
+        </div>
+        
+        <div class="form-group">
+            <label>الرقم (الهاتف):</label>
+            <input type="text" id="modal-p-phone">
+        </div>
+        
+        <div class="form-group">
+            <label>تاريخ التسجيل:</label>
+            <input type="date" id="modal-p-date">
+        </div>
+
+        <div class="form-group">
+            <label>التشخيص / خطة العلاج والملاحظات الطبية:</label>
+            <textarea id="modal-p-notes" rows="4" placeholder="اكتب هنا الإجراءات الطبية (حشو، علاج عصب، زيركون...) أو أي ملاحظات هامة تخص الحالة..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>صور الأشعة المرفقة حالياً:</label>
+            <div id="modal-xrays-list" style="background: #f8fafc; padding: 8px; border-radius: 6px; font-size: 13px; color: #7f8c8d; margin-bottom: 8px; border: 1px dashed #cbd5e1;">لا توجد أشعة مرفوعة</div>
+            <label style="font-size: 12px; color: #3498db;">إرفاق صور أشعة جديدة:</label>
+            <input type="file" id="modal-p-xray" multiple accept="image/*" style="font-size: 13px;">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 25px;">
+            <button onclick="savePatientFileChanges()" class="btn-submit" style="background-color: #2ecc71; flex: 2;">حفظ التعديلات والملف</button>
+            <button onclick="closePatientModal()" class="btn-submit" style="background-color: #e74c3c; flex: 1;">إلغلاق</button>
+        </div>
+    </div>
+</div>
+
 <script>
     // وضع تاريخ اليوم كقيمة افتراضية مسبقة لتسهيل العمل اليومي
     document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
@@ -274,17 +349,9 @@
         updateApp();
     }
 
-    // جلب البيانات مع ميزة الاسترجاع الآمن من المتصفح لعدم ضياع الداتا القديمة
-    let patients = JSON.parse(localStorage.getItem('clinic_patients')) || 
-                   JSON.parse(localStorage.getItem('patients')) || 
-                   JSON.parse(localStorage.getItem('patientsData')) || [];
-                   
-    let expenses = JSON.parse(localStorage.getItem('clinic_expenses')) || 
-                   JSON.parse(localStorage.getItem('expenses')) || 
-                   JSON.parse(localStorage.getItem('expensesData')) || [];
-
-    localStorage.setItem('clinic_patients', JSON.stringify(patients));
-    localStorage.setItem('clinic_expenses', JSON.stringify(expenses));
+    // جلب البيانات من المتصفح
+    let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
+    let expenses = JSON.parse(localStorage.getItem('clinic_expenses')) || [];
 
     function updateApp() {
         const pBody = document.getElementById('patients-table-body');
@@ -293,17 +360,21 @@
         
         pBody.innerHTML = ''; eBody.innerHTML = '';
 
-        // عرض جدول سجل المرضى الرائع والمبسط بدون كراكيب
+        // عرض جدول سجل المرضى
         if (patients.length === 0) {
             pBody.innerHTML = `<tr><td colspan="4" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
         } else {
-            patients.forEach(p => {
+            patients.forEach((p, index) => {
+                // استخلاص أول سطر من الملاحظات للعرض كـ ملاحظة سريعة في الجدول
+                let quickNote = p.notes ? p.notes.substring(0, 30) + (p.notes.length > 30 ? '...' : '') : 'لا توجد ملاحظات';
+                if(p.xrays && p.xrays !== 'لا يوجد') { quickNote += ' 📷 (يوجد أشعة)'; }
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><strong>${p.patient_name || p.name || ''}</strong></td>
+                    <td><span class="patient-link" onclick="openPatientFile(${index})">📁 ${p.patient_name || p.name || ''}</span></td>
                     <td>${p.phone || '—'}</td>
                     <td style="color: #2980b9; font-weight: bold;">${p.date_added || ''}</td>
-                    <td style="font-size: 12px; color: #7f8c8d;">سجل مرن</td>
+                    <td style="font-size: 12px; color: #7f8c8d;">${quickNote}</td>
                 `;
                 pBody.appendChild(row);
             });
@@ -325,7 +396,7 @@
         }
     }
 
-    // 💾 حفظ المريض بالتاريخ المختار بحرية تامة من الصندوق العلوي
+    // 💾 حفظ المريض من الصندوق العلوي
     function saveOldPatient(event) {
         event.preventDefault();
         const name = document.getElementById('old-p-name').value.trim();
@@ -334,19 +405,85 @@
 
         if (!name || !customDate) return;
 
-        // إضافة المريض الجديد في أول الجدول مباشرة
         patients.unshift({ 
             patient_name: name, 
             phone: phone, 
-            date_added: customDate 
+            date_added: customDate,
+            notes: '',
+            xrays: 'لا يوجد'
         });
 
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
         
-        // تفريغ المدخلات وإرجاع تاريخ اليوم تلقائياً للجاهزية
         document.getElementById('old-patient-form').reset();
         document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
         
+        updateApp();
+    }
+
+    // 📁 فتح ملف المريض المنبثق وعرض بياناته بالكامل للتعديل والإضافة
+    function openPatientFile(index) {
+        const p = patients[index];
+        if (!p) return;
+
+        document.getElementById('modal-patient-index').value = index;
+        document.getElementById('modal-patient-header').innerText = `ملف المريض: ${p.patient_name || p.name || ''}`;
+        document.getElementById('modal-p-name').value = p.patient_name || p.name || '';
+        document.getElementById('modal-p-phone').value = p.phone || '';
+        document.getElementById('modal-p-date').value = p.date_added || '';
+        document.getElementById('modal-p-notes').value = p.notes || '';
+        document.getElementById('modal-xrays-list').innerText = p.xrays || 'لا توجد أشعة مرفوعة';
+        document.getElementById('modal-p-xray').value = ''; // تفريغ الخانة لجاهزية رفع ملفات جديدة
+
+        // إظهار المودال بسلاسة
+        document.getElementById('patient-modal').style.display = 'flex';
+    }
+
+    // ❌ إغلاق نافذة ملف المريض
+    function closePatientModal() {
+        document.getElementById('patient-modal').style.display = 'none';
+    }
+
+    // 💾 حفظ التعديلات والملاحظات الجديدة جوة ملف المريض
+    function savePatientFileChanges() {
+        const index = document.getElementById('modal-patient-index').value;
+        if (index === '') return;
+
+        const updatedName = document.getElementById('modal-p-name').value.trim();
+        const updatedPhone = document.getElementById('modal-p-phone').value.trim();
+        const updatedDate = document.getElementById('modal-p-date').value;
+        const updatedNotes = document.getElementById('modal-p-notes').value.trim();
+        
+        // معالجة الأشعة الجديدة إذا رُفعت
+        const xrayInput = document.getElementById('modal-p-xray');
+        let currentXrays = patients[index].xrays || 'لا يوجد';
+        
+        if (xrayInput.files.length > 0) {
+            let newXrayNames = [];
+            for (let i = 0; i < xrayInput.files.length; i++) {
+                newXrayNames.push(xrayInput.files[i].name);
+            }
+            let newXraysString = newXrayNames.join(', ');
+            
+            if (currentXrays === 'لا يوجد' || currentXrays === '') {
+                currentXrays = newXraysString;
+            } else {
+                currentXrays += '، ' + newXraysString; // إضافة الأسماء الجديدة للقديمة
+            }
+        }
+
+        // تحديث المصفوفة الأصلية بالداتا الجديدة
+        patients[index].patient_name = updatedName;
+        patients[index].phone = updatedPhone;
+        patients[index].date_added = updatedDate;
+        patients[index].notes = updatedNotes;
+        patients[index].xrays = currentXrays;
+
+        // حفظ الداتا في السيرفر المحلي للمتصفح
+        localStorage.setItem('clinic_patients', JSON.stringify(patients));
+        
+        // إغلاق المودال وتحديث الواجهة فوراً
+        closePatientModal();
         updateApp();
     }
 
@@ -367,7 +504,7 @@
     }
 
     function clearAllData() {
-        if (confirm('هل أنت متأكد من مسح جميع سجلات المرضى والمصروفات نهائياً من هذا الجهاز لتهيئة الدورة؟')) {
+        if (confirm('هل أنت متأكد من مسح جميع سجلات المرضى والمصروفات نهائياً لتهيئة الدورة؟')) {
             localStorage.clear();
             patients = []; expenses = [];
             updateApp();
