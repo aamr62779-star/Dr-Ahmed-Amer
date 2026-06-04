@@ -13,7 +13,7 @@
             padding: 15px; 
             margin: 0; 
         }
-        .container { max-width: 1100px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
         
         header { 
             background: #3498db; 
@@ -113,6 +113,16 @@
         th { background-color: #e8f2f9; color: #2980b9; font-weight: bold; }
         tr:nth-child(even) { background-color: #fcfdfe; }
         
+        .eye-icon {
+            font-size: 20px;
+            cursor: pointer;
+            display: inline-block;
+            transition: transform 0.1s;
+        }
+        .eye-icon:hover {
+            transform: scale(1.2);
+        }
+
         .clear-btn { 
             background: #95a5a6; 
             color: white; 
@@ -128,17 +138,6 @@
 
         .page-content { display: none; }
         .page-content.active-page { display: block; }
-
-        /* تجميل اسم المريض ليوحي بالضغط */
-        .patient-link {
-            color: #3498db;
-            text-decoration: underline;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .patient-link:hover {
-            color: #2980b9;
-        }
 
         /* نافذة ملف المريض المنبثقة (Modal) */
         .modal-overlay {
@@ -167,6 +166,7 @@
 </head>
 <body>
 
+<!-- 🔑 شاشة قفل تسجيل الدخول -->
 <div id="login-screen" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
     <div class="box" style="width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
         <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول للعيادة</h2>
@@ -179,51 +179,66 @@
     </div>
 </div>
 
+<!-- 🏥 شاشة البرنامج الرئيسية (تفتح بعد الباسورد مباشرة) -->
 <div class="container" id="app-screen" style="display: none;">
     <header>
         <h1>Dr. Amer’s Clinic - إدارة العيادة الذكية</h1>
     </header>
 
+    <!-- 📱 شريط التنقل المبسط -->
     <div class="nav-bar">
         <button class="nav-btn active" id="btn-patients" onclick="switchPage('patients')">صفحة المرضى</button>
         <button class="nav-btn" id="btn-expenses" onclick="switchPage('expenses')">حسابات ومصروفات</button>
     </div>
 
+    <!-- 1️⃣ صفحة المرضى الرئيسية -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
                 
+                <!-- 🟢 صندوق الإدخال العلوي المحدث شامل المدفوع والمتبقي -->
                 <div class="box old-box">
-                    <h2>إضافة وتسجيل مريض جديد بالتاريخ</h2>
+                    <h2>إضافة وتسجيل مريض جديد بالتاريخ والحساب</h2>
                     <form id="old-patient-form" onsubmit="saveOldPatient(event)">
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                            <div class="form-group" style="flex: 1.5; min-width: 220px;">
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1.5; min-width: 200px;">
                                 <label>اسم المريض:</label>
                                 <input type="text" id="old-p-name" required placeholder="اكتب اسم المريض">
                             </div>
-                            <div class="form-group" style="flex: 1; min-width: 150px;">
-                                <label>الرقم بتاعه (الهاتف):</label>
+                            <div class="form-group" style="flex: 1; min-width: 140px;">
+                                <label>رقم المريض (الهاتف):</label>
                                 <input type="text" id="old-p-phone" placeholder="اكتب الرقم هنا">
                             </div>
-                            <div class="form-group" style="flex: 1; min-width: 180px;">
-                                <label>تاريخ التسجيل المختار:</label>
+                            <div class="form-group" style="flex: 1; min-width: 140px;">
+                                <label>الزيارة (التاريخ):</label>
                                 <input type="date" id="old-p-date" required>
+                            </div>
+                            <div class="form-group" style="flex: 0.6; min-width: 90px;">
+                                <label>المدفوع:</label>
+                                <input type="number" step="0.01" id="old-p-paid" value="0">
+                            </div>
+                            <div class="form-group" style="flex: 0.6; min-width: 90px;">
+                                <label>المتبقي:</label>
+                                <input type="number" step="0.01" id="old-p-remaining" value="0">
                             </div>
                         </div>
                         <button type="submit" class="btn-submit btn-old" style="margin-top: 5px;">حفظ في سجل المرضى</button>
                     </form>
                 </div>
 
+                <!-- جدول عرض السجل الكامل للعيادة بالمواصفات الجديدة -->
                 <div class="box">
-                    <h2>صفحة المرضى - اضغط على اسم المريض لفتح ملفه</h2>
+                    <h2>صفحة المرضى - السجل الإداري والطبي</h2>
                     <div style="overflow-x:auto;">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>الاسم (اضغط لفتح الملف)</th>
-                                    <th>الرقم (الهاتف)</th>
-                                    <th>التاريخ المحدد</th>
-                                    <th>ملاحظات سريعة</th>
+                                    <th>الاسم</th>
+                                    <th>رقم المريض</th>
+                                    <th>الزيارة</th>
+                                    <th>المدفوع</th>
+                                    <th>المتبقي</th>
+                                    <th>الملف</th>
                                 </tr>
                             </thead>
                             <tbody id="patients-table-body"></tbody>
@@ -235,6 +250,7 @@
         </div>
     </div>
 
+    <!-- 2️⃣ صفحة حسابات ومصروفات المستقلة -->
     <div id="page-expenses" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -275,6 +291,7 @@
 
 </div>
 
+<!-- 📂 نافذة ملف المريض المنبثقة (Modal) المحدثة -->
 <div id="patient-modal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
@@ -286,18 +303,29 @@
         </div>
         
         <div class="form-group">
-            <label>الرقم (الهاتف):</label>
+            <label>رقم المريض (الهاتف):</label>
             <input type="text" id="modal-p-phone">
         </div>
         
         <div class="form-group">
-            <label>تاريخ التسجيل:</label>
+            <label>تاريخ الزيارة:</label>
             <input type="date" id="modal-p-date">
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label>المدفوع (ج.م):</label>
+                <input type="number" step="0.01" id="modal-p-paid">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>المتبقي (ج.م):</label>
+                <input type="number" step="0.01" id="modal-p-remaining">
+            </div>
         </div>
 
         <div class="form-group">
             <label>التشخيص / خطة العلاج والملاحظات الطبية:</label>
-            <textarea id="modal-p-notes" rows="4" placeholder="اكتب هنا الإجراءات الطبية (حشو، علاج عصب، زيركون...) أو أي ملاحظات هامة تخص الحالة..."></textarea>
+            <textarea id="modal-p-notes" rows="4" placeholder="اكتب هنا الإجراءات الطبية أو الملاحظات الطبية..."></textarea>
         </div>
 
         <div class="form-group">
@@ -309,7 +337,7 @@
 
         <div style="display: flex; gap: 10px; margin-top: 25px;">
             <button onclick="savePatientFileChanges()" class="btn-submit" style="background-color: #2ecc71; flex: 2;">حفظ التعديلات والملف</button>
-            <button onclick="closePatientModal()" class="btn-submit" style="background-color: #e74c3c; flex: 1;">إلغلاق</button>
+            <button onclick="closePatientModal()" class="btn-submit" style="background-color: #e74c3c; flex: 1;">إغلاق</button>
         </div>
     </div>
 </div>
@@ -360,21 +388,19 @@
         
         pBody.innerHTML = ''; eBody.innerHTML = '';
 
-        // عرض جدول سجل المرضى
+        // عرض جدول سجل المرضى بالمواصفات المطلوبة بالظبط
         if (patients.length === 0) {
-            pBody.innerHTML = `<tr><td colspan="4" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
+            pBody.innerHTML = `<tr><td colspan="6" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
         } else {
             patients.forEach((p, index) => {
-                // استخلاص أول سطر من الملاحظات للعرض كـ ملاحظة سريعة في الجدول
-                let quickNote = p.notes ? p.notes.substring(0, 30) + (p.notes.length > 30 ? '...' : '') : 'لا توجد ملاحظات';
-                if(p.xrays && p.xrays !== 'لا يوجد') { quickNote += ' 📷 (يوجد أشعة)'; }
-
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><span class="patient-link" onclick="openPatientFile(${index})">📁 ${p.patient_name || p.name || ''}</span></td>
+                    <td><strong>${p.patient_name || p.name || ''}</strong></td>
                     <td>${p.phone || '—'}</td>
                     <td style="color: #2980b9; font-weight: bold;">${p.date_added || ''}</td>
-                    <td style="font-size: 12px; color: #7f8c8d;">${quickNote}</td>
+                    <td style="color: #2ecc71; font-weight: bold;">${parseFloat(p.paid || 0).toFixed(2)} ج.م</td>
+                    <td style="color: #e74c3c; font-weight: bold;">${parseFloat(p.remaining || 0).toFixed(2)} ج.م</td>
+                    <td><span class="eye-icon" onclick="openPatientFile(${index})" title="فتح الملف">👁️</span></td>
                 `;
                 pBody.appendChild(row);
             });
@@ -402,6 +428,8 @@
         const name = document.getElementById('old-p-name').value.trim();
         const phone = document.getElementById('old-p-phone').value.trim();
         const customDate = document.getElementById('old-p-date').value; 
+        const paid = parseFloat(document.getElementById('old-p-paid').value) || 0;
+        const remaining = parseFloat(document.getElementById('old-p-remaining').value) || 0;
 
         if (!name || !customDate) return;
 
@@ -409,19 +437,24 @@
             patient_name: name, 
             phone: phone, 
             date_added: customDate,
+            paid: paid,
+            remaining: remaining,
             notes: '',
             xrays: 'لا يوجد'
         });
 
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
         
+        // تفريغ المدخلات وإعادة تعيين القيم الافتراضية
         document.getElementById('old-patient-form').reset();
         document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('old-p-paid').value = "0";
+        document.getElementById('old-p-remaining').value = "0";
         
         updateApp();
     }
 
-    // 📁 فتح ملف المريض المنبثق وعرض بياناته بالكامل للتعديل والإضافة
+    // 📁 فتح ملف المريض المنبثق وعرض بياناته بالكامل بالتعديل
     function openPatientFile(index) {
         const p = patients[index];
         if (!p) return;
@@ -431,11 +464,12 @@
         document.getElementById('modal-p-name').value = p.patient_name || p.name || '';
         document.getElementById('modal-p-phone').value = p.phone || '';
         document.getElementById('modal-p-date').value = p.date_added || '';
+        document.getElementById('modal-p-paid').value = p.paid || 0;
+        document.getElementById('modal-p-remaining').value = p.remaining || 0;
         document.getElementById('modal-p-notes').value = p.notes || '';
         document.getElementById('modal-xrays-list').innerText = p.xrays || 'لا توجد أشعة مرفوعة';
-        document.getElementById('modal-p-xray').value = ''; // تفريغ الخانة لجاهزية رفع ملفات جديدة
+        document.getElementById('modal-p-xray').value = ''; 
 
-        // إظهار المودال بسلاسة
         document.getElementById('patient-modal').style.display = 'flex';
     }
 
@@ -452,9 +486,10 @@
         const updatedName = document.getElementById('modal-p-name').value.trim();
         const updatedPhone = document.getElementById('modal-p-phone').value.trim();
         const updatedDate = document.getElementById('modal-p-date').value;
+        const updatedPaid = parseFloat(document.getElementById('modal-p-paid').value) || 0;
+        const updatedRemaining = parseFloat(document.getElementById('modal-p-remaining').value) || 0;
         const updatedNotes = document.getElementById('modal-p-notes').value.trim();
         
-        // معالجة الأشعة الجديدة إذا رُفعت
         const xrayInput = document.getElementById('modal-p-xray');
         let currentXrays = patients[index].xrays || 'لا يوجد';
         
@@ -468,21 +503,21 @@
             if (currentXrays === 'لا يوجد' || currentXrays === '') {
                 currentXrays = newXraysString;
             } else {
-                currentXrays += '، ' + newXraysString; // إضافة الأسماء الجديدة للقديمة
+                currentXrays += '، ' + newXraysString;
             }
         }
 
-        // تحديث المصفوفة الأصلية بالداتا الجديدة
+        // تحديث المصفوفة الأصلية
         patients[index].patient_name = updatedName;
         patients[index].phone = updatedPhone;
         patients[index].date_added = updatedDate;
+        patients[index].paid = updatedPaid;
+        patients[index].remaining = updatedRemaining;
         patients[index].notes = updatedNotes;
         patients[index].xrays = currentXrays;
 
-        // حفظ الداتا في السيرفر المحلي للمتصفح
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
         
-        // إغلاق المودال وتحديث الواجهة فوراً
         closePatientModal();
         updateApp();
     }
