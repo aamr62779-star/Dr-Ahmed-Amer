@@ -49,7 +49,7 @@
         .sidebar {
             position: fixed;
             top: 0;
-            right: -280px; /* مخفية خارج الشاشة يميناً */
+            right: -280px; 
             width: 280px;
             height: 100%;
             background: #ffffff;
@@ -62,7 +62,7 @@
             box-sizing: border-box;
         }
         .sidebar.open {
-            right: 0; /* تظهر عند التفعيل */
+            right: 0; 
         }
         .sidebar-header {
             font-size: 18px;
@@ -169,6 +169,33 @@
         th { background-color: #e8f2f9; color: #2980b9; font-weight: bold; }
         tr:nth-child(even) { background-color: #fcfdfe; }
         
+        /* نمط اسم المريض القابل للضغط */
+        .patient-clickable-name {
+            color: #2c3e50;
+            cursor: pointer;
+            display: inline-block;
+            transition: color 0.15s, text-decoration 0.15s;
+        }
+        .patient-clickable-name:hover {
+            color: #3498db;
+            text-decoration: underline;
+        }
+
+        /* نمط رقم الهاتف المخصص للاتصال الفوري */
+        .phone-call-link {
+            color: #7f8c8d;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+        .phone-call-link:hover {
+            color: #2ecc71; /* يتحول للأخضر عند تمرير الماوس إشارة للاتصال */
+            text-decoration: underline;
+        }
+
         .eye-icon {
             font-size: 20px;
             cursor: pointer;
@@ -289,14 +316,11 @@
     
     <header>
         <h1>Dr. Amer’s Clinic - إدارة العيادة الذكية</h1>
-        <!-- زر فتح القائمة الجانبية -->
         <button class="menu-btn" onclick="toggleSidebar(event)">☰ القائمة الرئيسية</button>
     </header>
 
-    <!-- 👥 خلفية داكنة للقائمة الجانبية عند ظهورها -->
     <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-    <!-- 📋 القائمة الجانبية المحدثة -->
     <div id="app-sidebar" class="sidebar">
         <div class="sidebar-header">
             <span>صفحات النظام</span>
@@ -311,7 +335,6 @@
         <div class="row">
             <div class="col-12">
                 
-                <!-- 🟢 صندوق الإدخال العلوي المبسط لتسجيل مريض جديد -->
                 <div class="box old-box">
                     <h2>إضافة وتسجيل مريض جديد بالتاريخ</h2>
                     <form id="old-patient-form" onsubmit="saveOldPatient(event)">
@@ -333,11 +356,9 @@
                     </form>
                 </div>
 
-                <!-- جدول عرض السجل الكامل بالمواصفات الجديدة المدمجة والمالية والبحث -->
                 <div class="box">
                     <h2>صفحة المرضى - السجل العام والمالي</h2>
                     
-                    <!-- 🔍 أدوات البحث والفلترة الذكية الجديدة للمتأخرات -->
                     <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
                         <div style="flex: 2; min-width: 260px;">
                             <input type="text" id="search-patient-input" oninput="updateApp()" placeholder="🔍 اكتب اسم المريض للبحث الفوري المباشر..." style="padding: 11px;">
@@ -429,13 +450,11 @@
             <input type="date" id="modal-p-date">
         </div>
 
-        <!-- 📅 مربع الزيارة القادمة -->
         <div class="form-group" style="background-color: #eef9ff; padding: 12px; border-radius: 6px; border: 1px solid #7dd3fc; margin-bottom: 15px;">
             <label style="color: #0369a1; font-weight: bold; margin-bottom: 6px;">🗓️ موعد الجلسة / الزيارة القادمة:</label>
             <input type="date" id="modal-p-next-visit" style="border-color: #7dd3fc;">
         </div>
 
-        <!-- 💰 📊 النظام المالي المتطور والجديد للدفعات لكل جلسة -->
         <div class="box" style="border-top: 3px solid #2ecc71; background: #fcfdfe; padding: 15px; margin-bottom: 15px;">
             <h3 style="margin-top: 0; font-size: 15px; color: #27ae60; margin-bottom: 12px;">💸 الحسابات والمدفوعات لكل جلسة</h3>
             
@@ -444,7 +463,6 @@
                 <input type="number" step="0.01" id="modal-p-total-amount" oninput="calculateFinancials()" placeholder="اكتب إجمالي حساب خطة العلاج">
             </div>
 
-            <!-- إضافة دفعة جلسة جديدة -->
             <div style="background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px dashed #2ecc71; margin-bottom: 12px;">
                 <label style="color: #166534; font-weight: bold;">➕ تسجيل مدفوع لجلسة جديدة:</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
@@ -454,20 +472,15 @@
                 </div>
             </div>
 
-            <!-- سجل عرض الدفعات السابقة باليوم والتاريخ -->
             <label>📋 سجل دفعات الجلسات بالتاريخ واليوم:</label>
-            <div id="modal-payments-history-list" style="max-height: 130px; overflow-y: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; margin-top: 4px;">
-                <!-- يتم بناؤه برمجياً -->
-            </div>
+            <div id="modal-payments-history-list" style="max-height: 130px; overflow-y: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; margin-top: 4px;"></div>
 
-            <!-- ملخص الحساب التلقائي المحدث لحظياً -->
             <div style="display: flex; gap: 10px; margin-top: 12px; background: #e8f2f9; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; border: 1px solid #b9ddf5;">
                 <div style="flex: 1; color: #1e7e34; text-align: center;">تم دفع: <span id="lbl-total-paid">0.00</span> ج.م</div>
                 <div style="flex: 1; color: #bd2130; text-align: center;">المتبقي: <span id="lbl-total-remaining">0.00</span> ج.م</div>
             </div>
         </div>
 
-        <!-- 🦷 الخدمة الطبية للاسنان -->
         <div class="form-group" style="position: relative;">
             <label>الخدمة الطبية للاسنان (اختار أو اكتب مباشرة):</label>
             <div style="display: flex; width: 100%;">
@@ -500,17 +513,12 @@
 </div>
 
 <script>
-    // وضع تاريخ اليوم كقيمة افتراضية مسبقة
     document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
     document.getElementById('new-payment-date').value = new Date().toISOString().split('T')[0];
 
-    // مصفوفة مؤقتة للتحكم في دفعات المريض الحالي المفتوح ملفه
     let tempPaymentsList = [];
-    
-    // متغير حالة فلترة المتأخرات المالية (false تعني عرض الكل، true تعني المتأخرات فقط)
     let showDebtsOnly = false;
 
-    // 🛡️ دالة التحقق من الرقم السري
     function validateLogin() {
         const enteredPassword = document.getElementById('app-password').value;
         const correctPassword = "1234"; 
@@ -530,7 +538,6 @@
         if (e.key === 'Enter') validateLogin();
     });
 
-    // 📱 فتح وإغلاق القائمة الجانبية
     function toggleSidebar(event) {
         if (event) event.stopPropagation();
         const sidebar = document.getElementById('app-sidebar');
@@ -540,7 +547,6 @@
         overlay.classList.toggle('show');
     }
 
-    // دالة التبديل بين الصفحات من خلال القائمة الجانبية
     function switchPage(pageName) {
         document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active-page'));
         document.getElementById('page-' + pageName).classList.add('active-page');
@@ -552,11 +558,9 @@
         updateApp();
     }
 
-    // جلب البيانات من المتصفح
     let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
     let expenses = JSON.parse(localStorage.getItem('clinic_expenses')) || [];
 
-    // دالة لاستخراج اسم اليوم باللغة العربية بناءً على تاريخ معين
     function getArabicDayName(dateString) {
         if (!dateString) return '';
         const dateObj = new Date(dateString);
@@ -564,17 +568,16 @@
         return dateObj.toLocaleDateString('ar-EG', { weekday: 'long' });
     }
 
-    // دالة التحكم بتبديل فلتر المتأخرات المالية
     function toggleDebtFilter() {
         showDebtsOnly = !showDebtsOnly;
         const btn = document.getElementById('btn-toggle-debts');
         
         if (showDebtsOnly) {
             btn.innerText = '👥 عرض جميع الحالات';
-            btn.style.backgroundColor = '#3498db'; // تغيير اللون للأزرق السماوي عند الضغط ليعرض خطوة العودة
+            btn.style.backgroundColor = '#3498db'; 
         } else {
             btn.innerText = '⚠️ عرض الحالات المتأخرة فقط';
-            btn.style.backgroundColor = '#f39c12'; // اللون البرتقالي/الأصفر للتنبيه بالمتأخرات
+            btn.style.backgroundColor = '#f39c12'; 
         }
         updateApp();
     }
@@ -586,7 +589,6 @@
         
         pBody.innerHTML = ''; eBody.innerHTML = '';
 
-        // جلب قيمة مربع نص البحث
         const searchInput = document.getElementById('search-patient-input');
         const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
@@ -598,12 +600,10 @@
             patients.forEach((p, index) => {
                 const pName = (p.patient_name || p.name || '').toLowerCase();
                 
-                // 1️⃣ تطبيق فلترة البحث بالاسم (إذا كان هناك نص مكتوب)
                 if (searchQuery && !pName.includes(searchQuery)) {
-                    return; // تخطي العنصر الحالي
+                    return; 
                 }
 
-                // حساب المدفوعات الحالية ديناميكياً لتحديد المتبقي
                 let totalPaid = 0;
                 if (p.payments && p.payments.length > 0) {
                     totalPaid = p.payments.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
@@ -618,18 +618,20 @@
 
                 let remainingTotal = totalAmount - totalPaid;
 
-                // 2️⃣ تطبيق فلترة المتأخرات المالية (إذا تم تفعيل الزر)
                 if (showDebtsOnly && remainingTotal <= 0) {
-                    return; // تخطي أي حالة ليس عليها مديونية متأخرة
+                    return; 
                 }
 
                 visiblePatientsCount++;
 
                 const row = document.createElement('tr');
+                // تم تعديل السطر بالأسفل لإتاحة الضغط على الاسم لفتح الملف والضغط على الرقم للاتصال
                 row.innerHTML = `
                     <td>
-                        <strong>${p.patient_name || p.name || ''}</strong>
-                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 4px;">${p.phone || '—'}</div>
+                        <strong class="patient-clickable-name" onclick="openPatientFile(${index})" title="اضغط لفتح ملف المريض">${p.patient_name || p.name || ''}</strong>
+                        <div style="font-size: 13px; margin-top: 5px;">
+                            ${p.phone ? `<a href="tel:${p.phone}" class="phone-call-link" title="اضغط للاتصال المباشر بالمريض">📞 ${p.phone}</a>` : '—'}
+                        </div>
                     </td>
                     <td style="color: #2980b9; font-weight: bold;">${p.date_added || ''}</td>
                     <td style="color: #2ecc71; font-weight: bold;">${totalPaid.toFixed(2)} ج.م</td>
@@ -659,7 +661,6 @@
         }
     }
 
-    // 💾 حفظ المريض من الصندوق العلوي
     function saveOldPatient(event) {
         event.preventDefault();
         const name = document.getElementById('old-p-name').value.trim();
@@ -689,7 +690,6 @@
         updateApp();
     }
 
-    // 🔘 فتح / إغلاق قائمة الخدمات الطبية
     function toggleServicesDropdown(event) {
         event.stopPropagation();
         const menu = document.getElementById('services-dropdown-menu');
@@ -706,7 +706,6 @@
         if (menu) menu.style.display = 'none';
     });
 
-    // 📁 فتح ملف المريض المنبثق عند الضغط على العين 👁️
     function openPatientFile(index) {
         const p = patients[index];
         if (!p) return;
@@ -756,7 +755,7 @@
         const dateStr = dateInput.value;
 
         if (amount <= 0 || !dateStr) {
-            alert('الرجاء إدخال مبلغ صحيح وتحديد تاريخ الدفعة.');
+            alert('الرجاء إدخل مبلغ صحيح وتحديد تاريخ الدفعة.');
             return;
         }
 
