@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dr. Amer’s Clinic</title>
     <style>
-        /* تصميم مخصص باللون الأزرق السماوي والأبيض مريح للعين */
+        /* تصميم مخصص باللون الأزرق السماوي والأبيض مريح جداً للعين وسريع */
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: #eef5f9; 
@@ -26,7 +26,7 @@
         }
         header h1 { margin: 0; font-size: 24px; }
 
-        /* شريط التنقل بين الصفحات */
+        /* شريط التنقل بين الصفحات المتبقية */
         .nav-bar {
             display: flex;
             background: #fff;
@@ -55,23 +55,6 @@
             color: white;
             box-shadow: 0 3px 6px rgba(52, 152, 219, 0.3);
         }
-        
-        /* لوحة الحسابات الشهرية الملونة */
-        .dashboard { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-        .card { 
-            flex: 1; 
-            min-width: 200px; 
-            padding: 20px; 
-            border-radius: 8px; 
-            color: white; 
-            text-align: center; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-        }
-        .card.revenue { background-color: #2ecc71; }
-        .card.expenses { background-color: #e74c3c; }
-        .card.net { background-color: #41a5e1; }
-        .card h3 { margin: 0 0 10px 0; font-size: 16px; opacity: 0.9; }
-        .card p { margin: 0; font-size: 24px; font-weight: bold; }
 
         .row { display: flex; gap: 20px; flex-wrap: wrap; }
         .col-12 { flex: 1; width: 100%; }
@@ -85,13 +68,13 @@
             margin-bottom: 20px; 
         }
         .box.expense-box { border-top-color: #e74c3c; }
-        .box.old-box { border-top-color: #2ecc71; } /* لون أخضر مميز لصندوق التاريخ القديم */
+        .box.old-box { border-top-color: #2ecc71; } /* لون أخضر هادئ ومميز لصندوق الإدخال */
         
         h2 { font-size: 18px; margin-top: 0; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #eee; color: #2980b9; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #34495e; }
         
-        input[type="text"], input[type="number"], input[type="password"], input[type="date"], select { 
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"] { 
             width: 100%; 
             padding: 10px; 
             border: 1px solid #bdc3c7; 
@@ -100,7 +83,7 @@
             font-size: 15px; 
             background-color: #fff;
         }
-        input:focus, select:focus {
+        input:focus {
             outline: none;
             border-color: #3498db;
             background-color: #f7faff;
@@ -166,78 +149,16 @@
     </header>
 
     <div class="nav-bar">
-        <button class="nav-btn active" id="btn-home" onclick="switchPage('home')">الرئيسية والتسجيل</button>
-        <button class="nav-btn" id="btn-patients" onclick="switchPage('patients')">صفحة المرضى</button>
+        <button class="nav-btn active" id="btn-patients" onclick="switchPage('patients')">صفحة المرضى</button>
         <button class="nav-btn" id="btn-expenses" onclick="switchPage('expenses')">حسابات ومصروفات</button>
     </div>
 
-    <div class="dashboard">
-        <div class="card revenue">
-            <h3>إيرادات الشهر الإجمالية</h3>
-            <p id="total-revenue">0.00 ج.م</p>
-        </div>
-        <div class="card expenses">
-            <h3>مصروفات العيادة (هذا الشهر)</h3>
-            <p id="total-expenses">0.00 ج.م</p>
-        </div>
-        <div class="card net">
-            <h3>صافي الربح الشهري</h3>
-            <p id="net-monthly_profit">0.00 ج.م</p>
-        </div>
-    </div>
-
-    <div id="page-home" class="page-content active-page">
-        <div class="row">
-            <div class="col-12">
-                <div class="box">
-                    <h2>تسجيل مريض جديد (الحالي)</h2>
-                    <form id="patient-form" onsubmit="savePatient(event)">
-                        <div class="form-group">
-                            <label>اسم المريض:</label>
-                            <input type="text" id="p-name" required placeholder="أدخل اسم المريض">
-                        </div>
-                        <div class="form-group">
-                            <label>رقم الهاتف / المريض:</label>
-                            <input type="text" id="p-phone" placeholder="أدخل رقم الهاتف أو تواصل المريض">
-                        </div>
-                        <div class="form-group">
-                            <label>العمر (الفئة):</label>
-                            <select id="p-age">
-                                <option value="بالغ">بالغ</option>
-                                <option value="طفل">طفل</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>الخدمة / الإجراء الطبي:</label>
-                            <input type="text" id="p-service" required placeholder="مثال: حشو تجميلي، زيركون، علاج عصب">
-                        </div>
-                        <div class="form-group" style="display: flex; gap: 10px;">
-                            <div style="flex: 1;">
-                                <label>المدفوع:</label>
-                                <input type="number" step="0.01" id="p-paid" value="0">
-                            </div>
-                            <div style="flex: 1;">
-                                <label>المتبقي:</label>
-                                <input type="number" step="0.01" id="p-remaining" value="0">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>إرفاق صور الأشعة (اسم الملف):</label>
-                            <input type="file" id="p-xray" multiple accept="image/*">
-                        </div>
-                        <button type="submit" class="btn-submit">حفظ ملف المريض</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="page-patients" class="page-content">
+    <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
                 
                 <div class="box old-box">
-                    <h2>إضافة مريض بأثر رجعي (تسجيل بتاريخ قديم)</h2>
+                    <h2>إضافة وتسجيل مريض جديد بالتاريخ</h2>
                     <form id="old-patient-form" onsubmit="saveOldPatient(event)">
                         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                             <div class="form-group" style="flex: 1.5; min-width: 220px;">
@@ -249,11 +170,11 @@
                                 <input type="text" id="old-p-phone" placeholder="اكتب الرقم هنا">
                             </div>
                             <div class="form-group" style="flex: 1; min-width: 180px;">
-                                <label>تاريخ التسجيل (حدد التاريخ القديم):</label>
+                                <label>تاريخ التسجيل المختار:</label>
                                 <input type="date" id="old-p-date" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit btn-old" style="margin-top: 5px;">حفظ المريض بالتاريخ المحدد</button>
+                        <button type="submit" class="btn-submit btn-old" style="margin-top: 5px;">حفظ في سجل المرضى</button>
                     </form>
                 </div>
 
@@ -265,12 +186,8 @@
                                 <tr>
                                     <th>الاسم</th>
                                     <th>الرقم (الهاتف)</th>
-                                    <th>الفئة</th>
-                                    <th>الإجراء الطبي</th>
-                                    <th>المدفوع</th>
-                                    <th>المتبقي</th>
-                                    <th>الأشعة</th>
-                                    <th>التاريخ والوقت</th>
+                                    <th>التاريخ المحدد</th>
+                                    <th>النوع الإداري</th>
                                 </tr>
                             </thead>
                             <tbody id="patients-table-body"></tbody>
@@ -301,7 +218,7 @@
                 </div>
 
                 <div class="box box-expense-box">
-                    <h2>بيان المصروفات التفصيلي لهذا الشهر</h2>
+                    <h2>بيان المصروفات التفصيلي</h2>
                     <div style="overflow-x:auto;">
                         <table>
                             <thead>
@@ -323,7 +240,7 @@
 </div>
 
 <script>
-    // وضع تاريخ اليوم كقيمة افتراضية مسبقة في خانة التاريخ القديم لتسهيل الاختيار
+    // وضع تاريخ اليوم كقيمة افتراضية مسبقة لتسهيل العمل اليومي
     document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
 
     // 🛡️ دالة التحقق من الرقم السري
@@ -346,7 +263,7 @@
         if (e.key === 'Enter') validateLogin();
     });
 
-    // دالة التبديل بين الصفحات داخلياً
+    // دالة التبديل بين صفحة المرضى والمصروفات
     function switchPage(pageName) {
         document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active-page'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -357,7 +274,7 @@
         updateApp();
     }
 
-    // جلب البيانات الآمنة مع ميزة الاسترجاع التلقائي
+    // جلب البيانات مع ميزة الاسترجاع الآمن من المتصفح لعدم ضياع الداتا القديمة
     let patients = JSON.parse(localStorage.getItem('clinic_patients')) || 
                    JSON.parse(localStorage.getItem('patients')) || 
                    JSON.parse(localStorage.getItem('patientsData')) || [];
@@ -370,47 +287,33 @@
     localStorage.setItem('clinic_expenses', JSON.stringify(expenses));
 
     function updateApp() {
-        const now = new Date();
-        const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-        let totalRevenue = 0, totalExpenses = 0;
-
         const pBody = document.getElementById('patients-table-body');
         const eBody = document.getElementById('expenses-table-body');
         if(!pBody || !eBody) return; 
         
         pBody.innerHTML = ''; eBody.innerHTML = '';
 
-        // 1. معالجة وعرض جدول السجل الكامل للمرضى
+        // عرض جدول سجل المرضى الرائع والمبسط بدون كراكيب
         if (patients.length === 0) {
-            pBody.innerHTML = `<tr><td colspan="8" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
+            pBody.innerHTML = `<tr><td colspan="4" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
         } else {
             patients.forEach(p => {
-                if (p.date_added && p.date_added.startsWith(currentMonthStr)) {
-                    totalRevenue += parseFloat(p.paid || 0);
-                }
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${p.patient_name || p.name || ''}</strong></td>
                     <td>${p.phone || '—'}</td>
-                    <td>${p.age_category || p.age || 'بالغ'}</td>
-                    <td>${p.service || '—'}</td>
-                    <td style="color: #2ecc71; font-weight: bold;">${parseFloat(p.paid || 0).toFixed(2)} ج.م</td>
-                    <td style="color: #e74c3c; font-weight: bold;">${parseFloat(p.remaining || 0).toFixed(2)} ج.م</td>
-                    <td style="font-size: 11px; color: #7f8c8d;">${p.xrays || 'لا يوجد'}</td>
-                    <td>${p.date_added || ''}</td>
+                    <td style="color: #2980b9; font-weight: bold;">${p.date_added || ''}</td>
+                    <td style="font-size: 12px; color: #7f8c8d;">سجل مرن</td>
                 `;
                 pBody.appendChild(row);
             });
         }
 
-        // 2. معالجة وعرض جدول المصروفات
+        // عرض جدول بيان المصروفات
         if (expenses.length === 0) {
             eBody.innerHTML = `<tr><td colspan="3" style="color: #95a5a6;">لم يتم تسجيل أي مصروفات حتى الآن.</td></tr>`;
         } else {
             expenses.forEach(e => {
-                if (e.date_added && e.date_added.startsWith(currentMonthStr)) {
-                    totalExpenses += parseFloat(e.expense_amount || e.amount || 0);
-                }
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${e.expense_title || e.title || ''}</strong></td>
@@ -420,71 +323,34 @@
                 eBody.appendChild(row);
             });
         }
-
-        const netProfit = totalRevenue - totalExpenses;
-        document.getElementById('total-revenue').innerText = totalRevenue.toFixed(2) + ' ج.م';
-        document.getElementById('total-expenses').innerText = totalExpenses.toFixed(2) + ' ج.م';
-        document.getElementById('net-monthly_profit').innerText = netProfit.toFixed(2) + ' ج.م';
     }
 
-    // حفظ مريض حالي (من الصفحة الرئيسية)
-    function savePatient(event) {
-        event.preventDefault();
-        const name = document.getElementById('p-name').value.trim();
-        const phone = document.getElementById('p-phone').value.trim();
-        const age = document.getElementById('p-age').value;
-        const service = document.getElementById('p-service').value;
-        let paid = parseFloat(document.getElementById('p-paid').value) || 0;
-        let remaining = parseFloat(document.getElementById('p-remaining').value) || 0;
-
-        const xrayInput = document.getElementById('p-xray');
-        let xrayNames = [];
-        for (let i = 0; i < xrayInput.files.length; i++) { xrayNames.push(xrayInput.files[i].name); }
-        const xraysString = xrayNames.length > 0 ? xrayNames.join(', ') : 'لا يوجد';
-
-        const now = new Date();
-        const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-
-        patients.unshift({ patient_name: name, phone: phone, age_category: age, service: service, paid: paid, remaining: remaining, xrays: xraysString, date_added: dateStr });
-        localStorage.setItem('clinic_patients', JSON.stringify(patients));
-        document.getElementById('patient-form').reset();
-        
-        switchPage('patients');
-    }
-
-    // 💾 دالة حفظ المريض بالتاريخ القديم (من داخل صفحة المرضى)
+    // 💾 حفظ المريض بالتاريخ المختار بحرية تامة من الصندوق العلوي
     function saveOldPatient(event) {
         event.preventDefault();
         const name = document.getElementById('old-p-name').value.trim();
         const phone = document.getElementById('old-p-phone').value.trim();
-        const customDate = document.getElementById('old-p-date').value; // الصيغة المستخرجة YYYY-MM-DD
+        const customDate = document.getElementById('old-p-date').value; 
 
         if (!name || !customDate) return;
 
-        // صياغة الوقت لتتوافق مع السجلات (نضع وقت افتراضي 12:00 للقديم)
-        const dateStr = customDate + ' 12:00';
-
-        // إضافة البيانات في أول مصفوفة السجلات
+        // إضافة المريض الجديد في أول الجدول مباشرة
         patients.unshift({ 
             patient_name: name, 
             phone: phone, 
-            age_category: 'بالغ', 
-            service: 'تسجيل قديم بأثر رجعي', 
-            paid: 0, 
-            remaining: 0, 
-            xrays: 'لا يوجد', 
-            date_added: dateStr 
+            date_added: customDate 
         });
 
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
         
-        // تفريغ الاستمارة وإعادة تعيين تاريخ اليوم تلقائياً
+        // تفريغ المدخلات وإرجاع تاريخ اليوم تلقائياً للجاهزية
         document.getElementById('old-patient-form').reset();
         document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
         
         updateApp();
     }
 
+    // حفظ بند مصروفات جديد
     function saveExpense(event) {
         event.preventDefault();
         const title = document.getElementById('e-title').value.trim();
@@ -492,7 +358,7 @@
         if (!title || amount <= 0) return;
 
         const now = new Date();
-        const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+        const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
 
         expenses.unshift({ expense_title: title, expense_amount: amount, date_added: dateStr });
         localStorage.setItem('clinic_expenses', JSON.stringify(expenses));
@@ -501,7 +367,7 @@
     }
 
     function clearAllData() {
-        if (confirm('هل أنت متأكد من مسح جميع سجلات المرضى والمصروفات نهائياً من هذا الجهاز؟')) {
+        if (confirm('هل أنت متأكد من مسح جميع سجلات المرضى والمصروفات نهائياً من هذا الجهاز لتهيئة الدورة؟')) {
             localStorage.clear();
             patients = []; expenses = [];
             updateApp();
