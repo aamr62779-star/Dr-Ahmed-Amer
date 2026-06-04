@@ -126,6 +126,7 @@
         .box.expense-box { border-top-color: #e74c3c; }
         .box.old-box { border-top-color: #2ecc71; } 
         .box.monthly-box { border-top-color: #9b59b6; }
+        .box.followup-box { border-top-color: #00a3e0; }
         
         h2 { font-size: 18px; margin-top: 0; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #eee; color: #2980b9; }
         .form-group { margin-bottom: 15px; }
@@ -294,7 +295,6 @@
 </head>
 <body>
 
-<!-- 🔑 شاشة قفل تسجيل الدخول -->
 <div id="login-screen" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
     <div class="box" style="width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
         <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول للعيادة</h2>
@@ -307,7 +307,6 @@
     </div>
 </div>
 
-<!-- 🏥 شاشة البرنامج الرئيسية -->
 <div class="container" id="app-screen" style="display: none;">
     
     <header>
@@ -317,18 +316,17 @@
 
     <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-    <!-- 📋 القائمة الجانبية -->
     <div id="app-sidebar" class="sidebar">
         <div class="sidebar-header">
             <span>صفحات النظام</span>
             <button class="close-sidebar-btn" onclick="toggleSidebar()">✕</button>
         </div>
         <button class="sidebar-btn active" id="sidebar-btn-patients" onclick="switchPage('patients')">👥 صفحة المرضى والتسجيل</button>
+        <button class="sidebar-btn" id="sidebar-btn-followups" onclick="switchPage('followups')">📋 جدول متابعات الحالات</button>
         <button class="sidebar-btn" id="sidebar-btn-monthly" onclick="switchPage('monthly')">📅 سجل المرضى الشهري</button>
         <button class="sidebar-btn" id="sidebar-btn-expenses" onclick="switchPage('expenses')">💰 حسابات ومصروفات العيادة</button>
     </div>
 
-    <!-- 1️⃣ صفحة المرضى الرئيسية -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
@@ -386,7 +384,32 @@
         </div>
     </div>
 
-    <!-- 2️⃣ الصفحة الشهرية لفلترة المرضى بالشهور -->
+    <div id="page-followups" class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="box followup-box">
+                    <h2>📋 جدول متابعات الحالات المجدولة بالتاريخ</h2>
+                    <div style="background-color: #e8f2f9; padding: 12px; border-radius: 6px; font-weight: bold; color: #2980b9; margin-bottom: 15px;" id="followups-count-badge">
+                        جاري تحميل المتابعات...
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>اسم المريض وهاتفه</th>
+                                    <th>تاريخ المتابعة القادمة</th>
+                                    <th>الشغل المطلوب / الخدمة الطبية</th>
+                                    <th>الملف</th>
+                                </tr>
+                            </thead>
+                            <tbody id="followups-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="page-monthly" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -443,7 +466,6 @@
         </div>
     </div>
 
-    <!-- 3️⃣ صفحة حسابات ومصروفات المستقلة -->
     <div id="page-expenses" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -484,7 +506,6 @@
 
 </div>
 
-<!-- 📂 نافذة ملف المريض المنبثقة (Modal) -->
 <div id="patient-modal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
@@ -645,10 +666,12 @@
         const pBody = document.getElementById('patients-table-body');
         const mBody = document.getElementById('monthly-patients-table-body');
         const eBody = document.getElementById('expenses-table-body');
+        const fBody = document.getElementById('followups-table-body');
         
         if(pBody) pBody.innerHTML = ''; 
         if(mBody) mBody.innerHTML = '';
         if(eBody) eBody.innerHTML = '';
+        if(fBody) fBody.innerHTML = '';
 
         const searchInput = document.getElementById('search-patient-input');
         const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
@@ -658,11 +681,21 @@
 
         let visiblePatientsCount = 0;
         let monthlyPatientsCount = 0;
+        let followUpsCount = 0;
+
+        const todayStr = new Date().toISOString().split('T')[0];
 
         if (patients.length === 0) {
             if(pBody) pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
             if(mBody) mBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
+            if(fBody) fBody.innerHTML = `<tr><td colspan="4" style="color: #95a5a6;">لا توجد أي متابعات مسجلة حالياً.</td></tr>`;
+            if(document.getElementById('followups-count-badge')) {
+                document.getElementById('followups-count-badge').innerText = 'إجمالي الحالات المجدول لها متابعات: 0 حالة';
+            }
         } else {
+            // مصفوفة مؤقتة لمعالجة وفرز المتابعات
+            let followUpList = [];
+
             patients.forEach((p, index) => {
                 const dateParts = p.date_added ? p.date_added.split('-') : [];
                 const pYear = dateParts[0] ? parseInt(dateParts[0]) : 0;
@@ -683,7 +716,7 @@
                 }
                 let remainingTotal = totalAmount - totalPaid;
 
-                // 🌟 تحديد شكل شارة الحالة المنسدلة تحت الاسم والرقم بدقة
+                // شارة المديونية تحت الاسم
                 let debtBadgeHTML = '';
                 if (remainingTotal > 0) {
                     debtBadgeHTML = `<div style="font-size: 12px; margin-top: 6px; color: #e74c3c; font-weight: bold; background-color: #fdedec; padding: 3px 8px; border-radius: 4px; display: inline-block; border: 1px solid #fadbd8;">⚠️ مديونية: ${remainingTotal.toFixed(2)} ج.م</div>`;
@@ -691,7 +724,6 @@
                     debtBadgeHTML = `<div style="font-size: 12px; margin-top: 6px; color: #2ecc71; font-weight: bold; background-color: #eafaf1; padding: 3px 8px; border-radius: 4px; display: inline-block; border: 1px solid #d4efdf;">✅ خالص الحساب</div>`;
                 }
 
-                // بناء العناصر الثلاثة تحت بعضها هيدروليكياً في العمود الأول
                 const generateRowHTML = () => `
                     <td>
                         <strong class="patient-clickable-name" onclick="openPatientFile(${index})" title="اضغط لفتح ملف المريض">${p.patient_name || p.name || ''}</strong>
@@ -706,6 +738,7 @@
                     <td><span class="eye-icon" onclick="openPatientFile(${index})" title="فتح الملف">👁️</span></td>
                 `;
 
+                // فلترة السجل العام
                 let skipMainTable = false;
                 if (searchQuery && !pName.includes(searchQuery)) skipMainTable = true;
                 if (showDebtsOnly && remainingTotal <= 0) skipMainTable = true;
@@ -717,13 +750,64 @@
                     pBody.appendChild(row);
                 }
 
+                // فلترة السجل الشهري
                 if (pYear === targetYear && pMonth === targetMonth && mBody) {
                     monthlyPatientsCount++;
                     const row = document.createElement('tr');
                     row.innerHTML = generateRowHTML();
                     mBody.appendChild(row);
                 }
+
+                // تجميع المتابعات النشطة
+                if (p.next_visit && p.next_visit.trim() !== '') {
+                    followUpList.push({
+                        patientIndex: index,
+                        name: p.patient_name || p.name || '',
+                        phone: p.phone || '',
+                        next_visit: p.next_visit,
+                        service: p.service || 'لم يتم تحديد إجراء معين بعد'
+                    });
+                }
             });
+
+            // فرز قائمة المتابعات تصاعدياً من الأقرب إلى الأبعد
+            followUpList.sort((a, b) => new Date(a.next_visit) - new Date(b.next_visit));
+
+            // عرض قائمة المتابعات داخل الجدول الخاص بها
+            if (followUpList.length === 0) {
+                if(fBody) fBody.innerHTML = `<tr><td colspan="4" style="color: #95a5a6;">لا توجد أي متابعات مسجلة حالياً.</td></tr>`;
+            } else {
+                followUpList.forEach(fp => {
+                    followUpsCount++;
+                    if (fBody) {
+                        const row = document.createElement('tr');
+                        
+                        let todayBadge = '';
+                        if (fp.next_visit === todayStr) {
+                            todayBadge = `<span style="background-color: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 8px; font-weight: bold;">تنبيه: اليوم!</span>`;
+                        }
+
+                        row.innerHTML = `
+                            <td>
+                                <strong class="patient-clickable-name" onclick="openPatientFile(${fp.patientIndex})">${fp.name}</strong>
+                                <div style="font-size: 12px; color: #7f8c8d; margin-top: 3px;">📞 ${fp.phone || '—'}</div>
+                            </td>
+                            <td style="color: #005577; font-weight: bold;">
+                                ${fp.next_visit} ${todayBadge}
+                            </td>
+                            <td style="color: #555; font-weight: 500;">
+                                🛠️ ${fp.service}
+                            </td>
+                            <td><span class="eye-icon" onclick="openPatientFile(${fp.patientIndex})" title="فتح الملف">👁️</span></td>
+                        `;
+                        fBody.appendChild(row);
+                    }
+                });
+            }
+
+            if(document.getElementById('followups-count-badge')) {
+                document.getElementById('followups-count-badge').innerText = `إجمالي الحالات المجدول لها متابعات: ${followUpsCount} حالة متبقية.`;
+            }
 
             if (visiblePatientsCount === 0 && pBody) {
                 pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا توجد نتائج تطابق البحث أو الفلترة المالية الحالية.</td></tr>`;
