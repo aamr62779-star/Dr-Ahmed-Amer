@@ -210,7 +210,7 @@
         .modal-content {
             background: #fff;
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
@@ -245,6 +245,27 @@
             background-color: #e8f2f9;
             color: #2980b9;
             font-weight: bold;
+        }
+
+        /* تصميم أسطر سجل الدفعات */
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 6px;
+            border: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+        .delete-payment-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -320,9 +341,9 @@
                             <thead>
                                 <tr>
                                     <th>الاسم ورقم المريض</th>
-                                    <th>الزيارة</th>
-                                    <th>المدفوع</th>
-                                    <th>المتبقي</th>
+                                    <th>الزيارة الأولية</th>
+                                    <th>إجمالي المدفوع</th>
+                                    <th>المتبقي الكلي</th>
                                     <th>الملف</th>
                                 </tr>
                             </thead>
@@ -393,36 +414,55 @@
         </div>
         
         <div class="form-group">
-            <label>تاريخ الزيارة الحالية:</label>
+            <label>تاريخ أول زيارة:</label>
             <input type="date" id="modal-p-date">
         </div>
 
-        <!-- 📅 المربع الجديد الخاص بالزيارة القادمة (محدد بخلفية سماوية مميزة) -->
-        <div class="form-group" style="background-color: #eef9ff; padding: 12px; border-radius: 6px; border: 1px solid #7dd3fc; margin-bottom: 18px;">
-            <label style="color: #0369a1; font-weight: bold; margin-bottom: 8px;">🗓️ موعد الجلسة / الزيارة القادمة:</label>
+        <!-- 📅 مربع الزيارة القادمة -->
+        <div class="form-group" style="background-color: #eef9ff; padding: 12px; border-radius: 6px; border: 1px solid #7dd3fc; margin-bottom: 15px;">
+            <label style="color: #0369a1; font-weight: bold; margin-bottom: 6px;">🗓️ موعد الجلسة / الزيارة القادمة:</label>
             <input type="date" id="modal-p-next-visit" style="border-color: #7dd3fc;">
         </div>
 
-        <!-- 💰 الخانات المادية -->
-        <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 1;">
-                <label>المدفوع (ج.م):</label>
-                <input type="number" step="0.01" id="modal-p-paid">
+        <!-- 💰 📊 النظام المالي المتطور والجديد للدفعات لكل جلسة -->
+        <div class="box" style="border-top: 3px solid #2ecc71; background: #fcfdfe; padding: 15px; margin-bottom: 15px;">
+            <h3 style="margin-top: 0; font-size: 15px; color: #27ae60; margin-bottom: 12px;">💸 الحسابات والمدفوعات لكل جلسة</h3>
+            
+            <div class="form-group">
+                <label>المبلغ الإجمالي الكلي المطلوب (ج.م):</label>
+                <input type="number" step="0.01" id="modal-p-total-amount" oninput="calculateFinancials()" placeholder="اكتب إجمالي حساب خطة العلاج">
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label>المتبقي (ج.م):</label>
-                <input type="number" step="0.01" id="modal-p-remaining">
+
+            <!-- إضافة دفعة جلسة جديدة -->
+            <div style="background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px dashed #2ecc71; margin-bottom: 12px;">
+                <label style="color: #166534; font-weight: bold;">➕ تسجيل مدفوع لجلسة جديدة:</label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
+                    <input type="number" step="0.01" id="new-payment-amount" placeholder="المبلغ ج.م" style="flex: 1; min-width: 90px;">
+                    <input type="date" id="new-payment-date" style="flex: 1.2; min-width: 130px;">
+                    <button type="button" onclick="addPaymentToTempList()" style="background: #2ecc71; color: white; border: none; padding: 0 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;">أضف الدفعة</button>
+                </div>
+            </div>
+
+            <!-- سجل عرض الدفعات السابقة باليوم والتاريخ -->
+            <label>📋 سجل دفعات الجلسات بالتاريخ واليوم:</label>
+            <div id="modal-payments-history-list" style="max-height: 130px; overflow-y: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; margin-top: 4px;">
+                <!-- يتم بناؤه برمجياً -->
+            </div>
+
+            <!-- ملخص الحساب التلقائي المحدث لحظياً -->
+            <div style="display: flex; gap: 10px; margin-top: 12px; background: #e8f2f9; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; border: 1px solid #b9ddf5;">
+                <div style="flex: 1; color: #1e7e34; text-align: center;">تم دفع: <span id="lbl-total-paid">0.00</span> ج.م</div>
+                <div style="flex: 1; color: #bd2130; text-align: center;">المتبقي: <span id="lbl-total-remaining">0.00</span> ج.م</div>
             </div>
         </div>
 
-        <!-- 🦷 الخدمة الطبية للاسنان: اختيار بالسهم أو كتابة يدوية حرة فوراً -->
+        <!-- 🦷 الخدمة الطبية للاسنان -->
         <div class="form-group" style="position: relative;">
             <label>الخدمة الطبية للاسنان (اختار أو اكتب مباشرة):</label>
             <div style="display: flex; width: 100%;">
                 <input type="text" id="modal-p-service" placeholder="اكتب الخدمة هنا أو اضغط السهم للاختيار..." style="border-radius: 0 6px 6px 0; border-left: none; flex: 1;">
                 <button type="button" onclick="toggleServicesDropdown(event)" style="background: #e8f2f9; border: 1px solid #bdc3c7; border-radius: 6px 0 0 6px; width: 45px; cursor: pointer; color: #2980b9; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; outline: none;">▼</button>
             </div>
-            <!-- القائمة المنبثقة المضمونة -->
             <div id="services-dropdown-menu" class="dropdown-menu">
                 <div class="dropdown-item" onclick="selectServiceItem('حشو عادى')">حشو عادى</div>
                 <div class="dropdown-item" onclick="selectServiceItem('حشو عصب')">حشو عصب</div>
@@ -451,6 +491,10 @@
 <script>
     // وضع تاريخ اليوم كقيمة افتراضية مسبقة
     document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('new-payment-date').value = new Date().toISOString().split('T')[0];
+
+    // مصفوفة مؤقتة للتحكم في دفعات المريض الحالي المفتوح ملفه
+    let tempPaymentsList = [];
 
     // 🛡️ دالة التحقق من الرقم السري
     function validateLogin() {
@@ -498,6 +542,14 @@
     let patients = JSON.parse(localStorage.getItem('clinic_patients')) || [];
     let expenses = JSON.parse(localStorage.getItem('clinic_expenses')) || [];
 
+    // دالة لاستخراج اسم اليوم باللغة العربية بناءً على تاريخ معين
+    function getArabicDayName(dateString) {
+        if (!dateString) return '';
+        const dateObj = new Date(dateString);
+        if (isNaN(dateObj.getTime())) return '';
+        return dateObj.toLocaleDateString('ar-EG', { weekday: 'long' });
+    }
+
     function updateApp() {
         const pBody = document.getElementById('patients-table-body');
         const eBody = document.getElementById('expenses-table-body');
@@ -509,6 +561,21 @@
             pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
         } else {
             patients.forEach((p, index) => {
+                // حماية وحساب البيانات ديناميكياً لتظهر في الجدول العام بشكل صحيح المجموع والمتبقي
+                let totalPaid = 0;
+                if (p.payments && p.payments.length > 0) {
+                    totalPaid = p.payments.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+                } else {
+                    totalPaid = parseFloat(p.paid || 0);
+                }
+
+                let totalAmount = parseFloat(p.total_amount);
+                if (isNaN(totalAmount)) {
+                    totalAmount = totalPaid + parseFloat(p.remaining || 0);
+                }
+
+                let remainingTotal = totalAmount - totalPaid;
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
@@ -516,8 +583,8 @@
                         <div style="font-size: 12px; color: #7f8c8d; margin-top: 4px;">${p.phone || '—'}</div>
                     </td>
                     <td style="color: #2980b9; font-weight: bold;">${p.date_added || ''}</td>
-                    <td style="color: #2ecc71; font-weight: bold;">${parseFloat(p.paid || 0).toFixed(2)} ج.م</td>
-                    <td style="color: #e74c3c; font-weight: bold;">${parseFloat(p.remaining || 0).toFixed(2)} ج.م</td>
+                    <td style="color: #2ecc71; font-weight: bold;">${totalPaid.toFixed(2)} ج.م</td>
+                    <td style="color: #e74c3c; font-weight: bold;">${remainingTotal.toFixed(2)} ج.م</td>
                     <td><span class="eye-icon" onclick="openPatientFile(${index})" title="فتح الملف">👁️</span></td>
                 `;
                 pBody.appendChild(row);
@@ -552,10 +619,12 @@
             patient_name: name, 
             phone: phone, 
             date_added: customDate,
+            total_amount: 0,
             paid: 0,
             remaining: 0,
+            payments: [], // جدول سجل الدفعات التفصيلي فارغ للمريض الجديد
             service: '',
-            next_visit: '', // الموعد الافتراضي فارغ
+            next_visit: '', 
             xrays: 'لا يوجد'
         });
 
@@ -567,14 +636,13 @@
         updateApp();
     }
 
-    // 🔘 فتح / إغلاق القائمة المنسدلة للخدمات عند الضغط على السهم
+    // 🔘 فتح / إغلاق قائمة الخدمات الطبية
     function toggleServicesDropdown(event) {
         event.stopPropagation();
         const menu = document.getElementById('services-dropdown-menu');
         menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
     }
 
-    // 🎯 عند اختيار خدمة يتم إدخالها في الخانة مباشرة وإغلاق القائمة
     function selectServiceItem(value) {
         document.getElementById('modal-p-service').value = value;
         document.getElementById('services-dropdown-menu').style.display = 'none';
@@ -591,18 +659,39 @@
         if (!p) return;
 
         document.getElementById('modal-patient-index').value = index;
-        document.getElementById('modal-patient-header').innerText = `ملف المريض: ${p.patient_name || p.name || ''}`;
+        document.getElementById('modal-patient-header').innerText = `ملف المريض: ${p.patient_name || ''}`;
         document.getElementById('modal-p-name').value = p.patient_name || p.name || '';
         document.getElementById('modal-p-phone').value = p.phone || '';
         document.getElementById('modal-p-date').value = p.date_added || '';
-        document.getElementById('modal-p-paid').value = p.paid || 0;
-        document.getElementById('modal-p-remaining').value = p.remaining || 0;
-        
-        // جلب وعرض تاريخ الزيارة القادمة المخزن مسبقاً
         document.getElementById('modal-p-next-visit').value = p.next_visit || '';
-        
         document.getElementById('modal-p-service').value = p.service || p.notes || '';
-        document.getElementById('services-dropdown-menu').style.display = 'none';
+        
+        // تجهيز وحماية بيانات الدفعات للمريض
+        tempPaymentsList = p.payments ? [...p.payments] : [];
+        
+        // إذا كان مريض قديم ولديه دفعة مسجلة بالطريقة القديمة وليس لديه مصفوفة دفعات، ننقل الحساب تلقائياً
+        if (tempPaymentsList.length === 0 && parseFloat(p.paid) > 0) {
+            tempPaymentsList.push({
+                amount: parseFloat(p.paid),
+                date: p.date_added,
+                day: getArabicDayName(p.date_added)
+            });
+        }
+
+        let totalAmount = parseFloat(p.total_amount);
+        if (isNaN(totalAmount)) {
+            let oldPaid = parseFloat(p.paid || 0);
+            let oldRemaining = parseFloat(p.remaining || 0);
+            totalAmount = oldPaid + oldRemaining;
+        }
+        document.getElementById('modal-p-total-amount').value = totalAmount > 0 ? totalAmount : '';
+
+        // تصفير خانة إضافة دفعة جديدة ووضع تاريخ اليوم فيها تلقائياً
+        document.getElementById('new-payment-amount').value = '';
+        document.getElementById('new-payment-date').value = new Date().toISOString().split('T')[0];
+
+        // تحديث وعرض قائمة سجل الدفعات والحسابات
+        renderPaymentsList();
 
         document.getElementById('modal-xrays-list').innerText = p.xrays || 'لا توجد أشعة مرفوعة';
         document.getElementById('modal-p-xray').value = ''; 
@@ -610,12 +699,93 @@
         document.getElementById('patient-modal').style.display = 'flex';
     }
 
+    // دالة إضافة دفعة مؤقتة بداخل القائمة بالملف قبل الحفظ النهائي
+    function addPaymentToTempList() {
+        const amountInput = document.getElementById('new-payment-amount');
+        const dateInput = document.getElementById('new-payment-date');
+        
+        const amount = parseFloat(amountInput.value) || 0;
+        const dateStr = dateInput.value;
+
+        if (amount <= 0 || !dateStr) {
+            alert('الرجاء إدخال مبلغ صحيح وتحديد تاريخ الدفعة.');
+            return;
+        }
+
+        // استخراج اسم اليوم تلقائياً وبدقة
+        const dayName = getArabicDayName(dateStr);
+
+        // إضافة الدفعة للمصفوفة المؤقتة
+        tempPaymentsList.push({
+            amount: amount,
+            date: dateStr,
+            day: dayName
+        });
+
+        // مسح الحقل وإعادة تعيين التاريخ الافتراضي
+        amountInput.value = '';
+        dateInput.value = new Date().toISOString().split('T')[0];
+
+        // إعادة رندرة السجل المالي وحساب الأرقام تلقائياً
+        renderPaymentsList();
+    }
+
+    // دالة لحذف دفعة معينة من السجل المالي في حال الخطأ
+    function removePaymentFromTempList(idx) {
+        if(confirm('هل تريد حذف هذه الدفعة المالية من سجل المريض؟')) {
+            tempPaymentsList.splice(idx, 1);
+            renderPaymentsList();
+        }
+    }
+
+    // دالة رندرة وحساب العمليات المالية بداخل الملف المفتوح
+    function renderPaymentsList() {
+        const historyContainer = document.getElementById('modal-payments-history-list');
+        historyContainer.innerHTML = '';
+
+        let totalPaid = 0;
+
+        if (tempPaymentsList.length === 0) {
+            historyContainer.innerHTML = `<div style="color:#95a5a6; font-size:12px; text-align:center; padding:10px;">لا توجد أي دفعات مسجلة لجلسات هذا المريض حتى الآن.</div>`;
+        } else {
+            tempPaymentsList.forEach((pay, idx) => {
+                totalPaid += parseFloat(pay.amount || 0);
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'payment-item';
+                itemDiv.innerHTML = `
+                    <span>💰 دفع <strong>${parseFloat(pay.amount).toFixed(2)} ج.م</strong> يوم (${pay.day || 'غير محدد'}) بتاريخ: ${pay.date}</span>
+                    <button type="button" class="delete-payment-btn" onclick="removePaymentFromTempList(${idx})" title="حذف الدفعة">✕</button>
+                `;
+                historyContainer.appendChild(itemDiv);
+            });
+        }
+
+        // جلب الإجمالي وحساب المتبقي الكلي عرض حي
+        const totalAmountInput = document.getElementById('modal-p-total-amount').value;
+        const totalAmount = parseFloat(totalAmountInput) || 0;
+        const remainingTotal = totalAmount - totalPaid;
+
+        document.getElementById('lbl-total-paid').innerText = totalPaid.toFixed(2);
+        document.getElementById('lbl-total-remaining').innerText = remainingTotal.toFixed(2);
+    }
+
+    // دالة الحساب الحي المباشر عند تعديل خانة "المبلغ الإجمالي الكلي" يدوياً
+    function calculateFinancials() {
+        const totalAmount = parseFloat(document.getElementById('modal-p-total-amount').value) || 0;
+        let totalPaid = tempPaymentsList.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+        
+        const remainingTotal = totalAmount - totalPaid;
+        document.getElementById('lbl-total-paid').innerText = totalPaid.toFixed(2);
+        document.getElementById('lbl-total-remaining').innerText = remainingTotal.toFixed(2);
+    }
+
     // ❌ إغلاق نافذة ملف المريض
     function closePatientModal() {
         document.getElementById('patient-modal').style.display = 'none';
     }
 
-    // 💾 حفظ التعديلات والخدمة المحددة وتاريخ الزيارة القادمة
+    // 💾 حفظ التعديلات والخدمة وتاريخ الدفعات الجديد نهائياً في المتصفح
     function savePatientFileChanges() {
         const index = document.getElementById('modal-patient-index').value;
         if (index === '') return;
@@ -623,13 +793,16 @@
         const updatedName = document.getElementById('modal-p-name').value.trim();
         const updatedPhone = document.getElementById('modal-p-phone').value.trim();
         const updatedDate = document.getElementById('modal-p-date').value;
-        const updatedPaid = parseFloat(document.getElementById('modal-p-paid').value) || 0;
-        const updatedRemaining = parseFloat(document.getElementById('modal-p-remaining').value) || 0;
+        const updatedNextVisit = document.getElementById('modal-p-next-visit').value;
         const updatedService = document.getElementById('modal-p-service').value.trim();
         
-        // جلب تاريخ الزيارة القادمة الجديد لحفظه
-        const updatedNextVisit = document.getElementById('modal-p-next-visit').value;
+        // جلب قيمة خطة العلاج الكلية لحفظها
+        const updatedTotalAmount = parseFloat(document.getElementById('modal-p-total-amount').value) || 0;
         
+        // حساب الإجماليات النهائية لتخزينها للتوافقية
+        const finalTotalPaid = tempPaymentsList.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+        const finalRemaining = updatedTotalAmount - finalTotalPaid;
+
         const xrayInput = document.getElementById('modal-p-xray');
         let currentXrays = patients[index].xrays || 'لا يوجد';
         
@@ -647,14 +820,19 @@
             }
         }
 
-        // تحديث البيانات كاملة في الذاكرة
+        // تحديث البيانات بالكامل في الكائن الرئيسي بذاكرة التخزين
         patients[index].patient_name = updatedName;
         patients[index].phone = updatedPhone;
         patients[index].date_added = updatedDate;
-        patients[index].paid = updatedPaid;
-        patients[index].remaining = updatedRemaining;
+        patients[index].next_visit = updatedNextVisit;
         patients[index].service = updatedService;
-        patients[index].next_visit = updatedNextVisit; // حفظ الزيارة القادمة هنا
+        
+        // حفظ الحقول المالية الجديدة والتفصيلية
+        patients[index].total_amount = updatedTotalAmount;
+        patients[index].payments = tempPaymentsList; // حفظ مصفوفة الدفعات كاملة باليوم والتاريخ
+        patients[index].paid = finalTotalPaid;
+        patients[index].remaining = finalRemaining;
+        
         patients[index].xrays = currentXrays;
 
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
