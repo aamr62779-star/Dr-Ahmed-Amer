@@ -21,10 +21,40 @@
             padding: 15px 20px; 
             border-radius: 8px; 
             text-align: center; 
-            margin-bottom: 20px; 
+            margin-bottom: 15px; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
         }
         header h1 { margin: 0; font-size: 24px; }
+
+        /* شريط التنقل بين الصفحات من الداخل */
+        .nav-bar {
+            display: flex;
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            gap: 10px;
+        }
+        .nav-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: #f1f5f9;
+            color: #55677d;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .nav-btn:hover { background: #e2e8f0; }
+        .nav-btn.active {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 3px 6px rgba(52, 152, 219, 0.3);
+        }
         
         /* لوحة الحسابات الشهرية الملونة */
         .dashboard { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
@@ -44,8 +74,7 @@
         .card p { margin: 0; font-size: 24px; font-weight: bold; }
 
         .row { display: flex; gap: 20px; flex-wrap: wrap; }
-        .col-7 { flex: 1.8; min-width: 320px; }
-        .col-5 { flex: 1.2; min-width: 320px; }
+        .col-12 { flex: 1; width: 100%; }
 
         .box { 
             background: #ffffff; 
@@ -109,6 +138,10 @@
             float: left; 
         }
         .clear-btn:hover { background: #7f8c8d; }
+
+        /* إخفاء الصفحات افتراضياً */
+        .page-content { display: none; }
+        .page-content.active-page { display: block; }
     </style>
 </head>
 <body>
@@ -130,6 +163,12 @@
         <h1>Dr. Amer’s Clinic - إدارة العيادة الذكية</h1>
     </header>
 
+    <div class="nav-bar">
+        <button class="nav-btn active" id="btn-home" onclick="switchPage('home')">الرئيسية والتسجيل</button>
+        <button class="nav-btn" id="btn-patients" onclick="switchPage('patients')">صفحة المرضى</button>
+        <button class="nav-btn" id="btn-expenses" onclick="switchPage('expenses')">حسابات ومصروفات</button>
+    </div>
+
     <div class="dashboard">
         <div class="card revenue">
             <h3>إيرادات الشهر الإجمالية</h3>
@@ -145,129 +184,152 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-5">
-            <div class="box">
-                <h2>تسجيل مريض جديد</h2>
-                <form id="patient-form" onsubmit="savePatient(event)">
-                    <div class="form-group">
-                        <label>اسم المريض:</label>
-                        <input type="text" id="p-name" required placeholder="أدخل اسم المريض">
-                    </div>
-                    <div class="form-group">
-                        <label>العمر (الفئة):</label>
-                        <select id="p-age">
-                            <option value="بالغ">بالغ</option>
-                            <option value="طفل">طفل</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>الخدمة / الإجراء الطبي:</label>
-                        <input type="text" id="p-service" required placeholder="مثال: حشو تجميلي، زيركون، علاج عصب">
-                    </div>
-                    <div class="form-group" style="display: flex; gap: 10px;">
-                        <div style="flex: 1;">
-                            <label>المدفوع:</label>
-                            <input type="number" step="0.01" id="p-paid" value="0">
+    <div id="page-home" class="page-content active-page">
+        <div class="row">
+            <div class="col-12">
+                <div class="box">
+                    <h2>تسجيل مريض جديد</h2>
+                    <form id="patient-form" onsubmit="savePatient(event)">
+                        <div class="form-group">
+                            <label>اسم المريض:</label>
+                            <input type="text" id="p-name" required placeholder="أدخل اسم المريض">
                         </div>
-                        <div style="flex: 1;">
-                            <label>المتبقي:</label>
-                            <input type="number" step="0.01" id="p-remaining" value="0">
+                        <div class="form-group">
+                            <label>العمر (الفئة):</label>
+                            <select id="p-age">
+                                <option value="بالغ">بالغ</option>
+                                <option value="طفل">طفل</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>إرفاق صور الأشعة (اسم الملف):</label>
-                        <input type="file" id="p-xray" multiple accept="image/*">
-                    </div>
-                    <button type="submit" class="btn-submit">حفظ ملف المريض</button>
-                </form>
-            </div>
-
-            <div class="box box-expense-box">
-                <h2>إضافة بند مصروفات</h2>
-                <form id="expense-form" onsubmit="saveExpense(event)">
-                    <div class="form-group">
-                        <label>بند المصروف:</label>
-                        <input type="text" id="e-title" required placeholder="مثال: أدوات، خامات، إيجار...">
-                    </div>
-                    <div class="form-group">
-                        <label>المبلغ المدفوع:</label>
-                        <input type="number" step="0.01" id="e-amount" required placeholder="0.00">
-                    </div>
-                    <button type="submit" class="btn-submit btn-expense">تسجيل وحفظ المصروف</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="col-7">
-            <div class="box">
-                <h2>سجل المرضى</h2>
-                <div style="overflow-x:auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>الاسم</th>
-                                <th>الفئة</th>
-                                <th>الإجراء الطبي</th>
-                                <th>المدفوع</th>
-                                <th>المتبقي</th>
-                                <th>الأشعة</th>
-                                <th>التاريخ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="patients-table-body"></tbody>
-                    </table>
+                        <div class="form-group">
+                            <label>الخدمة / الإجراء الطبي:</label>
+                            <input type="text" id="p-service" required placeholder="مثال: حشو تجميلي، زيركون، علاج عصب">
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <div style="flex: 1;">
+                                <label>المدفوع:</label>
+                                <input type="number" step="0.01" id="p-paid" value="0">
+                            </div>
+                            <div style="flex: 1;">
+                                <label>المتبقي:</label>
+                                <input type="number" step="0.01" id="p-remaining" value="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>إرفاق صور الأشعة (اسم الملف):</label>
+                            <input type="file" id="p-xray" multiple accept="image/*">
+                        </div>
+                        <button type="submit" class="btn-submit">حفظ ملف المريض</button>
+                    </form>
                 </div>
-            </div>
-
-            <div class="box box-expense-box">
-                <h2>بيان المصروفات التفصيلي لهذا الشهر</h2>
-                <div style="overflow-x:auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>بند المصروف</th>
-                                <th>المبلغ</th>
-                                <th>التاريخ والوقت</th>
-                            </tr>
-                        </thead>
-                        <tbody id="expenses-table-body"></tbody>
-                    </table>
-                </div>
-                <button class="clear-btn" onclick="clearAllData()">مسح كل البيانات لتهيئة الدورة</button>
             </div>
         </div>
     </div>
+
+    <div id="page-patients" class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="box">
+                    <h2>صفحة المرضى - السجل الكامل للعيادة</h2>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الاسم</th>
+                                    <th>الفئة</th>
+                                    <th>الإجراء الطبي</th>
+                                    <th>المدفوع</th>
+                                    <th>المتبقي</th>
+                                    <th>الأشعة</th>
+                                    <th>التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patients-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-expenses" class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="box box-expense-box">
+                    <h2>إضافة بند مصروفات جديد</h2>
+                    <form id="expense-form" onsubmit="saveExpense(event)">
+                        <div class="form-group">
+                            <label>بند المصروف:</label>
+                            <input type="text" id="e-title" required placeholder="مثال: أدوات، خامات، إيجار...">
+                        </div>
+                        <div class="form-group">
+                            <label>المبلغ المدفوع:</label>
+                            <input type="number" step="0.01" id="e-amount" required placeholder="0.00">
+                        </div>
+                        <button type="submit" class="btn-submit btn-expense">تسجيل وحفظ المصروف</button>
+                    </form>
+                </div>
+
+                <div class="box box-expense-box">
+                    <h2>بيان المصروفات التفصيلي لهذا الشهر</h2>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>بند المصروف</th>
+                                    <th>المبلغ</th>
+                                    <th>التاريخ والوقت</th>
+                                }
+                                </tr>
+                            </thead>
+                            <tbody id="expenses-table-body"></tbody>
+                        </table>
+                    </div>
+                    <button class="clear-btn" onclick="clearAllData()">مسح كل البيانات لتهيئة الدورة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
-    // 🛡️ دالة التحقق من الرقم السري
+    // 🛡️ دالة التحقق من الرقم السري لدخول العيادة
     function validateLogin() {
         const enteredPassword = document.getElementById('app-password').value;
-        
-        // ⚙️ هنا الرقم السري الحالي (1234) تقدر تغيره لأي رقم يعجبك
-        const correctPassword = "1234"; 
+        const correctPassword = "1234"; // تقدر تغيره من هنا لأي باسورد تانية
 
         if (enteredPassword === correctPassword) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'block';
-            updateApp(); // تشغيل وجلب البيانات فوراً بعد الدخول الصحيح
+            updateApp(); 
         } else {
-            document.getElementById('login-error').style.style.display = 'block';
             document.getElementById('login-error').style.display = 'block';
             document.getElementById('app-password').value = '';
             document.getElementById('app-password').focus();
         }
     }
 
-    // تشغيل الدخول عند الضغط على زرار Enter في كيبورد الموبايل أو الكمبيوتر لتسهيل العمل
+    // تشغيل الدخول بـ Enter
     document.getElementById('app-password').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            validateLogin();
-        }
+        if (e.key === 'Enter') validateLogin();
     });
 
-    // جلب البيانات من الذاكرة المحلية الآمنة للمتصفح (خاصية الاسترجاع التلقائي)
+    // 🔄 دالة التبديل الذكي بين الصفحات من شريط التنقل
+    function switchPage(pageName) {
+        // إخفاء كل الصفحات أولاً
+        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active-page'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+        // إظهار الصفحة المطلوبة وتنشيط الزرار الخاص بها
+        document.getElementById('page-' + pageName).classList.add('active-page');
+        document.getElementById('btn-' + pageName).classList.add('active');
+        
+        // تحديث الحسابات والجداول في الخلفية باستمرار
+        updateApp();
+    }
+
+    // جلب البيانات مع ميزة الاسترجاع التلقائي لعدم فقدان أي داتا قديمة
     let patients = JSON.parse(localStorage.getItem('clinic_patients')) || 
                    JSON.parse(localStorage.getItem('patients')) || 
                    JSON.parse(localStorage.getItem('patientsData')) || [];
@@ -286,10 +348,11 @@
 
         const pBody = document.getElementById('patients-table-body');
         const eBody = document.getElementById('expenses-table-body');
-        if(!pBody || !eBody) return; // الحماية في حالة عدم تسجيل الدخول بعد
+        if(!pBody || !eBody) return; 
         
         pBody.innerHTML = ''; eBody.innerHTML = '';
 
+        // 1. معالجة وعرض جدول صفحة المرضى
         if (patients.length === 0) {
             pBody.innerHTML = `<tr><td colspan="7" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
         } else {
@@ -311,6 +374,7 @@
             });
         }
 
+        // 2. معالجة وعرض جدول المصروفات
         if (expenses.length === 0) {
             eBody.innerHTML = `<tr><td colspan="3" style="color: #95a5a6;">لم يتم تسجيل أي مصروفات حتى الآن.</td></tr>`;
         } else {
@@ -353,7 +417,9 @@
         patients.unshift({ patient_name: name, age_category: age, service: service, paid: paid, remaining: remaining, xrays: xraysString, date_added: dateStr });
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
         document.getElementById('patient-form').reset();
-        updateApp();
+        
+        // بعد الحفظ، ينقلك تلقائياً لـ صفحة المرضى عشان تشوف الاسم وهو بينزل في السجل فوراً!
+        switchPage('patients');
     }
 
     function saveExpense(event) {
