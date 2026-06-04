@@ -28,7 +28,7 @@
         }
         header h1 { margin: 0; font-size: 22px; }
 
-        /* ☰ زر القائمة الجانبية في الهيدر */
+        /* ☰ زر القائمة الجانبية في الهيدر وزر الرجوع */
         .menu-btn {
             background: #2980b9;
             color: white;
@@ -41,9 +41,10 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
         }
         .menu-btn:hover { background: #1f618d; }
+        .menu-btn:active { transform: scale(0.98); }
 
         /* 📋 تصميم القائمة الجانبية المنسدلة الحديثة */
         .sidebar {
@@ -331,7 +332,11 @@
     
     <header>
         <h1>Dr. Amer’s Clinic - إدارة العيادة الذكية</h1>
-        <button class="menu-btn" onclick="toggleSidebar(event)">☰ القائمة الرئيسية</button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <!-- ⬅️ زر الرجوع الذكي للرئيسية المضاف جديداً -->
+            <button id="back-to-main-btn" class="menu-btn" onclick="switchPage('patients')" style="background: #ffffff; color: #3498db; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">⬅️ الرجوع للرئيسية</button>
+            <button class="menu-btn" onclick="toggleSidebar(event)">☰ القائمة الرئيسية</button>
+        </div>
     </header>
 
     <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
@@ -708,7 +713,22 @@
         document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('sidebar-btn-' + pageName).classList.add('active');
         
-        toggleSidebar();
+        // 🔄 إغلاق القائمة الجانبية في حالة كانت مفتوحة
+        const sidebar = document.getElementById('app-sidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+            toggleSidebar();
+        }
+
+        // ⬅️ التحكم في إظهار أو إخفاء زر الرجوع بناءً على الصفحة النشطة
+        const backBtn = document.getElementById('back-to-main-btn');
+        if (backBtn) {
+            if (pageName === 'patients') {
+                backBtn.style.display = 'none'; // إخفاء الزر في الصفحة الرئيسية
+            } else {
+                backBtn.style.display = 'inline-flex'; // إظهار الزر في بقية الصفحات
+            }
+        }
+        
         updateApp();
     }
 
