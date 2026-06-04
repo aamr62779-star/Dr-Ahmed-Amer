@@ -2,21 +2,22 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>برنامج عيادة د. عامر المتكامل</title>
+    <title>إدارة عيادة د. عامر - النظام الكامل</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma; background: #eef5f9; margin: 0; padding: 10px; }
+        body { font-family: Tahoma; background: #eef5f9; padding: 10px; }
         .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .nav { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        .nav button { flex: 1; padding: 12px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: bold; }
+        .nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 5px; margin-bottom: 20px; }
+        .nav button { padding: 10px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: bold; }
         .section { display: none; }
         .active { display: block; }
-        input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button.add { background: #27ae60; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        input { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button.add { background: #27ae60; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; cursor: pointer; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
         th { background: #f8f9fa; color: #2980b9; }
+        .calc-box { background: #fdf2e9; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #fae5d3; }
     </style>
 </head>
 <body>
@@ -28,41 +29,40 @@
         <button onclick="show('patients')">👥 المرضى</button>
         <button onclick="show('labs')">🧪 المعامل</button>
         <button onclick="show('expenses')">💰 المصروفات</button>
-        <button onclick="show('reservations')">📅 الحجوزات</button>
+        <button onclick="show('percentages')">📊 النسب</button>
     </div>
 
     <div id="patients" class="section active">
         <h3>تسجيل مريض جديد</h3>
         <input type="text" id="pName" placeholder="اسم المريض">
-        <input type="text" id="pPhone" placeholder="رقم الهاتف">
-        <input type="text" id="pService" placeholder="نوع الخدمة">
-        <button class="add" onclick="save('patients', {name: document.getElementById('pName').value, phone: document.getElementById('pPhone').value, service: document.getElementById('pService').value})">حفظ المريض</button>
-        <table id="t-patients"><thead><tr><th>الاسم</th><th>الهاتف</th><th>الخدمة</th></tr></thead><tbody></tbody></table>
+        <input type="number" id="pAmount" placeholder="المبلغ المدفوع">
+        <button class="add" onclick="save('patients', {name: document.getElementById('pName').value, amount: document.getElementById('pAmount').value})">حفظ المريض</button>
+        <table id="t-patients"><thead><tr><th>الاسم</th><th>المبلغ</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="labs" class="section">
         <h3>حسابات المعامل</h3>
         <input type="text" id="lName" placeholder="اسم المعمل">
         <input type="number" id="lAmount" placeholder="المبلغ">
-        <input type="date" id="lDate">
-        <button class="add" onclick="save('labs', {name: document.getElementById('lName').value, amount: document.getElementById('lAmount').value, date: document.getElementById('lDate').value})">حفظ الدفعة</button>
-        <table id="t-labs"><thead><tr><th>المعمل</th><th>المبلغ</th><th>التاريخ</th></tr></thead><tbody></tbody></table>
+        <button class="add" onclick="save('labs', {name: document.getElementById('lName').value, amount: document.getElementById('lAmount').value})">حفظ الدفعة</button>
+        <table id="t-labs"><thead><tr><th>المعمل</th><th>المبلغ</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="expenses" class="section">
-        <h3>مصروفات العيادة</h3>
+        <h3>المصروفات</h3>
         <input type="text" id="eName" placeholder="بند المصروف">
         <input type="number" id="eAmount" placeholder="المبلغ">
         <button class="add" onclick="save('expenses', {name: document.getElementById('eName').value, amount: document.getElementById('eAmount').value})">حفظ المصروف</button>
         <table id="t-expenses"><thead><tr><th>البند</th><th>المبلغ</th></tr></thead><tbody></tbody></table>
     </div>
 
-    <div id="reservations" class="section">
-        <h3>الحجوزات الجديدة</h3>
-        <input type="text" id="rName" placeholder="اسم المريض">
-        <input type="date" id="rDate">
-        <button class="add" onclick="save('reservations', {name: document.getElementById('rName').value, date: document.getElementById('rDate').value})">حفظ الحجز</button>
-        <table id="t-reservations"><thead><tr><th>المريض</th><th>التاريخ</th></tr></thead><tbody></tbody></table>
+    <div id="percentages" class="section">
+        <h3>📊 حساب نسب دكتور عامر والعيادة</h3>
+        <div class="calc-box">
+            <p>إجمالي دخل العيادة من المرضى: <strong id="totalIncome">0</strong> ج.م</p>
+            <p style="color: #27ae60;">نصيب دكتور عامر (70%): <strong id="drShare">0</strong> ج.م</p>
+            <p style="color: #e67e22;">نصيب العيادة (30%): <strong id="clinicShare">0</strong> ج.م</p>
+        </div>
     </div>
 </div>
 
@@ -83,25 +83,35 @@
         }
     }
 
-    // المزامنة التلقائية لكل الجداول
+    // مزامنة وعرض البيانات + حساب النسب
     const mapping = {
-        patients: ['name', 'phone', 'service'],
-        labs: ['name', 'amount', 'date'],
-        expenses: ['name', 'amount'],
-        reservations: ['name', 'date']
+        patients: ['name', 'amount'],
+        labs: ['name', 'amount'],
+        expenses: ['name', 'amount']
     };
 
     Object.keys(mapping).forEach(node => {
         db.ref(node).on('value', (snapshot) => {
             const tbody = document.querySelector(`#t-${node} tbody`);
-            tbody.innerHTML = '';
+            if(tbody) tbody.innerHTML = '';
+            let total = 0;
             snapshot.forEach((child) => {
                 const data = child.val();
-                let row = '<tr>';
-                mapping[node].forEach(k => row += `<td>${data[k] || ''}</td>`);
-                row += '</tr>';
-                tbody.innerHTML += row;
+                if(tbody) {
+                    let row = '<tr>';
+                    mapping[node].forEach(k => row += `<td>${data[k] || ''}</td>`);
+                    row += '</tr>';
+                    tbody.innerHTML += row;
+                }
+                // حساب إجمالي الدخل من المرضى فقط
+                if(node === 'patients') total += parseFloat(data.amount || 0);
             });
+            
+            if(node === 'patients') {
+                document.getElementById('totalIncome').innerText = total;
+                document.getElementById('drShare').innerText = (total * 0.70).toFixed(2);
+                document.getElementById('clinicShare').innerText = (total * 0.30).toFixed(2);
+            }
         });
     });
 </script>
