@@ -285,7 +285,7 @@
         <button class="sidebar-btn" id="sidebar-btn-expenses" onclick="switchPage('expenses')">💰 حسابات ومصروفات العيادة</button>
     </div>
 
-    <!-- 1️⃣ صفحة المرضى الرئيسية (تظهر مباشرة أول واجهة) -->
+    <!-- 1️⃣ صفحة المرضى الرئيسية -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
@@ -393,8 +393,14 @@
         </div>
         
         <div class="form-group">
-            <label>تاريخ الزيارة:</label>
+            <label>تاريخ الزيارة الحالية:</label>
             <input type="date" id="modal-p-date">
+        </div>
+
+        <!-- 📅 المربع الجديد الخاص بالزيارة القادمة (محدد بخلفية سماوية مميزة) -->
+        <div class="form-group" style="background-color: #eef9ff; padding: 12px; border-radius: 6px; border: 1px solid #7dd3fc; margin-bottom: 18px;">
+            <label style="color: #0369a1; font-weight: bold; margin-bottom: 8px;">🗓️ موعد الجلسة / الزيارة القادمة:</label>
+            <input type="date" id="modal-p-next-visit" style="border-color: #7dd3fc;">
         </div>
 
         <!-- 💰 الخانات المادية -->
@@ -409,7 +415,7 @@
             </div>
         </div>
 
-        <!-- 🦷 الخانة المدمجة: اختيار بالسهم أو كتابة يدوية حرة فوراً -->
+        <!-- 🦷 الخدمة الطبية للاسنان: اختيار بالسهم أو كتابة يدوية حرة فوراً -->
         <div class="form-group" style="position: relative;">
             <label>الخدمة الطبية للاسنان (اختار أو اكتب مباشرة):</label>
             <div style="display: flex; width: 100%;">
@@ -478,17 +484,13 @@
 
     // دالة التبديل بين الصفحات من خلال القائمة الجانبية
     function switchPage(pageName) {
-        // إخفاء وعرض الصفحات
         document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active-page'));
         document.getElementById('page-' + pageName).classList.add('active-page');
 
-        // تحديد الزر النشط داخل القائمة الجانبية
         document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('sidebar-btn-' + pageName).classList.add('active');
         
-        // إغلاق القائمة الجانبية تلقائياً بعد الاختيار
         toggleSidebar();
-        
         updateApp();
     }
 
@@ -503,7 +505,6 @@
         
         pBody.innerHTML = ''; eBody.innerHTML = '';
 
-        // عرض جدول سجل المرضى بالأعمدة المدمجة
         if (patients.length === 0) {
             pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
         } else {
@@ -523,7 +524,6 @@
             });
         }
 
-        // عرض جدول بيان المصروفات
         if (expenses.length === 0) {
             eBody.innerHTML = `<tr><td colspan="3" style="color: #95a5a6;">لم يتم تسجيل أي مصروفات حتى الآن.</td></tr>`;
         } else {
@@ -555,6 +555,7 @@
             paid: 0,
             remaining: 0,
             service: '',
+            next_visit: '', // الموعد الافتراضي فارغ
             xrays: 'لا يوجد'
         });
 
@@ -579,7 +580,6 @@
         document.getElementById('services-dropdown-menu').style.display = 'none';
     }
 
-    // إغلاق أي قائمة منسدلة مفتوحة لو ضغطت في أي مكان حُر بالخطأ
     document.addEventListener('click', function() {
         const menu = document.getElementById('services-dropdown-menu');
         if (menu) menu.style.display = 'none';
@@ -598,7 +598,9 @@
         document.getElementById('modal-p-paid').value = p.paid || 0;
         document.getElementById('modal-p-remaining').value = p.remaining || 0;
         
-        // عرض الخدمة المكتوبة أو المختارة مباشرة داخل المربع الحُر
+        // جلب وعرض تاريخ الزيارة القادمة المخزن مسبقاً
+        document.getElementById('modal-p-next-visit').value = p.next_visit || '';
+        
         document.getElementById('modal-p-service').value = p.service || p.notes || '';
         document.getElementById('services-dropdown-menu').style.display = 'none';
 
@@ -613,7 +615,7 @@
         document.getElementById('patient-modal').style.display = 'none';
     }
 
-    // 💾 حفظ التعديلات والخدمة المحددة جوة ملف المريض
+    // 💾 حفظ التعديلات والخدمة المحددة وتاريخ الزيارة القادمة
     function savePatientFileChanges() {
         const index = document.getElementById('modal-patient-index').value;
         if (index === '') return;
@@ -623,9 +625,10 @@
         const updatedDate = document.getElementById('modal-p-date').value;
         const updatedPaid = parseFloat(document.getElementById('modal-p-paid').value) || 0;
         const updatedRemaining = parseFloat(document.getElementById('modal-p-remaining').value) || 0;
-        
-        // جلب الكلام المكتوب داخل الخانة (سواء تم اختياره بالسهم أو كتابته يدوياً)
         const updatedService = document.getElementById('modal-p-service').value.trim();
+        
+        // جلب تاريخ الزيارة القادمة الجديد لحفظه
+        const updatedNextVisit = document.getElementById('modal-p-next-visit').value;
         
         const xrayInput = document.getElementById('modal-p-xray');
         let currentXrays = patients[index].xrays || 'لا يوجد';
@@ -644,13 +647,14 @@
             }
         }
 
-        // تحديث البيانات في المصفوفة
+        // تحديث البيانات كاملة في الذاكرة
         patients[index].patient_name = updatedName;
         patients[index].phone = updatedPhone;
         patients[index].date_added = updatedDate;
         patients[index].paid = updatedPaid;
         patients[index].remaining = updatedRemaining;
         patients[index].service = updatedService;
+        patients[index].next_visit = updatedNextVisit; // حفظ الزيارة القادمة هنا
         patients[index].xrays = currentXrays;
 
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
