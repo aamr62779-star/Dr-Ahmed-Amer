@@ -333,7 +333,7 @@
     <header>
         <h1>Dr. Amer’s Clinic - إدارة العيادة الذكية</h1>
         <div style="display: flex; gap: 10px; align-items: center;">
-            <!-- ⬅️ زر الرجوع الذكي للرئيسية المضاف جديداً -->
+            <!-- ⬅️ زر الرجوع الذكي للرئيسية -->
             <button id="back-to-main-btn" class="menu-btn" onclick="switchPage('patients')" style="background: #ffffff; color: #3498db; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">⬅️ الرجوع للرئيسية</button>
             <button class="menu-btn" onclick="toggleSidebar(event)">☰ القائمة الرئيسية</button>
         </div>
@@ -372,7 +372,7 @@
                                 <input type="text" id="old-p-phone" placeholder="اكتب الرقم هنا">
                             </div>
                             <div class="form-group" style="flex: 1; min-width: 180px;">
-                                <label>الزيارة (التاريخ):</label>
+                                <label>الزيارة (التاريخ قابل للتعديل):</label>
                                 <input type="date" id="old-p-date" required>
                             </div>
                         </div>
@@ -429,7 +429,7 @@
                                 <input type="text" id="res-p-phone" placeholder="اكتب رقم الهاتف هنا">
                             </div>
                             <div class="form-group" style="flex: 1; min-width: 180px;">
-                                <label>تاريخ الحجز (تحدده بنفسك):</label>
+                                <label>تاريخ الحجز (قابل للتعديل):</label>
                                 <input type="date" id="res-p-date" required>
                             </div>
                         </div>
@@ -665,15 +665,50 @@
 </div>
 
 <script>
-    const currentToday = new Date();
-    document.getElementById('old-p-date').value = currentToday.toISOString().split('T')[0];
-    document.getElementById('new-payment-date').value = currentToday.toISOString().split('T')[0];
-    if (document.getElementById('res-p-date')) {
-        document.getElementById('res-p-date').value = currentToday.toISOString().split('T')[0];
+    // ⚙️ نظام إدارة ومزامنة التواريخ الذكي
+    let lastInitializedDate = ""; // لتخزين آخر تاريخ تم الاعتماد عليه كـ "اليوم"
+
+    // دالة لجلب التاريخ المحلي الحالي بدقة على صيغة YYYY-MM-DD لضمان عدم حدوث لغبطة فروق التوقيت
+    function getLocalDateString() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
-    
+
+    // دالة المزامنة الذكية للتواريخ في كل الخانات والصفحات
+    function syncDefaultDates() {
+        const todayStr = getLocalDateString();
+        
+        // جميع حقول الإدخال الخاصة بالتواريخ الافتراضية في البرنامج
+        const dateInputIds = ['old-p-date', 'new-payment-date', 'res-p-date'];
+        
+        dateInputIds.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                // الميزة هنا: لو الخانة فارغة تماماً، أو قيمتها الحالية مطابقة للتاريخ القديم (مما يعني أن المستخدم لم يقم بتغييرها يدوياً لتاريخ مخصص)، نقوم بتحديثها فوراً لتاريخ اليوم الجديد بعد الساعة 12
+                if (!input.value || input.value === lastInitializedDate) {
+                    input.value = todayStr;
+                }
+            }
+        });
+        
+        // حفظ التاريخ الحالي ليكون هو المرجع في الفحص القادم
+        lastInitializedDate = todayStr;
+    }
+
+    // تهيئة اختيارات القوائم الشهرية المنسدلة عند التحميل أول مرة
+    const currentToday = new Date();
     document.getElementById('monthly-month-select').value = currentToday.getMonth() + 1;
     document.getElementById('monthly-year-select').value = currentToday.getFullYear();
+
+    // تشغيل المزامنة الفورية للتواريخ عند الإقلاع وتثبيت الخانات
+    syncDefaultDates();
+
+    // 🕒 الفحص التلقائي المستمر كل 15 ثانية لمراقبة عبور الساعة 12 منتصف الليل وتحديث الخانات فوراً
+    setInterval(syncDefaultDates, 15000);
+
 
     let tempPaymentsList = [];
     let showDebtsOnly = false;
@@ -723,12 +758,14 @@
         const backBtn = document.getElementById('back-to-main-btn');
         if (backBtn) {
             if (pageName === 'patients') {
-                backBtn.style.display = 'none'; // إخفاء الزر في الصفحة الرئيسية
+                backBtn.style.display = 'none'; 
             } else {
-                backBtn.style.display = 'inline-flex'; // إظهار الزر في بقية الصفحات
+                backBtn.style.display = 'inline-flex'; 
             }
         }
         
+        // التأكد من تحديث ومزامنة تواريخ اليوم عند الانتقال بين الشاشات
+        syncDefaultDates();
         updateApp();
     }
 
@@ -780,7 +817,8 @@
         localStorage.setItem('clinic_reservations', JSON.stringify(reservations));
         
         document.getElementById('reservation-form').reset();
-        document.getElementById('res-p-date').value = new Date().toISOString().split('T')[0];
+        // إعادة ملء التواريخ لليوم الحالي ذكياً بدلاً من التجميد
+        syncDefaultDates();
         updateApp();
     }
 
@@ -842,7 +880,7 @@
         let monthlyPatientsCount = 0;
         let followUpsCount = 0;
 
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = getLocalDateString();
 
         // عرض جدول الحجوزات
         if (rBody) {
@@ -1045,8 +1083,8 @@
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
         
         document.getElementById('old-patient-form').reset();
-        document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
-        
+        // إعادة تهيئة التواريخ تلقائياً لليوم الحالي
+        syncDefaultDates();
         updateApp();
     }
 
@@ -1097,7 +1135,8 @@
         document.getElementById('modal-p-total-amount').value = totalAmount > 0 ? totalAmount : '';
 
         document.getElementById('new-payment-amount').value = '';
-        document.getElementById('new-payment-date').value = new Date().toISOString().split('T')[0];
+        // جعل تاريخ الدفعة الجديدة بداخل الملف هو تاريخ اليوم الفعلي تلقائياً
+        document.getElementById('new-payment-date').value = getLocalDateString();
 
         renderPaymentsList();
 
@@ -1128,7 +1167,8 @@
         });
 
         amountInput.value = '';
-        dateInput.value = new Date().toISOString().split('T')[0];
+        // إرجاع تاريخ الدفعة بداخل الصندوق لليوم الحالي ذكياً بعد الإضافة
+        dateInput.value = getLocalDateString();
 
         renderPaymentsList();
     }
@@ -1238,8 +1278,8 @@
         let amount = parseFloat(document.getElementById('e-amount').value) || 0;
         if (!title || amount <= 0) return;
 
-        const now = new Date();
-        const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        // استخدام دالة التاريخ المحلي الذكية لتسجيل بنود المصاريف بدقة
+        const dateStr = getLocalDateString();
 
         expenses.unshift({ expense_title: title, expense_amount: amount, date_added: dateStr });
         localStorage.setItem('clinic_expenses', JSON.stringify(expenses));
