@@ -26,7 +26,7 @@
         }
         header h1 { margin: 0; font-size: 24px; }
 
-        /* شريط التنقل بين الصفحات من الداخل */
+        /* شريط التنقل بين الصفحات */
         .nav-bar {
             display: flex;
             background: #fff;
@@ -85,12 +85,13 @@
             margin-bottom: 20px; 
         }
         .box.expense-box { border-top-color: #e74c3c; }
+        .box.old-box { border-top-color: #2ecc71; } /* لون أخضر مميز لصندوق التاريخ القديم */
         
         h2 { font-size: 18px; margin-top: 0; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #eee; color: #2980b9; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #34495e; }
         
-        input[type="text"], input[type="number"], input[type="password"], select { 
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"], select { 
             width: 100%; 
             padding: 10px; 
             border: 1px solid #bdc3c7; 
@@ -120,6 +121,8 @@
         .btn-submit:hover { background-color: #2980b9; }
         .btn-expense { background-color: #e74c3c; }
         .btn-expense:hover { background-color: #c0392b; }
+        .btn-old { background-color: #2ecc71; }
+        .btn-old:hover { background-color: #27ae60; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; background: white; }
         th, td { border: 1px solid #e2e8f0; padding: 11px; text-align: center; }
@@ -139,7 +142,6 @@
         }
         .clear-btn:hover { background: #7f8c8d; }
 
-        /* إخفاء الصفحات افتراضياً */
         .page-content { display: none; }
         .page-content.active-page { display: block; }
     </style>
@@ -188,11 +190,15 @@
         <div class="row">
             <div class="col-12">
                 <div class="box">
-                    <h2>تسجيل مريض جديد</h2>
+                    <h2>تسجيل مريض جديد (الحالي)</h2>
                     <form id="patient-form" onsubmit="savePatient(event)">
                         <div class="form-group">
                             <label>اسم المريض:</label>
                             <input type="text" id="p-name" required placeholder="أدخل اسم المريض">
+                        </div>
+                        <div class="form-group">
+                            <label>رقم الهاتف / المريض:</label>
+                            <input type="text" id="p-phone" placeholder="أدخل رقم الهاتف أو تواصل المريض">
                         </div>
                         <div class="form-group">
                             <label>العمر (الفئة):</label>
@@ -229,6 +235,28 @@
     <div id="page-patients" class="page-content">
         <div class="row">
             <div class="col-12">
+                
+                <div class="box old-box">
+                    <h2>إضافة مريض بأثر رجعي (تسجيل بتاريخ قديم)</h2>
+                    <form id="old-patient-form" onsubmit="saveOldPatient(event)">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1.5; min-width: 220px;">
+                                <label>اسم المريض:</label>
+                                <input type="text" id="old-p-name" required placeholder="اكتب اسم المريض">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label>الرقم بتاعه (الهاتف):</label>
+                                <input type="text" id="old-p-phone" placeholder="اكتب الرقم هنا">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 180px;">
+                                <label>تاريخ التسجيل (حدد التاريخ القديم):</label>
+                                <input type="date" id="old-p-date" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit btn-old" style="margin-top: 5px;">حفظ المريض بالتاريخ المحدد</button>
+                    </form>
+                </div>
+
                 <div class="box">
                     <h2>صفحة المرضى - السجل الكامل للعيادة</h2>
                     <div style="overflow-x:auto;">
@@ -236,18 +264,20 @@
                             <thead>
                                 <tr>
                                     <th>الاسم</th>
+                                    <th>الرقم (الهاتف)</th>
                                     <th>الفئة</th>
                                     <th>الإجراء الطبي</th>
                                     <th>المدفوع</th>
                                     <th>المتبقي</th>
                                     <th>الأشعة</th>
-                                    <th>التاريخ</th>
+                                    <th>التاريخ والوقت</th>
                                 </tr>
                             </thead>
                             <tbody id="patients-table-body"></tbody>
                         </table>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -279,7 +309,6 @@
                                     <th>بند المصروف</th>
                                     <th>المبلغ</th>
                                     <th>التاريخ والوقت</th>
-                                }
                                 </tr>
                             </thead>
                             <tbody id="expenses-table-body"></tbody>
@@ -294,10 +323,13 @@
 </div>
 
 <script>
-    // 🛡️ دالة التحقق من الرقم السري لدخول العيادة
+    // وضع تاريخ اليوم كقيمة افتراضية مسبقة في خانة التاريخ القديم لتسهيل الاختيار
+    document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
+
+    // 🛡️ دالة التحقق من الرقم السري
     function validateLogin() {
         const enteredPassword = document.getElementById('app-password').value;
-        const correctPassword = "1234"; // تقدر تغيره من هنا لأي باسورد تانية
+        const correctPassword = "1234"; 
 
         if (enteredPassword === correctPassword) {
             document.getElementById('login-screen').style.display = 'none';
@@ -310,26 +342,22 @@
         }
     }
 
-    // تشغيل الدخول بـ Enter
     document.getElementById('app-password').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') validateLogin();
     });
 
-    // 🔄 دالة التبديل الذكي بين الصفحات من شريط التنقل
+    // دالة التبديل بين الصفحات داخلياً
     function switchPage(pageName) {
-        // إخفاء كل الصفحات أولاً
         document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active-page'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-        // إظهار الصفحة المطلوبة وتنشيط الزرار الخاص بها
         document.getElementById('page-' + pageName).classList.add('active-page');
         document.getElementById('btn-' + pageName).classList.add('active');
         
-        // تحديث الحسابات والجداول في الخلفية باستمرار
         updateApp();
     }
 
-    // جلب البيانات مع ميزة الاسترجاع التلقائي لعدم فقدان أي داتا قديمة
+    // جلب البيانات الآمنة مع ميزة الاسترجاع التلقائي
     let patients = JSON.parse(localStorage.getItem('clinic_patients')) || 
                    JSON.parse(localStorage.getItem('patients')) || 
                    JSON.parse(localStorage.getItem('patientsData')) || [];
@@ -352,9 +380,9 @@
         
         pBody.innerHTML = ''; eBody.innerHTML = '';
 
-        // 1. معالجة وعرض جدول صفحة المرضى
+        // 1. معالجة وعرض جدول السجل الكامل للمرضى
         if (patients.length === 0) {
-            pBody.innerHTML = `<tr><td colspan="7" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
+            pBody.innerHTML = `<tr><td colspan="8" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
         } else {
             patients.forEach(p => {
                 if (p.date_added && p.date_added.startsWith(currentMonthStr)) {
@@ -363,12 +391,13 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${p.patient_name || p.name || ''}</strong></td>
+                    <td>${p.phone || '—'}</td>
                     <td>${p.age_category || p.age || 'بالغ'}</td>
-                    <td>${p.service || ''}</td>
+                    <td>${p.service || '—'}</td>
                     <td style="color: #2ecc71; font-weight: bold;">${parseFloat(p.paid || 0).toFixed(2)} ج.م</td>
                     <td style="color: #e74c3c; font-weight: bold;">${parseFloat(p.remaining || 0).toFixed(2)} ج.م</td>
                     <td style="font-size: 11px; color: #7f8c8d;">${p.xrays || 'لا يوجد'}</td>
-                    <td>${p.date_added ? p.date_added.split(' ')[0] : ''}</td>
+                    <td>${p.date_added || ''}</td>
                 `;
                 pBody.appendChild(row);
             });
@@ -398,9 +427,11 @@
         document.getElementById('net-monthly_profit').innerText = netProfit.toFixed(2) + ' ج.م';
     }
 
+    // حفظ مريض حالي (من الصفحة الرئيسية)
     function savePatient(event) {
         event.preventDefault();
         const name = document.getElementById('p-name').value.trim();
+        const phone = document.getElementById('p-phone').value.trim();
         const age = document.getElementById('p-age').value;
         const service = document.getElementById('p-service').value;
         let paid = parseFloat(document.getElementById('p-paid').value) || 0;
@@ -414,12 +445,44 @@
         const now = new Date();
         const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
-        patients.unshift({ patient_name: name, age_category: age, service: service, paid: paid, remaining: remaining, xrays: xraysString, date_added: dateStr });
+        patients.unshift({ patient_name: name, phone: phone, age_category: age, service: service, paid: paid, remaining: remaining, xrays: xraysString, date_added: dateStr });
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
         document.getElementById('patient-form').reset();
         
-        // بعد الحفظ، ينقلك تلقائياً لـ صفحة المرضى عشان تشوف الاسم وهو بينزل في السجل فوراً!
         switchPage('patients');
+    }
+
+    // 💾 دالة حفظ المريض بالتاريخ القديم (من داخل صفحة المرضى)
+    function saveOldPatient(event) {
+        event.preventDefault();
+        const name = document.getElementById('old-p-name').value.trim();
+        const phone = document.getElementById('old-p-phone').value.trim();
+        const customDate = document.getElementById('old-p-date').value; // الصيغة المستخرجة YYYY-MM-DD
+
+        if (!name || !customDate) return;
+
+        // صياغة الوقت لتتوافق مع السجلات (نضع وقت افتراضي 12:00 للقديم)
+        const dateStr = customDate + ' 12:00';
+
+        // إضافة البيانات في أول مصفوفة السجلات
+        patients.unshift({ 
+            patient_name: name, 
+            phone: phone, 
+            age_category: 'بالغ', 
+            service: 'تسجيل قديم بأثر رجعي', 
+            paid: 0, 
+            remaining: 0, 
+            xrays: 'لا يوجد', 
+            date_added: dateStr 
+        });
+
+        localStorage.setItem('clinic_patients', JSON.stringify(patients));
+        
+        // تفريغ الاستمارة وإعادة تعيين تاريخ اليوم تلقائياً
+        document.getElementById('old-patient-form').reset();
+        document.getElementById('old-p-date').value = new Date().toISOString().split('T')[0];
+        
+        updateApp();
     }
 
     function saveExpense(event) {
