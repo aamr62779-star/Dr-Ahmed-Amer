@@ -333,9 +333,20 @@
                     </form>
                 </div>
 
-                <!-- جدول عرض السجل الكامل بالمواصفات الجديدة المدمجة والمالية -->
+                <!-- جدول عرض السجل الكامل بالمواصفات الجديدة المدمجة والمالية والبحث -->
                 <div class="box">
                     <h2>صفحة المرضى - السجل العام والمالي</h2>
+                    
+                    <!-- 🔍 أدوات البحث والفلترة الذكية الجديدة للمتأخرات -->
+                    <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                        <div style="flex: 2; min-width: 260px;">
+                            <input type="text" id="search-patient-input" oninput="updateApp()" placeholder="🔍 اكتب اسم المريض للبحث الفوري المباشر..." style="padding: 11px;">
+                        </div>
+                        <div style="flex: 1; min-width: 210px;">
+                            <button type="button" id="btn-toggle-debts" onclick="toggleDebtFilter()" style="background-color: #f39c12; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; font-size: 14px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">⚠️ عرض الحالات المتأخرة فقط</button>
+                        </div>
+                    </div>
+
                     <div style="overflow-x:auto;">
                         <table>
                             <thead>
@@ -495,6 +506,9 @@
 
     // مصفوفة مؤقتة للتحكم في دفعات المريض الحالي المفتوح ملفه
     let tempPaymentsList = [];
+    
+    // متغير حالة فلترة المتأخرات المالية (false تعني عرض الكل، true تعني المتأخرات فقط)
+    let showDebtsOnly = false;
 
     // 🛡️ دالة التحقق من الرقم السري
     function validateLogin() {
@@ -550,6 +564,21 @@
         return dateObj.toLocaleDateString('ar-EG', { weekday: 'long' });
     }
 
+    // دالة التحكم بتبديل فلتر المتأخرات المالية
+    function toggleDebtFilter() {
+        showDebtsOnly = !showDebtsOnly;
+        const btn = document.getElementById('btn-toggle-debts');
+        
+        if (showDebtsOnly) {
+            btn.innerText = '👥 عرض جميع الحالات';
+            btn.style.backgroundColor = '#3498db'; // تغيير اللون للأزرق السماوي عند الضغط ليعرض خطوة العودة
+        } else {
+            btn.innerText = '⚠️ عرض الحالات المتأخرة فقط';
+            btn.style.backgroundColor = '#f39c12'; // اللون البرتقالي/الأصفر للتنبيه بالمتأخرات
+        }
+        updateApp();
+    }
+
     function updateApp() {
         const pBody = document.getElementById('patients-table-body');
         const eBody = document.getElementById('expenses-table-body');
@@ -557,11 +586,24 @@
         
         pBody.innerHTML = ''; eBody.innerHTML = '';
 
+        // جلب قيمة مربع نص البحث
+        const searchInput = document.getElementById('search-patient-input');
+        const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+        let visiblePatientsCount = 0;
+
         if (patients.length === 0) {
             pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا يوجد مرضى مسجلين حتى الآن.</td></tr>`;
         } else {
             patients.forEach((p, index) => {
-                // حماية وحساب البيانات ديناميكياً لتظهر في الجدول العام بشكل صحيح المجموع والمتبقي
+                const pName = (p.patient_name || p.name || '').toLowerCase();
+                
+                // 1️⃣ تطبيق فلترة البحث بالاسم (إذا كان هناك نص مكتوب)
+                if (searchQuery && !pName.includes(searchQuery)) {
+                    return; // تخطي العنصر الحالي
+                }
+
+                // حساب المدفوعات الحالية ديناميكياً لتحديد المتبقي
                 let totalPaid = 0;
                 if (p.payments && p.payments.length > 0) {
                     totalPaid = p.payments.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
@@ -576,6 +618,13 @@
 
                 let remainingTotal = totalAmount - totalPaid;
 
+                // 2️⃣ تطبيق فلترة المتأخرات المالية (إذا تم تفعيل الزر)
+                if (showDebtsOnly && remainingTotal <= 0) {
+                    return; // تخطي أي حالة ليس عليها مديونية متأخرة
+                }
+
+                visiblePatientsCount++;
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
@@ -589,6 +638,10 @@
                 `;
                 pBody.appendChild(row);
             });
+
+            if (visiblePatientsCount === 0) {
+                pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا توجد نتائج تطابق البحث أو الفلترة المالية الحالية.</td></tr>`;
+            }
         }
 
         if (expenses.length === 0) {
@@ -622,7 +675,7 @@
             total_amount: 0,
             paid: 0,
             remaining: 0,
-            payments: [], // جدول سجل الدفعات التفصيلي فارغ للمريض الجديد
+            payments: [], 
             service: '',
             next_visit: '', 
             xrays: 'لا يوجد'
@@ -666,10 +719,8 @@
         document.getElementById('modal-p-next-visit').value = p.next_visit || '';
         document.getElementById('modal-p-service').value = p.service || p.notes || '';
         
-        // تجهيز وحماية بيانات الدفعات للمريض
         tempPaymentsList = p.payments ? [...p.payments] : [];
         
-        // إذا كان مريض قديم ولديه دفعة مسجلة بالطريقة القديمة وليس لديه مصفوفة دفعات، ننقل الحساب تلقائياً
         if (tempPaymentsList.length === 0 && parseFloat(p.paid) > 0) {
             tempPaymentsList.push({
                 amount: parseFloat(p.paid),
@@ -686,11 +737,9 @@
         }
         document.getElementById('modal-p-total-amount').value = totalAmount > 0 ? totalAmount : '';
 
-        // تصفير خانة إضافة دفعة جديدة ووضع تاريخ اليوم فيها تلقائياً
         document.getElementById('new-payment-amount').value = '';
         document.getElementById('new-payment-date').value = new Date().toISOString().split('T')[0];
 
-        // تحديث وعرض قائمة سجل الدفعات والحسابات
         renderPaymentsList();
 
         document.getElementById('modal-xrays-list').innerText = p.xrays || 'لا توجد أشعة مرفوعة';
@@ -699,7 +748,6 @@
         document.getElementById('patient-modal').style.display = 'flex';
     }
 
-    // دالة إضافة دفعة مؤقتة بداخل القائمة بالملف قبل الحفظ النهائي
     function addPaymentToTempList() {
         const amountInput = document.getElementById('new-payment-amount');
         const dateInput = document.getElementById('new-payment-date');
@@ -712,25 +760,20 @@
             return;
         }
 
-        // استخراج اسم اليوم تلقائياً وبدقة
         const dayName = getArabicDayName(dateStr);
 
-        // إضافة الدفعة للمصفوفة المؤقتة
         tempPaymentsList.push({
             amount: amount,
             date: dateStr,
             day: dayName
         });
 
-        // مسح الحقل وإعادة تعيين التاريخ الافتراضي
         amountInput.value = '';
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        // إعادة رندرة السجل المالي وحساب الأرقام تلقائياً
         renderPaymentsList();
     }
 
-    // دالة لحذف دفعة معينة من السجل المالي في حال الخطأ
     function removePaymentFromTempList(idx) {
         if(confirm('هل تريد حذف هذه الدفعة المالية من سجل المريض؟')) {
             tempPaymentsList.splice(idx, 1);
@@ -738,7 +781,6 @@
         }
     }
 
-    // دالة رندرة وحساب العمليات المالية بداخل الملف المفتوح
     function renderPaymentsList() {
         const historyContainer = document.getElementById('modal-payments-history-list');
         historyContainer.innerHTML = '';
@@ -761,7 +803,6 @@
             });
         }
 
-        // جلب الإجمالي وحساب المتبقي الكلي عرض حي
         const totalAmountInput = document.getElementById('modal-p-total-amount').value;
         const totalAmount = parseFloat(totalAmountInput) || 0;
         const remainingTotal = totalAmount - totalPaid;
@@ -770,7 +811,6 @@
         document.getElementById('lbl-total-remaining').innerText = remainingTotal.toFixed(2);
     }
 
-    // دالة الحساب الحي المباشر عند تعديل خانة "المبلغ الإجمالي الكلي" يدوياً
     function calculateFinancials() {
         const totalAmount = parseFloat(document.getElementById('modal-p-total-amount').value) || 0;
         let totalPaid = tempPaymentsList.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
@@ -780,12 +820,10 @@
         document.getElementById('lbl-total-remaining').innerText = remainingTotal.toFixed(2);
     }
 
-    // ❌ إغلاق نافذة ملف المريض
     function closePatientModal() {
         document.getElementById('patient-modal').style.display = 'none';
     }
 
-    // 💾 حفظ التعديلات والخدمة وتاريخ الدفعات الجديد نهائياً في المتصفح
     function savePatientFileChanges() {
         const index = document.getElementById('modal-patient-index').value;
         if (index === '') return;
@@ -795,11 +833,8 @@
         const updatedDate = document.getElementById('modal-p-date').value;
         const updatedNextVisit = document.getElementById('modal-p-next-visit').value;
         const updatedService = document.getElementById('modal-p-service').value.trim();
-        
-        // جلب قيمة خطة العلاج الكلية لحفظها
         const updatedTotalAmount = parseFloat(document.getElementById('modal-p-total-amount').value) || 0;
         
-        // حساب الإجماليات النهائية لتخزينها للتوافقية
         const finalTotalPaid = tempPaymentsList.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
         const finalRemaining = updatedTotalAmount - finalTotalPaid;
 
@@ -820,19 +855,15 @@
             }
         }
 
-        // تحديث البيانات بالكامل في الكائن الرئيسي بذاكرة التخزين
         patients[index].patient_name = updatedName;
         patients[index].phone = updatedPhone;
         patients[index].date_added = updatedDate;
         patients[index].next_visit = updatedNextVisit;
         patients[index].service = updatedService;
-        
-        // حفظ الحقول المالية الجديدة والتفصيلية
         patients[index].total_amount = updatedTotalAmount;
-        patients[index].payments = tempPaymentsList; // حفظ مصفوفة الدفعات كاملة باليوم والتاريخ
+        patients[index].payments = tempPaymentsList; 
         patients[index].paid = finalTotalPaid;
         patients[index].remaining = finalRemaining;
-        
         patients[index].xrays = currentXrays;
 
         localStorage.setItem('clinic_patients', JSON.stringify(patients));
@@ -841,7 +872,6 @@
         updateApp();
     }
 
-    // حفظ بند مصروفات جديد
     function saveExpense(event) {
         event.preventDefault();
         const title = document.getElementById('e-title').value.trim();
