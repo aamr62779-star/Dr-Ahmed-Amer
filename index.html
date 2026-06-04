@@ -196,14 +196,31 @@
             text-decoration: underline;
         }
 
+        .action-icons-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+
         .eye-icon {
             font-size: 20px;
             cursor: pointer;
-            display: inline-block;
             transition: transform 0.1s;
         }
         .eye-icon:hover {
             transform: scale(1.2);
+        }
+
+        .trash-icon {
+            font-size: 18px;
+            cursor: pointer;
+            color: #e74c3c;
+            transition: transform 0.1s;
+        }
+        .trash-icon:hover {
+            transform: scale(1.2);
+            color: #c0392b;
         }
 
         .clear-btn { 
@@ -295,6 +312,7 @@
 </head>
 <body>
 
+<!-- 🔑 شاشة قفل تسجيل الدخول -->
 <div id="login-screen" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
     <div class="box" style="width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
         <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول للعيادة</h2>
@@ -307,6 +325,7 @@
     </div>
 </div>
 
+<!-- 🏥 شاشة البرنامج الرئيسية -->
 <div class="container" id="app-screen" style="display: none;">
     
     <header>
@@ -316,6 +335,7 @@
 
     <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
+    <!-- 📋 القائمة الجانبية -->
     <div id="app-sidebar" class="sidebar">
         <div class="sidebar-header">
             <span>صفحات النظام</span>
@@ -327,6 +347,7 @@
         <button class="sidebar-btn" id="sidebar-btn-expenses" onclick="switchPage('expenses')">💰 حسابات ومصروفات العيادة</button>
     </div>
 
+    <!-- 1️⃣ صفحة المرضى الرئيسية -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
@@ -372,7 +393,7 @@
                                     <th>الزيارة الأولية</th>
                                     <th>إجمالي المدفوع</th>
                                     <th>المتبقي الكلي</th>
-                                    <th>الملف</th>
+                                    <th>الملف والتحكم</th>
                                 </tr>
                             </thead>
                             <tbody id="patients-table-body"></tbody>
@@ -384,6 +405,7 @@
         </div>
     </div>
 
+    <!-- 2️⃣ صفحة المتابعات التلقائية -->
     <div id="page-followups" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -399,7 +421,7 @@
                                     <th>اسم المريض وهاتفه</th>
                                     <th>تاريخ المتابعة القادمة</th>
                                     <th>الشغل المطلوب / الخدمة الطبية</th>
-                                    <th>الملف</th>
+                                    <th>الملف والتحكم</th>
                                 </tr>
                             </thead>
                             <tbody id="followups-table-body"></tbody>
@@ -410,6 +432,7 @@
         </div>
     </div>
 
+    <!-- 3️⃣ الصفحة الشهرية -->
     <div id="page-monthly" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -455,7 +478,7 @@
                                     <th>تاريخ الزيارة</th>
                                     <th>إجمالي المدفوع</th>
                                     <th>المتبقي الكلي</th>
-                                    <th>الملف</th>
+                                    <th>الملف والتحكم</th>
                                 </tr>
                             </thead>
                             <tbody id="monthly-patients-table-body"></tbody>
@@ -466,6 +489,7 @@
         </div>
     </div>
 
+    <!-- 4️⃣ صفحة حسابات ومصروفات المستقلة -->
     <div id="page-expenses" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -506,6 +530,7 @@
 
 </div>
 
+<!-- 📂 نافذة ملف المريض المنبثقة (Modal) -->
 <div id="patient-modal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
@@ -662,6 +687,19 @@
         updateApp();
     }
 
+    /* 🗑️ دالة حذف المريض الذكية مع رسالة تأكيد بأمان */
+    function deletePatient(event, index) {
+        if (event) event.stopPropagation(); 
+        
+        const patientName = patients[index].patient_name || patients[index].name || 'هذا المريض';
+        
+        if (confirm(`⚠️ هل أنت متأكد تماماً من حذف المريض (${patientName}) نهائياً بجميع بياناته وحساباته وجلساته من النظام؟`)) {
+            patients.splice(index, 1);
+            localStorage.setItem('clinic_patients', JSON.stringify(patients));
+            updateApp();
+        }
+    }
+
     function updateApp() {
         const pBody = document.getElementById('patients-table-body');
         const mBody = document.getElementById('monthly-patients-table-body');
@@ -693,7 +731,6 @@
                 document.getElementById('followups-count-badge').innerText = 'إجمالي الحالات المجدول لها متابعات: 0 حالة';
             }
         } else {
-            // مصفوفة مؤقتة لمعالجة وفرز المتابعات
             let followUpList = [];
 
             patients.forEach((p, index) => {
@@ -716,7 +753,6 @@
                 }
                 let remainingTotal = totalAmount - totalPaid;
 
-                // شارة المديونية تحت الاسم
                 let debtBadgeHTML = '';
                 if (remainingTotal > 0) {
                     debtBadgeHTML = `<div style="font-size: 12px; margin-top: 6px; color: #e74c3c; font-weight: bold; background-color: #fdedec; padding: 3px 8px; border-radius: 4px; display: inline-block; border: 1px solid #fadbd8;">⚠️ مديونية: ${remainingTotal.toFixed(2)} ج.م</div>`;
@@ -735,10 +771,14 @@
                     <td style="color: #2980b9; font-weight: bold;">${p.date_added || ''}</td>
                     <td style="color: #2ecc71; font-weight: bold;">${totalPaid.toFixed(2)} ج.م</td>
                     <td style="color: #e74c3c; font-weight: bold;">${remainingTotal.toFixed(2)} ج.م</td>
-                    <td><span class="eye-icon" onclick="openPatientFile(${index})" title="فتح الملف">👁️</span></td>
+                    <td>
+                        <div class="action-icons-container">
+                            <span class="eye-icon" onclick="openPatientFile(${index})" title="فتح العيادة / ملف المريض">👁️</span>
+                            <span class="trash-icon" onclick="deletePatient(event, ${index})" title="حذف المريض نهائياً">🗑️</span>
+                        </div>
+                    </td>
                 `;
 
-                // فلترة السجل العام
                 let skipMainTable = false;
                 if (searchQuery && !pName.includes(searchQuery)) skipMainTable = true;
                 if (showDebtsOnly && remainingTotal <= 0) skipMainTable = true;
@@ -750,7 +790,6 @@
                     pBody.appendChild(row);
                 }
 
-                // فلترة السجل الشهري
                 if (pYear === targetYear && pMonth === targetMonth && mBody) {
                     monthlyPatientsCount++;
                     const row = document.createElement('tr');
@@ -758,7 +797,6 @@
                     mBody.appendChild(row);
                 }
 
-                // تجميع المتابعات النشطة
                 if (p.next_visit && p.next_visit.trim() !== '') {
                     followUpList.push({
                         patientIndex: index,
@@ -770,10 +808,8 @@
                 }
             });
 
-            // فرز قائمة المتابعات تصاعدياً من الأقرب إلى الأبعد
             followUpList.sort((a, b) => new Date(a.next_visit) - new Date(b.next_visit));
 
-            // عرض قائمة المتابعات داخل الجدول الخاص بها
             if (followUpList.length === 0) {
                 if(fBody) fBody.innerHTML = `<tr><td colspan="4" style="color: #95a5a6;">لا توجد أي متابعات مسجلة حالياً.</td></tr>`;
             } else {
@@ -798,7 +834,12 @@
                             <td style="color: #555; font-weight: 500;">
                                 🛠️ ${fp.service}
                             </td>
-                            <td><span class="eye-icon" onclick="openPatientFile(${fp.patientIndex})" title="فتح الملف">👁️</span></td>
+                            <td>
+                                <div class="action-icons-container">
+                                    <span class="eye-icon" onclick="openPatientFile(${fp.patientIndex})" title="فتح ملف المريض">👁️</span>
+                                    <span class="trash-icon" onclick="deletePatient(event, ${fp.patientIndex})" title="حذف المريض نهائياً">🗑️</span>
+                                </div>
+                            </td>
                         `;
                         fBody.appendChild(row);
                     }
@@ -813,7 +854,7 @@
                 pBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا توجد نتائج تطابق البحث أو الفلترة المالية الحالية.</td></tr>`;
             }
             if (monthlyPatientsCount === 0 && mBody) {
-                mBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا توجد حالات مسجلة في هذا الشهر المختار بعد.</td></tr>`;
+                mBody.innerHTML = `<tr><td colspan="5" style="color: #95a5a6;">لا توجد حالات مسجلة في هذا شهر المختار بعد.</td></tr>`;
             }
         }
 
