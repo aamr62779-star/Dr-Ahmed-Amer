@@ -616,13 +616,14 @@
         toggleSidebar();
     }
 
+    // تعديل الـ Sidebar ليعمل بنقرة واحدة سريعة خارج النطاق
     function toggleSidebar(e) {
         if(e) e.stopPropagation();
         document.getElementById('app-sidebar').classList.toggle('open');
         document.getElementById('sidebar-overlay').classList.toggle('show');
     }
 
-    // 📤 وظائف الإرسال والحفظ على السيرفر
+    // 📤 وظيفة حفظ المريض مع ضمان رفع كود وهيكل مالي نظيف ومحمي
     function saveOldPatient(e) {
         e.preventDefault();
         const newRef = db.ref('patients').push();
@@ -633,7 +634,8 @@
             date: document.getElementById('old-p-date').value,
             totalAmount: 0,
             service: "",
-            nextVisit: ""
+            nextVisit: "",
+            payments: [] // تهيئة مصفوفة دفعات فارغة تجنباً للمشاكل
         };
         newRef.set(newPatient);
         document.getElementById('old-patient-form').reset();
@@ -666,7 +668,8 @@
             date: res.date,
             totalAmount: 0,
             service: "",
-            nextVisit: ""
+            nextVisit: "",
+            payments: []
         });
         db.ref('reservations/' + id).remove();
     }
@@ -701,26 +704,27 @@
         }
     }
 
-    // 🔄 دالة بناء وتحديث الشاشة والمحتوى
+    // 🔄 دالة بناء وتحديث الشاشة والمحتوى بدون توقف (معالجة الأخطاء وحماية البيانات)
     function updateApp() {
         const searchTerm = document.getElementById('search-patient-input').value.toLowerCase();
         
-        // 1. جدول المرضى
+        // 1. جدول المرضى الرئيسي
         const tableBody = document.getElementById('patients-table-body');
         tableBody.innerHTML = '';
+        
         Object.keys(globalPatients).forEach(id => {
             const p = globalPatients[id];
+            if (!p || !p.name) return; // حماية ضد البيانات التالفة
             
-            // إصلاح وحماية مصفوفة الدفعات حتى لا يحدث خطأ عند القراءة من الفايربيس
             let payments = [];
             if (p.payments) {
                 payments = Array.isArray(p.payments) ? p.payments : Object.values(p.payments);
             }
             
-            const totalPaid = payments.reduce((sum, pay) => sum + parseFloat(pay.amount || 0), 0);
+            const totalPaid = payments.reduce((sum, pay) => sum + parseFloat(pay ? pay.amount || 0 : 0), 0);
             const remaining = (p.totalAmount || 0) - totalPaid;
             
-            if (p.name && p.name.toLowerCase().includes(searchTerm) && (!showDebtsOnly || remaining > 0)) {
+            if (p.name.toLowerCase().includes(searchTerm) && (!showDebtsOnly || remaining > 0)) {
                 tableBody.innerHTML += `<tr>
                     <td><span class="patient-clickable-name" onclick="openPatientModal('${id}')"><strong>${p.name}</strong></span><br><a href="tel:${p.phone}" class="phone-call-link">📞 ${p.phone || 'بدون رقم'}</a></td>
                     <td>${p.date || '---'}</td>
@@ -741,10 +745,10 @@
         resTableBody.innerHTML = '';
         Object.keys(globalReservations).forEach(id => {
             const r = globalReservations[id];
-            if(r.name) {
+            if(r && r.name) {
                 resTableBody.innerHTML += `<tr>
                     <td><strong>${r.name}</strong><br><small>📞 ${r.phone || '---'}</small></td>
-                    <td>${r.date}</td>
+                    <td>${r.date || '---'}</td>
                     <td>
                         <button onclick="transferToPatient('${id}')" style="background:#2ecc71; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">حضر</button>
                         <button onclick="deleteReservation('${id}')" style="background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">إلغاء</button>
@@ -759,7 +763,7 @@
         let followupCount = 0;
         Object.keys(globalPatients).forEach(id => {
             const p = globalPatients[id];
-            if(p.name && p.nextVisit) {
+            if(p && p.name && p.nextVisit) {
                 followupCount++;
                 followupBody.innerHTML += `<tr>
                     <td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td>
@@ -778,14 +782,14 @@
         monthlyBody.innerHTML = '';
         Object.keys(globalPatients).forEach(id => {
             const p = globalPatients[id];
-            if(p.name && p.date) {
+            if(p && p.name && p.date) {
                 const pDate = new Date(p.date);
                 if((pDate.getMonth() + 1) === mMonth && pDate.getFullYear() === mYear) {
                     let payments = [];
                     if (p.payments) {
                         payments = Array.isArray(p.payments) ? p.payments : Object.values(p.payments);
                     }
-                    const totalPaid = payments.reduce((sum, pay) => sum + parseFloat(pay.amount || 0), 0);
+                    const totalPaid = payments.reduce((sum, pay) => sum + parseFloat(pay ? pay.amount || 0 : 0), 0);
                     const remaining = (p.totalAmount || 0) - totalPaid;
                     monthlyBody.innerHTML += `<tr>
                         <td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td>
@@ -803,12 +807,14 @@
         expenseBody.innerHTML = '';
         Object.keys(globalExpenses).forEach(id => {
             const e = globalExpenses[id];
-            expenseBody.innerHTML += `<tr>
-                <td>${e.title}</td>
-                <td style="color:#e74c3c; font-weight:bold;">${parseFloat(e.amount).toFixed(2)} ج.م</td>
-                <td><small>${e.dateTime}</small></td>
-                <td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td>
-            </tr>`;
+            if(e) {
+                expenseBody.innerHTML += `<tr>
+                    <td>${e.title || '---'}</td>
+                    <td style="color:#e74c3c; font-weight:bold;">${parseFloat(e.amount || 0).toFixed(2)} ج.م</td>
+                    <td><small>${e.dateTime || '---'}</small></td>
+                    <td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td>
+                </tr>`;
+            }
         });
     }
 
@@ -818,7 +824,7 @@
         updateApp();
     }
 
-    // 📂 إدارة شاشة ملف المريض (Modal)
+    // 📂 إدارة شاشة ملف المريض المنبثقة وحماية مصفوفاتها
     function openPatientModal(id) {
         const p = globalPatients[id];
         if(!p) return;
@@ -856,7 +862,7 @@
 
     function calculateFinancials() {
         const total = parseFloat(document.getElementById('modal-p-total-amount').value || 0);
-        const paid = tempPaymentsList.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+        const paid = tempPaymentsList.reduce((sum, p) => sum + parseFloat(p ? p.amount || 0 : 0), 0);
         const remaining = total - paid;
         document.getElementById('lbl-total-paid').innerText = paid.toFixed(2);
         document.getElementById('lbl-total-remaining').innerText = remaining.toFixed(2);
@@ -893,10 +899,12 @@
             return;
         }
         tempPaymentsList.forEach((p, idx) => {
-            listDiv.innerHTML += `<div class="payment-item">
-                <span>📅 <strong>${p.date}</strong> - دفع: <b>${parseFloat(p.amount).toFixed(2)} ج.م</b></span>
-                <button type="button" class="delete-payment-btn" onclick="deleteTempPayment(${idx})">✕</button>
-            </div>`;
+            if (p) {
+                listDiv.innerHTML += `<div class="payment-item">
+                    <span>📅 <strong>${p.date || '---'}</strong> - دفع: <b>${parseFloat(p.amount || 0).toFixed(2)} ج.م</b></span>
+                    <button type="button" class="delete-payment-btn" onclick="deleteTempPayment(${idx})">✕</button>
+                </div>`;
+            }
         });
     }
 
@@ -931,14 +939,16 @@
         const container = document.createElement('div');
         container.className = 'xray-preview-container';
         tempXraysList.forEach((src, idx) => {
-            const img = document.createElement('img');
-            img.src = src; img.className = 'xray-thumb';
-            img.onclick = function() {
-                const newTab = window.open();
-                newTab.document.body.innerHTML = `<img src="${src}" style="max-width:100%; height:auto;">`;
-            };
-            img.ondblclick = function() { removeXray(idx); };
-            container.appendChild(img);
+            if (src) {
+                const img = document.createElement('img');
+                img.src = src; img.className = 'xray-thumb';
+                img.onclick = function() {
+                    const newTab = window.open();
+                    newTab.document.body.innerHTML = `<img src="${src}" style="max-width:100%; height:auto;">`;
+                };
+                img.ondblclick = function() { removeXray(idx); };
+                container.appendChild(img);
+            }
         });
         xrayZone.appendChild(container);
     }
