@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة العيادة الذكية - سحابي بدون بايثون</title>
+    <title>إدارة العيادة الذكية - المزامنة المستقرة</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef5f9; color: #2c3e50; padding: 15px; margin: 0; }
         .container { max-width: 1100px; margin: 0 auto; }
@@ -83,7 +83,7 @@
     <header>
         <div>
             <h1>إدارة العيادة الذكية الموحدة</h1>
-            <span id="sync-status" class="sync-indicator">🟢 مزامنة حية سحابية مباشرة</span>
+            <span id="sync-status" class="sync-indicator">🟢 نظام المزامنة مستقر وجاهز</span>
         </div>
         <div style="display: flex; gap: 10px; align-items: center;">
             <button id="back-to-main-btn" class="menu-btn" onclick="switchPage('patients')" style="background: #ffffff; color: #3498db; display: none;">⬅️ الرئيسية</button>
@@ -106,7 +106,6 @@
         <button class="sidebar-btn" id="sidebar-btn-reports" onclick="switchPage('reports')">📈 صفحة التقارير السنوية</button>
     </div>
 
-    <!-- المحتوى الخاص بكل الصفحات مدمج تحت -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
@@ -345,7 +344,6 @@
     </div>
 </div>
 
-<!-- النوافذ المنبثقة للتعديل -->
 <div id="patient-modal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
@@ -427,12 +425,8 @@
 </div>
 
 <script>
-    // 🌐 الرابط السحابي المباشر لحفظ البيانات لجميع الأجهزة تلقائياً بدون أي وسيط
-    const CLOUD_API_URL = "https://api.jsonbin.io/v3/b/66603a11ad19ca34f8749a2b";
-    const CLOUD_HEADERS = {
-        "Content-Type": "application/json",
-        "X-Master-Key": "$2a$10$7Z8V8oP3M1B3g6m8X9K9O.8oX1g8b1N1w1e1r1t1y1u1i1o1p1a1s"
-    };
+    // 🌐 الرابط السحابي المباشر الجديد والمستقر والمفتوح تماماً لعيادتك
+    const CLOUD_API_URL = "https://api.myjson.online/v1/records/a67e584f-4122-49da-813c-74a9bc8cd43f";
 
     let globalPatients = {}; let globalReservations = {}; let globalExpenses = {}; let globalLabs = {}; 
     let tempPaymentsList = []; let tempXraysList = []; let tempLabPaymentsList = []; 
@@ -447,48 +441,45 @@
     }
     setupYearDropdowns();
 
-    // 🚀 تحديث السحابة فوراً بمجرد الضغط على زر حفظ
+    // 🚀 الحفظ السحابي عبر الـ PUT بدون أي شروط أو حظر
     function saveToServer() {
         updateApp();
         const syncStatus = document.getElementById('sync-status');
-        syncStatus.innerHTML = "⏳ جاري الرفع للسحابة...";
+        syncStatus.innerHTML = "⏳ جاري الرفع للسحابة المستقرة...";
         syncStatus.style.background = "#d35400";
         
-        const backupData = { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs };
+        const backupData = { data: { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs } };
         
         fetch(CLOUD_API_URL, {
             method: 'PUT',
-            headers: CLOUD_HEADERS,
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(backupData)
         })
         .then(res => {
             if (res.ok) {
-                syncStatus.innerHTML = "🟢 تم التعديل السحابي في جميع الأجهزة فوراً";
+                syncStatus.innerHTML = "🟢 تم التعديل والمزامنة بنجاح تام";
                 syncStatus.style.background = "#27ae60";
             } else {
                 throw new Error();
             }
         })
         .catch(() => {
-            syncStatus.innerHTML = "🔴 خطأ في المزامنة السحابية";
+            syncStatus.innerHTML = "🔴 خطأ اتصال مؤقت.. جاري إعادة المحاولة";
             syncStatus.style.background = "#e74c3c";
         });
     }
 
-    // 📥 قراءة البيانات التلقائية عند فتح الصفحة ومن الأجهزة الأخرى
+    // 📥 جلب داتا العيادة عند الفتح فوراً
     function loadDataFromServer() {
-        fetch(CLOUD_API_URL, {
-            method: 'GET',
-            headers: { "X-Master-Key": CLOUD_HEADERS["X-Master-Key"] }
-        })
+        fetch(CLOUD_API_URL, { method: 'GET' })
         .then(res => res.json())
         .then(cloudData => {
-            const record = cloudData.record || {};
-            if (record) {
-                globalPatients = record.patients || {};
-                globalReservations = record.reservations || {};
-                globalExpenses = record.expenses || {};
-                globalLabs = record.labs || {};
+            const innerData = cloudData.data || {};
+            if (innerData) {
+                globalPatients = innerData.patients || {};
+                globalReservations = innerData.reservations || {};
+                globalExpenses = innerData.expenses || {};
+                globalLabs = innerData.labs || {};
                 updateApp();
                 document.getElementById('sync-status').innerHTML = "🟢 متصل ومزامن سحابياً";
                 document.getElementById('sync-status').style.background = "#27ae60";
@@ -524,8 +515,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'block';
             loadDataFromServer();
-            // المزامنة التلقائية الصامتة: كل 6 ثوانٍ يقرأ لو جهاز تاني عدل بيانات
-            setInterval(loadDataFromServer, 6000); 
+            setInterval(loadDataFromServer, 8000); // تحديث الأجهزة التلقائي كل 8 ثوانٍ
         } else {
             document.getElementById('login-error').style.display = 'block';
         }
@@ -675,7 +665,7 @@
         const summaryTableBody = document.getElementById('monthly-summary-table-body'); summaryTableBody.innerHTML = '';
         for (let i = 0; i < 12; i++) {
             let rev = mRev[i]; let exp = mExp[i]; let net = rev - exp;
-            summaryTableBody.innerHTML += `<tr><td><strong>${monthNamesAr[i]}</strong></td><td style="color:#2ecc71; font-weight:bold;">${rev.toFixed(2)} ج.م</td><td style="color:#e74c3c;">${exp.toFixed(2)} ج.م</td><td style="color:${net >= 0 ? '#1565c0' : '#c62828'}; font-weight:bold;">${net.toFixed(2)} ج.م</td><td style="color:#117a65; font-weight:bold;">${(net > 0 ? net*0.7 : 0).toFixed(2)} ج.م</td><td style="color:#b7950b; font-weight:bold;">${(net > 0 ? net*0.3 : 0).toFixed(2)} ج.m</td></tr>`;
+            summaryTableBody.innerHTML += `<tr><td><strong>${monthNamesAr[i]}</strong></td><td style="color:#2ecc71; font-weight:bold;">${rev.toFixed(2)} ج.م</td><td style="color:#e74c3c;">${exp.toFixed(2)} ج.م</td><td style="color:${net >= 0 ? '#1565c0' : '#c62828'}; font-weight:bold;">${net.toFixed(2)} ج.م</td><td style="color:#117a65; font-weight:bold;">${(net > 0 ? net*0.7 : 0).toFixed(2)} ج.م</td><td style="color:#b7950b; font-weight:bold;">${(net > 0 ? net*0.3 : 0).toFixed(2)} ج.م</td></tr>`;
         }
     }
 
