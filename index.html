@@ -616,14 +616,13 @@
         toggleSidebar();
     }
 
-    // تعديل الـ Sidebar ليعمل بنقرة واحدة سريعة خارج النطاق
     function toggleSidebar(e) {
         if(e) e.stopPropagation();
         document.getElementById('app-sidebar').classList.toggle('open');
         document.getElementById('sidebar-overlay').classList.toggle('show');
     }
 
-    // 📤 وظيفة حفظ المريض مع ضمان رفع كود وهيكل مالي نظيف ومحمي
+    // 📤 [تم الإصلاح الحرج] حفظ المريض بدون إرسال مصفوفات فارغة تمنع الحفظ سحابياً
     function saveOldPatient(e) {
         e.preventDefault();
         const newRef = db.ref('patients').push();
@@ -634,8 +633,8 @@
             date: document.getElementById('old-p-date').value,
             totalAmount: 0,
             service: "",
-            nextVisit: "",
-            payments: [] // تهيئة مصفوفة دفعات فارغة تجنباً للمشاكل
+            nextVisit: ""
+            // إزالة المصفوفة الفارغة لضمان نجاح الرفع الفوري على السيرفر
         };
         newRef.set(newPatient);
         document.getElementById('old-patient-form').reset();
@@ -668,8 +667,7 @@
             date: res.date,
             totalAmount: 0,
             service: "",
-            nextVisit: "",
-            payments: []
+            nextVisit: ""
         });
         db.ref('reservations/' + id).remove();
     }
@@ -704,7 +702,7 @@
         }
     }
 
-    // 🔄 دالة بناء وتحديث الشاشة والمحتوى بدون توقف (معالجة الأخطاء وحماية البيانات)
+    // 🔄 دالة بناء وتحديث الشاشة والمحتوى مع حماية متكاملة ومعالجة حاسمة لكل الحالات
     function updateApp() {
         const searchTerm = document.getElementById('search-patient-input').value.toLowerCase();
         
@@ -714,7 +712,7 @@
         
         Object.keys(globalPatients).forEach(id => {
             const p = globalPatients[id];
-            if (!p || !p.name) return; // حماية ضد البيانات التالفة
+            if (!p || !p.name) return; 
             
             let payments = [];
             if (p.payments) {
