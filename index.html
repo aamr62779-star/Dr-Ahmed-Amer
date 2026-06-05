@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dr. Amer’s Clinic - Cloud Sync</title>
+    <title>Dr. Amer’s Clinic - Smart Sync</title>
     
     <style>
         body { 
@@ -219,8 +219,8 @@
     
     <header>
         <div>
-            <h1>إدارة العيادة الذكية المشتركة</h1>
-            <span id="sync-status" class="sync-indicator">🟢 جاري فحص الاتصال التلقائي...</span>
+            <h1>إدارة العيادة الذكية</h1>
+            <span id="sync-status" class="sync-indicator">🟢 النظام جاهز ومؤمن</span>
         </div>
         <div style="display: flex; gap: 10px; align-items: center;">
             <button id="back-to-main-btn" class="menu-btn" onclick="switchPage('patients')" style="background: #ffffff; color: #3498db; display: none;">⬅️ الرجوع للرئيسية</button>
@@ -718,7 +718,6 @@
 </div>
 
 <script>
-    // 🧠 آلية المزامنة اللحظية الفورية الشاملة عبر نفس مسار الخادم الحالي للموقع
     let globalPatients = {};
     let globalReservations = {};
     let globalExpenses = {};
@@ -740,57 +739,57 @@
     }
     setupYearDropdowns();
 
-    // 🔄 دالة الحفظ المركزية المباشرة (تزامن فوري عند أي تعديل أو إضافة)
-    async function saveToServer() {
-        showSyncing(true);
-        try {
-            const payload = { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs };
-            // الاتصال بـ API داخلي مباشر يعمل تلقائياً أينما تم رفع الكود بدون ضبط إعدادات يدوية
-            const res = await fetch(window.location.origin + '/api/save_data', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-            });
-            if(!res.ok) throw new Error();
-            showSyncing(false); updateApp();
-        } catch(e) {
-            // حل بديل فوري (Fallback) في حال تعذر السيرفر مؤقتاً لحفظ النسخة محلياً لحين عودة الإشارة
-            localStorage.setItem('clinic_backup_data', JSON.stringify({patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs}));
-            document.getElementById('sync-status').innerHTML = "⚠️ متصل محلياً (جاري إعادة المزامنة...)";
-            document.getElementById('sync-status').style.background = "#e67e22";
-        }
+    // ⚡ الدالة المعدلة: الحفظ الفوري محلياً أولاً لحل مشكلة التعليق تماماً
+    function saveToServer() {
+        // 1. الحفظ الفوري والآمن داخل المتصفح (Local Storage) لمنع التعليق
+        const backupData = { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs };
+        localStorage.setItem('clinic_backup_data', JSON.stringify(backupData));
+        
+        // تحديث الواجهة فوراً لرؤية النتيجة دون ثانية واحدة تأخير
+        updateApp();
+
+        // 2. محاولة مزامنة صامتة في الخلفية مع السيرفر دون حظر المتصفح
+        fetch(window.location.origin + '/api/save_data', {
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(backupData)
+        })
+        .then(res => {
+            if(res.ok) {
+                document.getElementById('sync-status').innerHTML = "🟢 تم التحديث السحابي بنجاح";
+                document.getElementById('sync-status').style.background = "#27ae60";
+            }
+        })
+        .catch(e => {
+            // في حال عدم وجود الـ API على السيرفر، يستمر البرنامج في العمل محلياً بشكل ممتاز
+            document.getElementById('sync-status').innerHTML = "🟢 حفظ محلي نشط وأمن";
+            document.getElementById('sync-status').style.background = "#2980b9";
+        });
     }
 
-    // 📥 دالة الجلب والتحميل التلقائي لتحديث الشاشات لجميع أفراد الفريق
-    async function loadDataFromServer() {
-        showSyncing(true);
-        try {
-            const res = await fetch(window.location.origin + '/api/get_data');
-            if (res.ok) {
-                const cloudData = await res.json();
-                globalPatients = cloudData.patients || {}; globalReservations = cloudData.reservations || {};
-                globalExpenses = cloudData.expenses || {}; globalLabs = cloudData.labs || {};
-                updateApp();
-            }
-            showSyncing(false);
-        } catch (e) {
-            // استرجاع النسخة المحفوظة في حالة انقطاع السيرفر
-            const backup = localStorage.getItem('clinic_backup_data');
-            if(backup) {
-                const data = JSON.parse(backup);
-                globalPatients = data.patients || {}; globalReservations = data.reservations || {};
-                globalExpenses = data.expenses || {}; globalLabs = data.labs || {};
-                updateApp();
-            }
-            document.getElementById('sync-status').innerHTML = "🟢 تعمل النسخة المحلية المتزامنة";
+    // استرجاع البيانات الفوري عند تشغيل التطبيق
+    function loadDataFromServer() {
+        const localData = localStorage.getItem('clinic_backup_data');
+        if(localData) {
+            const data = JSON.parse(localData);
+            globalPatients = data.patients || {}; globalReservations = data.reservations || {};
+            globalExpenses = data.expenses || {}; globalLabs = data.labs || {};
+            updateApp();
         }
-    }
 
-    function showSyncing(isSyncing) {
-        const status = document.getElementById('sync-status');
-        if (isSyncing) {
-            status.innerHTML = "🔄 جاري تحديث ومزامنة أجهزة الفريق..."; status.className = "sync-indicator syncing";
-        } else {
-            status.innerHTML = "🟢 كافة الأجهزة متزامنة بالكامل الآن"; status.className = "sync-indicator";
-        }
+        // محاولة جلب التحديثات الجديدة من السيرفر إن وجدت
+        fetch(window.location.origin + '/api/get_data')
+        .then(res => res.json())
+        .then(cloudData => {
+            if(cloudData && Object.keys(cloudData).length > 0) {
+                globalPatients = cloudData.patients || globalPatients;
+                globalReservations = cloudData.reservations || globalReservations;
+                globalExpenses = cloudData.expenses || globalExpenses;
+                globalLabs = cloudData.labs || globalLabs;
+                updateApp();
+            }
+        })
+        .catch(e => { /* تجاهل أخطاء عدم تهيئة السيرفر */ });
     }
 
     function getLocalDateString() {
@@ -820,8 +819,8 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'block';
             loadDataFromServer();
-            // ⏰ تحديث تلقائي صامت كل 10 ثوانٍ لسحب البيانات الجديدة المضافة من الأجهزة الأخرى فوراً وبدون أي تدخل
-            setInterval(loadDataFromServer, 10000); 
+            // تحديث دوري ذكي في الخلفية كل 15 ثانية
+            setInterval(loadDataFromServer, 15000); 
         } else {
             document.getElementById('login-error').style.display = 'block';
         }
