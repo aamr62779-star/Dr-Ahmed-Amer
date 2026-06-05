@@ -125,6 +125,7 @@
         .box.followup-box { border-top-color: #00a3e0; }
         .box.reservation-box { border-top-color: #f39c12; }
         .box.lab-box { border-top-color: #e67e22; }
+        .box.percentage-box { border-top-color: #1abc9c; }
         
         h2 { font-size: 18px; margin-top: 0; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #eee; color: #2980b9; }
         .form-group { margin-bottom: 15px; position: relative; }
@@ -140,47 +141,18 @@
             background-color: #fff;
             font-family: inherit;
         }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #3498db;
-            background-color: #f7faff;
-        }
-        
-        .btn-submit { 
-            background-color: #3498db; 
-            color: white; 
-            border: none; 
-            padding: 12px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            width: 100%; 
-            font-size: 16px; 
-            font-weight: bold; 
-            transition: background 0.2s;
-        }
-        .btn-submit:hover { background-color: #2980b9; }
-        .btn-expense { background-color: #e74c3c; }
-        .btn-expense:hover { background-color: #c0392b; }
-        .btn-old { background-color: #2ecc71; }
-        .btn-old:hover { background-color: #27ae60; }
-        .btn-lab { background-color: #e67e22; }
-        .btn-lab:hover { background-color: #d35400; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; background: white; }
         th, td { border: 1px solid #e2e8f0; padding: 11px; text-align: center; }
         th { background-color: #e8f2f9; color: #2980b9; font-weight: bold; }
-        tr:nth-child(even) { background-color: #fcfdfe; }
         
-        .patient-clickable-name, .lab-clickable-name { color: #2c3e50; cursor: pointer; display: inline-block; font-weight: bold; }
-        .patient-clickable-name:hover, .lab-clickable-name:hover { color: #3498db; text-decoration: underline; }
+        .patient-clickable-name { color: #2c3e50; cursor: pointer; display: inline-block; font-weight: bold; }
+        .patient-clickable-name:hover { color: #3498db; text-decoration: underline; }
         .phone-call-link { color: #7f8c8d; text-decoration: none; font-weight: 500; }
-        .phone-call-link:hover { color: #2ecc71; text-decoration: underline; }
 
         .action-icons-container { display: flex; justify-content: center; align-items: center; gap: 12px; }
-        .eye-icon { font-size: 20px; cursor: pointer; transition: transform 0.1s; }
-        .eye-icon:hover { transform: scale(1.2); }
+        .eye-icon { font-size: 20px; cursor: pointer; }
         .trash-icon { font-size: 18px; cursor: pointer; color: #e74c3c; }
-        .trash-icon:hover { transform: scale(1.2); color: #c0392b; }
 
         .clear-btn { background: #95a5a6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 10px; float: left; }
         .page-content { display: none; }
@@ -199,13 +171,23 @@
             display: none; position: absolute; top: 100%; right: 0; left: 0; background: #fff;
             border: 1px solid #bdc3c7; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10005; max-height: 220px; overflow-y: auto; margin-top: 2px;
         }
-        .dropdown-item { padding: 11px 15px; cursor: pointer; text-align: right; font-size: 14px; color: #2c3e50; }
+        .dropdown-item { padding: 11px 15px; cursor: pointer; text-align: right; font-size: 14px; }
         .dropdown-item:hover { background-color: #e8f2f9; color: #2980b9; font-weight: bold; }
 
         .payment-item { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 5px; margin-bottom: 6px; border: 1px solid #e2e8f0; font-size: 13px; }
-        .delete-payment-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .delete-payment-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-weight: bold; }
         .xray-preview-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
         .xray-thumb { width: 70px; height: 70px; border-radius: 4px; object-fit: cover; border: 1px solid #bdc3c7; cursor: pointer; }
+
+        /* ستايل كروت النسب الجديد */
+        .ratio-cards-container { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        .ratio-card { flex: 1; min-width: 220px; padding: 20px; border-radius: 8px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .ratio-card.dr { background: linear-gradient(135deg, #1abc9c, #16a085); }
+        .ratio-card.clinic { background: linear-gradient(135deg, #34495e, #2c3e50); }
+        .ratio-card.total { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .ratio-card h3 { margin: 0 0 10px 0; font-size: 16px; opacity: 0.9; }
+        .ratio-card .value { font-size: 24px; font-weight: bold; }
+        .ratio-card .percentage-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; font-size: 12px; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -219,7 +201,7 @@
             <input type="password" id="app-password" placeholder="••••" style="text-align: center; font-size: 20px; letter-spacing: 6px;">
         </div>
         <p id="login-error" style="color: #e74c3c; font-size: 14px; display: none; margin-bottom: 15px; font-weight: bold;">الرقم السري غير صحيح!</p>
-        <button onclick="validateLogin()" class="btn-submit">دخول للبرنامج</button>
+        <button onclick="validateLogin()" class="btn-submit" style="background-color:#3498db; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; width:100%; font-weight:bold;">دخول للبرنامج</button>
     </div>
 </div>
 
@@ -247,6 +229,7 @@
         <button class="sidebar-btn" id="sidebar-btn-monthly" onclick="switchPage('monthly')">📅 سجل المرضى الشهري</button>
         <button class="sidebar-btn" id="sidebar-btn-labs" onclick="switchPage('labs')">🔬 حسابات المعامل والتركيبات</button>
         <button class="sidebar-btn" id="sidebar-btn-expenses" onclick="switchPage('expenses')">💰 حسابات ومصروفات العيادة</button>
+        <button class="sidebar-btn" id="sidebar-btn-percentages" onclick="switchPage('percentages')">📊 حساب نسب الأرباح والتوزيع</button>
     </div>
 
     <!-- 1️⃣ صفحة المرضى الرئيسية -->
@@ -270,7 +253,7 @@
                                 <input type="date" id="old-p-date" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit btn-old" style="margin-top: 5px;">حفظ في سجل المرضى</button>
+                        <button type="submit" style="background-color: #2ecc71; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold;">حفظ في سجل المرضى</button>
                     </form>
                 </div>
 
@@ -324,7 +307,7 @@
                                 <input type="date" id="res-p-date" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit" style="margin-top: 5px; background-color: #f39c12;">تأكيد وحفظ الحجز المسبق</button>
+                        <button type="submit" style="background-color: #f39c12; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; margin-top: 5px;">تأكيد وحفظ الحجز المسبق</button>
                     </form>
                 </div>
 
@@ -347,14 +330,13 @@
         </div>
     </div>
 
-    <!-- 2️⃣ صفحة المتابعات التلقائية مع فلتر التاريخ الجديد -->
+    <!-- 2️⃣ صفحة المتابعات التلقائية مع فلتر التاريخ -->
     <div id="page-followups" class="page-content">
         <div class="row">
             <div class="col-12">
                 <div class="box followup-box">
                     <h2>📋 جدول متابعات الحالات المجدولة بالتاريخ</h2>
                     
-                    <!-- 📅 فلتر اختيار التاريخ اليومي المضاف حديثاً -->
                     <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 200px;">
                             <label style="color: #00a3e0; font-weight: bold;">📅 استعراض جدول مواعيد يوم محدد:</label>
@@ -440,7 +422,7 @@
                                 <input type="date" id="lab-date-input" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit btn-lab">حفظ المعمل الجديد</button>
+                        <button type="submit" style="background-color: #e67e22; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold;">حفظ المعمل الجديد</button>
                     </form>
                 </div>
 
@@ -481,7 +463,7 @@
                             <label>المبلغ المدفوع:</label>
                             <input type="number" step="0.01" id="e-amount" required placeholder="0.00">
                         </div>
-                        <button type="submit" class="btn-submit btn-expense">تسجيل وحفظ المصروف</button>
+                        <button type="submit" style="background-color: #e74c3c; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold;">تسجيل وحفظ المصروف</button>
                     </form>
                 </div>
 
@@ -501,6 +483,46 @@
                         </table>
                     </div>
                     <button class="clear-btn" onclick="clearAllData()">مسح كل البيانات لتهيئة الدورة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📊 6️⃣ صفحة حساب نسب الأرباح والتوزيع الجديدة -->
+    <div id="page-percentages" class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="box percentage-box">
+                    <h2>📊 تقرير توزيع نسب الأرباح التلقائي للعيادة</h2>
+                    <p style="color: #7f8c8d; font-size: 14px;">يتم احتساب هذا التقرير حياً وبشكل تلقائي بناءً على إجمالي المبالغ التي تم تحصيلها فعلياً من المرضى مطروحاً منها المصروفات العامة للعيادة.</p>
+                    
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px dashed #1abc9c; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
+                        • 📥 <b>إجمالي الإيرادات المحصلة (فعلياً):</b> <span id="calc-total-revenues" style="font-weight: bold; color: #2ecc71;">0.00</span> ج.م<br>
+                        • 📤 <b>إجمالي المصروفات العامة الخصمية:</b> <span id="calc-total-expenses" style="font-weight: bold; color: #e74c3c;">0.00</span> ج.م
+                    </div>
+
+                    <div class="ratio-cards-container">
+                        <!-- كارت صافي الأرباح -->
+                        <div class="ratio-card total">
+                            <h3>💵 صافي الأرباح القابلة للتوزيع</h3>
+                            <div class="value" id="calc-net-profit">0.00 ج.م</div>
+                            <span class="percentage-badge">إيرادات - مصروفات</span>
+                        </div>
+                        
+                        <!-- كارت دكتور أحمد -->
+                        <div class="ratio-card dr">
+                            <h3>👨‍⚕️ حصة دكتور أحمد</h3>
+                            <div class="value" id="calc-dr-share">0.00 ج.م</div>
+                            <span class="percentage-badge">النسبة المحددة: 70%</span>
+                        </div>
+
+                        <!-- كارت العيادة -->
+                        <div class="ratio-card clinic">
+                            <h3>🏥 حصة إدارة العيادة</h3>
+                            <div class="value" id="calc-clinic-share">0.00 ج.م</div>
+                            <span class="percentage-badge">النسبة المحددة: 30%</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -558,7 +580,7 @@
         </div>
 
         <div class="form-group">
-            <label>الخدمة الطبية للاسنان (التجميلية والعلاجية):</label>
+            <label>الخدمة الطبية للأسنان (التجميلية والعلاجية):</label>
             <div style="display: flex; width: 100%;">
                 <input type="text" id="modal-p-service" placeholder="اكتب الخدمة أو اختر..." style="border-radius: 0 6px 6px 0; border-left: none; flex: 1;">
                 <button type="button" onclick="toggleServicesDropdown(event)" style="background: #e8f2f9; border: 1px solid #bdc3c7; border-radius: 6px 0 0 6px; width: 45px; cursor: pointer; color: #2980b9;">▼</button>
@@ -579,8 +601,8 @@
         </div>
 
         <div style="display: flex; gap: 10px; margin-top: 25px;">
-            <button onclick="savePatientFileChanges()" class="btn-submit" style="background-color: #2ecc71; flex: 2;">حفظ الملف</button>
-            <button onclick="closePatientModal()" class="btn-submit" style="background-color: #e74c3c; flex: 1;">إغلاق</button>
+            <button onclick="savePatientFileChanges()" style="background-color: #2ecc71; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; flex: 2; font-size:16px; font-weight:bold;">حفظ الملف</button>
+            <button onclick="closePatientModal()" style="background-color: #e74c3c; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; flex: 1; font-size:16px; font-weight:bold;">إغلاق</button>
         </div>
     </div>
 </div>
@@ -602,7 +624,6 @@
                 <input type="number" step="0.01" id="modal-l-total-debt" oninput="calculateLabFinancials()">
             </div>
 
-            <!-- تسجيل دفعة مالية للمعمل بتاريخ مخصص يدوي -->
             <div style="background: #fff9f2; padding: 12px; border-radius: 6px; border: 1px dashed #e67e22; margin-bottom: 12px;">
                 <label style="color: #d35400; font-weight: bold;">➕ تسجيل مبلـغ مدفوع للمعمل:</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
@@ -622,8 +643,8 @@
         </div>
 
         <div style="display: flex; gap: 10px; margin-top: 25px;">
-            <button onclick="saveLabFileChanges()" class="btn-submit" style="background-color: #2ecc71; flex: 2;">تحديث الحساب</button>
-            <button onclick="closeLabModal()" class="btn-submit" style="background-color: #e74c3c; flex: 1;">إغلاق</button>
+            <button onclick="saveLabFileChanges()" style="background-color: #2ecc71; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; flex: 2; font-size:16px; font-weight:bold;">تحديث الحساب</button>
+            <button onclick="closeLabModal()" style="background-color: #e74c3c; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; flex: 1; font-size:16px; font-weight:bold;">إغلاق</button>
         </div>
     </div>
 </div>
@@ -748,27 +769,16 @@
     }
 
     function transferToPatient(id) {
-        const res = globalReservations[id];
-        if(!res) return;
+        const res = globalReservations[id]; if(!res) return;
         const pId = 'p_' + Date.now();
-        globalPatients[pId] = {
-            id: pId,
-            name: res.name,
-            phone: res.phone,
-            date: res.date,
-            totalAmount: 0,
-            service: "",
-            nextVisit: "",
-            payments: [],
-            xrays: []
-        };
+        globalPatients[pId] = { id: pId, name: res.name, phone: res.phone, date: res.date, totalAmount: 0, service: "", nextVisit: "", payments: [], xrays: [] };
         delete globalReservations[id];
         saveToLocalStorage();
     }
 
     function deleteReservation(id) { if(confirm("هل تريد إلغاء هذا الحجز؟")) { delete globalReservations[id]; saveToLocalStorage(); } }
     function deletePatient(id) { if(confirm("تحذير حرج: سيتم مسح ملف المريض بالكامل؟")) { delete globalPatients[id]; saveToLocalStorage(); } }
-    function deleteLab(id) { if(confirm("تحذير: هل تود مسح هذا المعمل وكل أرشيف دفعاته المالية نهائياً؟")) { delete globalLabs[id]; saveToLocalStorage(); } }
+    function deleteLab(id) { if(confirm("تحذير: هل تود مسح هذا المعمل نهائياً؟")) { delete globalLabs[id]; saveToLocalStorage(); } }
 
     function saveExpense(e) {
         e.preventDefault();
@@ -786,6 +796,7 @@
 
     function updateApp() {
         const searchTerm = document.getElementById('search-patient-input').value.toLowerCase();
+        let totalRevenuesCollected = 0; // لحساب الإيرادات الفعلية للنسب
         
         // 1. جدول المرضى
         const tableBody = document.getElementById('patients-table-body');
@@ -794,10 +805,13 @@
             const p = globalPatients[id]; if (!p || !p.name) return; 
             let payments = p.payments ? (Array.isArray(p.payments) ? p.payments : Object.values(p.payments)) : [];
             const totalPaid = payments.reduce((sum, pay) => sum + parseFloat(pay ? pay.amount || 0 : 0), 0);
+            
+            totalRevenuesCollected += totalPaid; // تجميع الإيرادات التراكمية الفورية
+            
             const remaining = (p.totalAmount || 0) - totalPaid;
             if (p.name.toLowerCase().includes(searchTerm) && (!showDebtsOnly || remaining > 0)) {
                 tableBody.innerHTML += `<tr>
-                    <td><span class="patient-clickable-name" onclick="openPatientModal('${id}')">${p.name}</span><br><a href="tel:${p.phone}" class="phone-call-link">📞 ${p.phone || 'بدون رقم'}</a></td>
+                    <td><span class="patient-clickable-name" onclick="openPatientModal('${id}')">${p.name}</span><br><a href="tel:${p.phone}" style="color:#7f8c8d; text-decoration:none;">📞 ${p.phone || 'بدون رقم'}</a></td>
                     <td>${p.date || '---'}</td>
                     <td>${totalPaid.toFixed(2)} ج.م</td>
                     <td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td>
@@ -806,63 +820,37 @@
             }
         });
 
-        // 2. جدول المعامل وحساب المديونيات بالتاريخ
-        const labsTableBody = document.getElementById('labs-table-body');
-        labsTableBody.innerHTML = '';
+        // 2. جدول المعامل
+        const labsTableBody = document.getElementById('labs-table-body'); labsTableBody.innerHTML = '';
         Object.keys(globalLabs).forEach(id => {
             const l = globalLabs[id]; if(!l || !l.name) return;
             let labPayments = l.payments ? (Array.isArray(l.payments) ? l.payments : Object.values(l.payments)) : [];
-            const totalLabPaid = labPayments.reduce((sum, lp) => sum + parseFloat(lp ? lp.amount || 0 : 0), 0);
-            const labRemaining = (l.totalDebt || 0) - totalLabPaid;
-            labsTableBody.innerHTML += `<tr>
-                <td><span class="lab-clickable-name" onclick="openLabModal('${id}')">🔬 ${l.name}</span></td>
-                <td>${l.date || '---'}</td>
-                <td style="font-weight:bold; color:#2c3e50;">${parseFloat(l.totalDebt || 0).toFixed(2)} ج.م</td>
-                <td style="color:#2ecc71; font-weight:bold;">${totalLabPaid.toFixed(2)} ج.م</td>
-                <td style="color:${labRemaining > 0 ? '#e67e22' : '#7f8c8d'}; font-weight:bold;">${labRemaining.toFixed(2)} ج.م</td>
-                <td><div class="action-icons-container"><span class="eye-icon" onclick="openLabModal('${id}')">👁️ كشف الحساب</span><span class="trash-icon" onclick="deleteLab('${id}')">🗑️</span></div></td>
-            </tr>`;
+            const totalLabPaid = labPayments.reduce((sum, lp) => sum + parseFloat(lp ? lp.amount || 0 : 0), 0); const labRemaining = (l.totalDebt || 0) - totalLabPaid;
+            labsTableBody.innerHTML += `<tr><td><span style="cursor:pointer; font-weight:bold;" onclick="openLabModal('${id}')">🔬 ${l.name}</span></td><td>${l.date || '---'}</td><td>${parseFloat(l.totalDebt || 0).toFixed(2)} ج.م</td><td>${totalLabPaid.toFixed(2)} ج.م</td><td style="color:${labRemaining > 0 ? '#e67e22' : '#7f8c8d'}; font-weight:bold;">${labRemaining.toFixed(2)} ج.م</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openLabModal('${id}')">👁️</span><span class="trash-icon" onclick="deleteLab('${id}')">🗑️</span></div></td></tr>`;
         });
 
         // 3. جدول الحجوزات
-        const resTableBody = document.getElementById('reservations-table-body');
-        resTableBody.innerHTML = '';
+        const resTableBody = document.getElementById('reservations-table-body'); resTableBody.innerHTML = '';
         Object.keys(globalReservations).forEach(id => {
             const r = globalReservations[id]; if(r && r.name) {
-                resTableBody.innerHTML += `<tr><td><strong>${r.name}</strong><br><small>📞 ${r.phone || '---'}</small></td><td>${r.date || '---'}</td><td><button onclick="transferToPatient('${id}')" style="background:#2ecc71; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">حضر</button> <button onclick="deleteReservation('${id}')" style="background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">إلغاء</button></td></tr>`;
+                resTableBody.innerHTML += `<tr><td><strong>${r.name}</strong><br><small>📞 ${r.phone || '---'}</small></td><td>${r.date || '---'}</td><td><button onclick="transferToPatient('${id}')" style="background:#2ecc71; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">حضر</button> <button onclick="deleteReservation('${id}')" style="background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">إلغاء</button></td></tr>`;
             }
         });
 
-        // 4. جدول المتابعات اليومي المعدّل والمحسّن
-        const followupBody = document.getElementById('followups-table-body'); 
-        followupBody.innerHTML = ''; 
-        let followupCount = 0;
+        // 4. جدول المتابعات اليومي
+        const followupBody = document.getElementById('followups-table-body'); followupBody.innerHTML = ''; let followupCount = 0;
         const selectedFilterDate = document.getElementById('followup-filter-date').value;
-
         Object.keys(globalPatients).forEach(id => {
             const p = globalPatients[id]; 
-            if(p && p.name && p.nextVisit) { 
-                // عرض الحالات التي تطابق التاريخ المختار فقط في الفلتر
-                if (p.nextVisit === selectedFilterDate) {
-                    followupCount++; 
-                    followupBody.innerHTML += `<tr>
-                        <td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td>
-                        <td style="color:#00a3e0; font-weight:bold;">📅 ${p.nextVisit}</td>
-                        <td>${p.service || 'فحص ومتابعة'}</td>
-                        <td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️ ملف المريض</span></td>
-                    </tr>`; 
-                }
+            if(p && p.name && p.nextVisit && p.nextVisit === selectedFilterDate) { 
+                followupCount++; 
+                followupBody.innerHTML += `<tr><td><strong>${p.name}</strong></td><td style="color:#00a3e0; font-weight:bold;">📅 ${p.nextVisit}</td><td>${p.service || 'فحص ومتابعة'}</td><td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️ الملف</span></td></tr>`; 
             }
         });
-        
-        // عرض اسم اليوم المختار بشكل مريح
         let dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         let formattedDateLabel = selectedFilterDate ? new Date(selectedFilterDate).toLocaleDateString('ar-EG', dateOptions) : 'المحدد';
         document.getElementById('followups-count-badge').innerText = `💡 عدد حالات المتابعة ليوم (${formattedDateLabel}): ${followupCount} مريض`;
-        
-        if (followupCount === 0) {
-            followupBody.innerHTML = `<tr><td colspan="4" style="color: #7f8c8d; padding: 20px;">🎉 لا توجد جلسات متابعة مجدولة في هذا التاريخ المحدد.</td></tr>`;
-        }
+        if (followupCount === 0) { followupBody.innerHTML = `<tr><td colspan="4" style="color: #7f8c8d; padding: 20px;">🎉 لا توجد جلسات متابعة مجدولة في هذا التاريخ.</td></tr>`; }
 
         // 5. الأرشيف الشهري
         const mMonth = parseInt(document.getElementById('monthly-month-select').value); const mYear = parseInt(document.getElementById('monthly-year-select').value);
@@ -872,16 +860,35 @@
                 const pDate = new Date(p.date); if((pDate.getMonth() + 1) === mMonth && pDate.getFullYear() === mYear) {
                     let payments = p.payments ? (Array.isArray(p.payments) ? p.payments : Object.values(p.payments)) : [];
                     const totalPaid = payments.reduce((sum, pay) => sum + parseFloat(pay ? pay.amount || 0 : 0), 0); const remaining = (p.totalAmount || 0) - totalPaid;
-                    monthlyBody.innerHTML += `<tr><td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td><td>${p.date}</td><td>${totalPaid.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td><td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span></td></tr>`;
+                    monthlyBody.innerHTML += `<tr><td><strong>${p.name}</strong></td><td>${p.date}</td><td>${totalPaid.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td><td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span></td></tr>`;
                 }
             }
         });
 
-        // 6. جدول المصروفات
+        // 6. جدول المصروفات وحساب إجماليها للنسب
+        let totalExpensesCalculated = 0;
         const expenseBody = document.getElementById('expenses-table-body'); expenseBody.innerHTML = '';
         Object.keys(globalExpenses).forEach(id => {
-            const e = globalExpenses[id]; if(e) { expenseBody.innerHTML += `<tr><td>${e.title || '---'}</td><td style="color:#e74c3c; font-weight:bold;">${parseFloat(e.amount || 0).toFixed(2)} ج.م</td><td><small>${e.dateTime || '---'}</small></td><td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td></tr>`; }
+            const e = globalExpenses[id]; if(e) { 
+                totalExpensesCalculated += parseFloat(e.amount || 0);
+                expenseBody.innerHTML += `<tr><td>${e.title || '---'}</td><td style="color:#e74c3c; font-weight:bold;">${parseFloat(e.amount || 0).toFixed(2)} ج.م</td><td><small>${e.dateTime || '---'}</small></td><td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td></tr>`; 
+            }
         });
+
+        // 📊 7. تشغيل الحسابات الرياضية التلقائية في صفحة النسب الجديدة
+        document.getElementById('calc-total-revenues').innerText = totalRevenuesCollected.toFixed(2);
+        document.getElementById('calc-total-expenses').innerText = totalExpensesCalculated.toFixed(2);
+        
+        let netProfit = totalRevenuesCollected - totalExpensesCalculated;
+        // منع السوالب في العرض الجمالي لصافي الأرباح إذا زادت المصاريف مؤقتاً
+        document.getElementById('calc-net-profit').innerText = netProfit.toFixed(2) + " ج.م";
+        
+        // حساب نسبة دكتور أحمد 70% والعيادة 30%
+        let drShare = netProfit > 0 ? (netProfit * 0.70) : 0;
+        let clinicShare = netProfit > 0 ? (netProfit * 0.30) : 0;
+        
+        document.getElementById('calc-dr-share').innerText = drShare.toFixed(2) + " ج.م";
+        document.getElementById('calc-clinic-share').innerText = clinicShare.toFixed(2) + " ج.م";
     }
 
     function toggleDebtFilter() { showDebtsOnly = !showDebtsOnly; document.getElementById('btn-toggle-debts').style.background = showDebtsOnly ? '#2c3e50' : '#f39c12'; updateApp(); }
@@ -931,8 +938,7 @@
         document.getElementById('modal-l-name').value = l.name || '';
         document.getElementById('modal-l-total-debt').value = l.totalDebt || 0;
         tempLabPaymentsList = l.payments ? [...l.payments] : [];
-        renderLabModalPayments();
-        calculateLabFinancials();
+        renderLabModalPayments(); calculateLabFinancials();
         document.getElementById('lab-modal').style.display = 'flex';
     }
     function closeLabModal() { document.getElementById('lab-modal').style.display = 'none'; }
@@ -944,31 +950,17 @@
         document.getElementById('lbl-lab-remaining').innerText = (totalDebt - paid).toFixed(2);
     }
 
+    // ميزات المعمل المتبقية
     function addPaymentToLabList() {
-        const amtInput = document.getElementById('new-lab-payment-amount');
-        const dateInput = document.getElementById('new-lab-payment-date');
-        const amt = parseFloat(amtInput.value || 0);
-        if(amt <= 0) return;
-        
-        tempLabPaymentsList.push({
-            amount: amt,
-            date: dateInput.value || getLocalDateString()
-        });
-        amtInput.value = '';
-        renderLabModalPayments();
-        calculateLabFinancials();
+        const amtInput = document.getElementById('new-lab-payment-amount'); const dateInput = document.getElementById('new-lab-payment-date');
+        const amt = parseFloat(amtInput.value || 0); if(amt <= 0) return;
+        tempLabPaymentsList.push({ amount: amt, date: dateInput.value || getLocalDateString() });
+        amtInput.value = ''; renderLabModalPayments(); calculateLabFinancials();
     }
-
-    function deleteTempLabPayment(idx) {
-        tempLabPaymentsList.splice(idx, 1);
-        renderLabModalPayments();
-        calculateLabFinancials();
-    }
-
+    function deleteTempLabPayment(idx) { tempLabPaymentsList.splice(idx, 1); renderLabModalPayments(); calculateLabFinancials(); }
     function renderLabModalPayments() {
-        const listDiv = document.getElementById('modal-lab-payments-list');
-        listDiv.innerHTML = '';
-        if(tempLabPaymentsList.length === 0) { listDiv.innerHTML = '<span style="color:#aaa; font-size:12px;">لم يتم صرف أي مبالغ مسبقاً.</span>'; return; }
+        const listDiv = document.getElementById('modal-lab-payments-list'); listDiv.innerHTML = '';
+        if(tempLabPaymentsList.length === 0) { listDiv.innerHTML = '<span style="color:#aaa; font-size:12px;">لم يتم صرف دفعات.</span>'; return; }
         tempLabPaymentsList.forEach((p, idx) => {
             if(p) listDiv.innerHTML += `<div class="payment-item"><span>📅 <b>${p.date || '---'}</b> - تم دفع: <b>${parseFloat(p.amount || 0).toFixed(2)} ج.م</b></span><button type="button" class="delete-payment-btn" onclick="deleteTempLabPayment(${idx})">✕</button></div>`;
         });
@@ -979,8 +971,7 @@
         globalLabs[id].name = document.getElementById('modal-l-name').value;
         globalLabs[id].totalDebt = parseFloat(document.getElementById('modal-l-total-debt').value || 0);
         globalLabs[id].payments = tempLabPaymentsList;
-        closeLabModal();
-        saveToLocalStorage();
+        closeLabModal(); saveToLocalStorage();
     }
 
     function savePatientFileChanges() {
@@ -991,10 +982,8 @@
         globalPatients[id].nextVisit = document.getElementById('modal-p-next-visit').value;
         globalPatients[id].totalAmount = parseFloat(document.getElementById('modal-p-total-amount').value || 0);
         globalPatients[id].service = document.getElementById('modal-p-service').value;
-        globalPatients[id].payments = tempPaymentsList;
-        globalPatients[id].xrays = tempXraysList;
-        closePatientModal();
-        saveToLocalStorage();
+        globalPatients[id].payments = tempPaymentsList; globalPatients[id].xrays = tempXraysList;
+        closePatientModal(); saveToLocalStorage();
     }
 
     function handleXrayUpload(e) {
@@ -1014,20 +1003,13 @@
                 img.onclick = function() { const newTab = window.open(); newTab.document.body.innerHTML = `<img src="${src}" style="max-width:100%; height:auto;">`; };
                 img.ondblclick = function() { removeXray(idx); }; container.appendChild(img);
             }
-        });
-        xrayZone.appendChild(container);
+        }); xrayZone.appendChild(container);
     }
 
     function toggleServicesDropdown(e) { e.stopPropagation(); const menu = document.getElementById('services-dropdown-menu'); menu.style.display = (menu.style.display === 'block') ? 'none' : 'block'; }
     function selectServiceItem(val) { document.getElementById('modal-p-service').value = val; document.getElementById('services-dropdown-menu').style.display = 'none'; }
     
-    function clearAllData() { 
-        if(confirm("هل أنت متأكد من مسح قاعدة البيانات بالكامل؟")) { 
-            localStorage.clear(); 
-            globalPatients = {}; globalReservations = {}; globalExpenses = {}; globalLabs = {}; 
-            updateApp(); 
-        } 
-    }
+    function clearAllData() { if(confirm("هل أنت متأكد من مسح قاعدة البيانات بالكامل؟")) { localStorage.clear(); globalPatients = {}; globalReservations = {}; globalExpenses = {}; globalLabs = {}; updateApp(); } }
 
     window.onclick = function(event) { if (!event.target.matches('.form-group *')) { document.getElementById('services-dropdown-menu').style.display = 'none'; } }
     
