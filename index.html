@@ -210,6 +210,7 @@
 </head>
 <body>
 
+<!-- 🔑 شاشة قفل تسجيل الدخول -->
 <div id="login-screen" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
     <div class="box" style="width: 100%; max-width: 400px; text-align: center;">
         <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول للعيادة</h2>
@@ -222,6 +223,7 @@
     </div>
 </div>
 
+<!-- 🏥 شاشة البرنامج الرئيسية -->
 <div class="container" id="app-screen" style="display: none;">
     
     <header>
@@ -247,6 +249,7 @@
         <button class="sidebar-btn" id="sidebar-btn-expenses" onclick="switchPage('expenses')">💰 حسابات ومصروفات العيادة</button>
     </div>
 
+    <!-- 1️⃣ صفحة المرضى الرئيسية -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
@@ -300,6 +303,7 @@
         </div>
     </div>
 
+    <!-- 📌 صفحة الحجوزات المسبقة الجديدة -->
     <div id="page-reservations" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -343,18 +347,31 @@
         </div>
     </div>
 
+    <!-- 2️⃣ صفحة المتابعات التلقائية مع فلتر التاريخ الجديد -->
     <div id="page-followups" class="page-content">
         <div class="row">
             <div class="col-12">
                 <div class="box followup-box">
                     <h2>📋 جدول متابعات الحالات المجدولة بالتاريخ</h2>
+                    
+                    <!-- 📅 فلتر اختيار التاريخ اليومي المضاف حديثاً -->
+                    <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="color: #00a3e0; font-weight: bold;">📅 استعراض جدول مواعيد يوم محدد:</label>
+                            <input type="date" id="followup-filter-date" onchange="updateApp()" style="border-color: #00a3e0;">
+                        </div>
+                        <div style="padding-top: 22px;">
+                            <button type="button" onclick="resetFollowupToToday()" style="background-color: #00a3e0; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;">📅 جدول اليوم الحالي</button>
+                        </div>
+                    </div>
+
                     <div style="background-color: #e8f2f9; padding: 12px; border-radius: 6px; font-weight: bold; color: #2980b9; margin-bottom: 15px;" id="followups-count-badge">جاري تحميل المتابعات...</div>
                     <div style="overflow-x:auto;">
                         <table>
                             <thead>
                                 <tr>
                                     <th>اسم المريض وهاتفه</th>
-                                    <th>تاريخ المتابعة القادمة</th>
+                                    <th>تاريخ المتابعة</th>
                                     <th>الشغل المطلوب / الخدمة الطبية</th>
                                     <th>الملف والتحكم</th>
                                 </tr>
@@ -367,6 +384,7 @@
         </div>
     </div>
 
+    <!-- 3️⃣ الصفحة الشهرية -->
     <div id="page-monthly" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -405,6 +423,7 @@
         </div>
     </div>
 
+    <!-- 🔬 5️⃣ صفحة حسابات المعامل والتركيبات -->
     <div id="page-labs" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -447,6 +466,7 @@
         </div>
     </div>
 
+    <!-- 4️⃣ صفحة حسابات ومصروفات العيادة -->
     <div id="page-expenses" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -488,6 +508,7 @@
 
 </div>
 
+<!-- 📂 نافذة ملف المريض المنبثقة (Modal) -->
 <div id="patient-modal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
@@ -564,6 +585,7 @@
     </div>
 </div>
 
+<!-- 📂 نافذة حساب المعمل المنبثقة (Lab Modal) -->
 <div id="lab-modal" class="modal-overlay">
     <div class="modal-content" style="border-top-color: #e67e22;">
         <h2 style="color: #e67e22; margin-top: 0;" id="modal-lab-header">حساب المعمل التفصيلي</h2>
@@ -580,6 +602,7 @@
                 <input type="number" step="0.01" id="modal-l-total-debt" oninput="calculateLabFinancials()">
             </div>
 
+            <!-- تسجيل دفعة مالية للمعمل بتاريخ مخصص يدوي -->
             <div style="background: #fff9f2; padding: 12px; border-radius: 6px; border: 1px dashed #e67e22; margin-bottom: 12px;">
                 <label style="color: #d35400; font-weight: bold;">➕ تسجيل مبلـغ مدفوع للمعمل:</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
@@ -606,7 +629,6 @@
 </div>
 
 <script>
-    // 💾 كود الربط بالذاكرة المحلية للمتصفح (LocalStorage) لضمان العمل الفوري بنسبة 100%
     let globalPatients = JSON.parse(localStorage.getItem('patients')) || {};
     let globalReservations = JSON.parse(localStorage.getItem('reservations')) || {};
     let globalExpenses = JSON.parse(localStorage.getItem('expenses')) || {};
@@ -633,7 +655,7 @@
 
     function syncDefaultDates() {
         const todayStr = getLocalDateString();
-        ['old-p-date', 'new-payment-date', 'res-p-date', 'lab-date-input', 'new-lab-payment-date'].forEach(id => {
+        ['old-p-date', 'new-payment-date', 'res-p-date', 'lab-date-input', 'new-lab-payment-date', 'followup-filter-date'].forEach(id => {
             const input = document.getElementById(id);
             if (input && (!input.value || input.value === lastInitializedDate)) {
                 input.value = todayStr;
@@ -646,6 +668,11 @@
     document.getElementById('monthly-month-select').value = currentToday.getMonth() + 1;
     document.getElementById('monthly-year-select').value = currentToday.getFullYear();
     syncDefaultDates();
+
+    function resetFollowupToToday() {
+        document.getElementById('followup-filter-date').value = getLocalDateString();
+        updateApp();
+    }
 
     function validateLogin() {
         if (document.getElementById('app-password').value === "1234") {
@@ -806,12 +833,36 @@
             }
         });
 
-        // 4. جدول المتابعات
-        const followupBody = document.getElementById('followups-table-body'); followupBody.innerHTML = ''; let followupCount = 0;
+        // 4. جدول المتابعات اليومي المعدّل والمحسّن
+        const followupBody = document.getElementById('followups-table-body'); 
+        followupBody.innerHTML = ''; 
+        let followupCount = 0;
+        const selectedFilterDate = document.getElementById('followup-filter-date').value;
+
         Object.keys(globalPatients).forEach(id => {
-            const p = globalPatients[id]; if(p && p.name && p.nextVisit) { followupCount++; followupBody.innerHTML += `<tr><td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td><td style="color:#00a3e0; font-weight:bold;">${p.nextVisit}</td><td>${p.service || 'فحص ومتابعة'}</td><td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️ ملف المريض</span></td></tr>`; }
+            const p = globalPatients[id]; 
+            if(p && p.name && p.nextVisit) { 
+                // عرض الحالات التي تطابق التاريخ المختار فقط في الفلتر
+                if (p.nextVisit === selectedFilterDate) {
+                    followupCount++; 
+                    followupBody.innerHTML += `<tr>
+                        <td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td>
+                        <td style="color:#00a3e0; font-weight:bold;">📅 ${p.nextVisit}</td>
+                        <td>${p.service || 'فحص ومتابعة'}</td>
+                        <td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️ ملف المريض</span></td>
+                    </tr>`; 
+                }
+            }
         });
-        document.getElementById('followups-count-badge').innerText = `💡 إجمالي الحالات التي تنتظر متابعة جدولة قادمة: ${followupCount} مريض`;
+        
+        // عرض اسم اليوم المختار بشكل مريح
+        let dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        let formattedDateLabel = selectedFilterDate ? new Date(selectedFilterDate).toLocaleDateString('ar-EG', dateOptions) : 'المحدد';
+        document.getElementById('followups-count-badge').innerText = `💡 عدد حالات المتابعة ليوم (${formattedDateLabel}): ${followupCount} مريض`;
+        
+        if (followupCount === 0) {
+            followupBody.innerHTML = `<tr><td colspan="4" style="color: #7f8c8d; padding: 20px;">🎉 لا توجد جلسات متابعة مجدولة في هذا التاريخ المحدد.</td></tr>`;
+        }
 
         // 5. الأرشيف الشهري
         const mMonth = parseInt(document.getElementById('monthly-month-select').value); const mYear = parseInt(document.getElementById('monthly-year-select').value);
@@ -980,7 +1031,6 @@
 
     window.onclick = function(event) { if (!event.target.matches('.form-group *')) { document.getElementById('services-dropdown-menu').style.display = 'none'; } }
     
-    // شحن وعرض أول تحديث للشاشة فور التشغيل
     updateApp();
 </script>
 </body>
