@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة العيادة الذكية - النظام المستقر تماماً</title>
+    <title>إدارة العيادة الذكية - النظام السحابي المستقر</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef5f9; color: #2c3e50; padding: 15px; margin: 0; }
         .container { max-width: 1100px; margin: 0 auto; }
@@ -83,7 +83,7 @@
     <header>
         <div>
             <h1>إدارة العيادة الذكية الموحدة</h1>
-            <span id="sync-status" class="sync-indicator">🟢 النظام مستقر تماماً وجاهز</span>
+            <span id="sync-status" class="sync-indicator">🟢 النظام جاهز ومستقر</span>
         </div>
         <div style="display: flex; gap: 10px; align-items: center;">
             <button id="back-to-main-btn" class="menu-btn" onclick="switchPage('patients')" style="background: #ffffff; color: #3498db; display: none;">⬅️ الرئيسية</button>
@@ -106,7 +106,6 @@
         <button class="sidebar-btn" id="sidebar-btn-reports" onclick="switchPage('reports')">📈 صفحة التقارير السنوية</button>
     </div>
 
-    <!-- [محتوى الصفحات مدمج ومحسن بالكامل لمنع أي أخطاء عرض] -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
@@ -345,7 +344,6 @@
     </div>
 </div>
 
-<!-- المودال الخاص بالمرضى والمعامل والمزامنة -->
 <div id="patient-modal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
@@ -427,8 +425,8 @@
 </div>
 
 <script>
-    // 🌐 سيرفر المزامنة الفوري المفتوح تماماً بدون شروط (نظام مستقر دائم لعيادتك)
-    const CLOUD_API_URL = "https://kvdb.io/MN9vRkvMst6VbM7gMv5zWj/clinic_data_mohs_ahmed";
+    // 🌐 السيرفر العالمي المستقر والجديد تماماً (nPoint الدائم)
+    const CLOUD_API_URL = "https://api.npoint.io/08a3f8510db9fe792751";
 
     let globalPatients = {}; let globalReservations = {}; let globalExpenses = {}; let globalLabs = {}; 
     let tempPaymentsList = []; let tempXraysList = []; let tempLabPaymentsList = []; 
@@ -443,7 +441,7 @@
     }
     setupYearDropdowns();
 
-    // 🚀 الرفع الفوري بدون قيود أو شروط سحابية
+    // 🚀 دالة الحفظ الفوري الموثوقة 
     function saveToServer() {
         updateApp();
         const syncStatus = document.getElementById('sync-status');
@@ -453,7 +451,8 @@
         const backupData = { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs };
         
         fetch(CLOUD_API_URL, {
-            method: 'POST',
+            method: 'JSON',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(backupData)
         })
         .then(res => {
@@ -463,18 +462,15 @@
             } else { throw new Error(); }
         })
         .catch(() => {
-            syncStatus.innerHTML = "🔴 خطأ مزامنة مؤقت.. يرجى التحقق من الشبكة";
+            syncStatus.innerHTML = "🔴 خطأ مزامنة.. يرجى التحقق من الشبكة";
             syncStatus.style.background = "#e74c3c";
         });
     }
 
     // 📥 جلب الداتا فور فتح التطبيق
     function loadDataFromServer() {
-        fetch(CLOUD_API_URL, { method: 'GET' })
-        .then(res => {
-            if(!res.ok) return null;
-            return res.json();
-        })
+        fetch(CLOUD_API_URL, { method: 'GET', cache: 'no-store' })
+        .then(res => { if(!res.ok) return null; return res.json(); })
         .then(innerData => {
             if (innerData) {
                 globalPatients = innerData.patients || {};
@@ -516,7 +512,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'block';
             loadDataFromServer();
-            setInterval(loadDataFromServer, 9000); // تحديث الأجهزة التلقائي المتبادل
+            setInterval(loadDataFromServer, 8000); 
         } else {
             document.getElementById('login-error').style.display = 'block';
         }
