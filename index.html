@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dr. Amer’s Clinic - Cloud</title>
+    <title>Dr. Amer’s Clinic - Local Storage</title>
     
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -228,7 +225,7 @@
 <div class="container" id="app-screen" style="display: none;">
     
     <header>
-        <h1>Dr. Amer’s Clinic - إدارة العيادة السحابية</h1>
+        <h1>Dr. Amer’s Clinic - إدارة العيادة الذكية</h1>
         <div style="display: flex; gap: 10px; align-items: center;">
             <button id="back-to-main-btn" class="menu-btn" onclick="switchPage('patients')" style="background: #ffffff; color: #3498db; display: none;">⬅️ الرجوع للرئيسية</button>
             <button class="menu-btn" onclick="toggleSidebar(event)">☰ القائمة الرئيسية</button>
@@ -540,15 +537,15 @@
         </div>
 
         <div class="form-group">
-            <label>الخدمة الطبية للاسنان:</label>
+            <label>الخدمة الطبية للاسنان (التجميلية والعلاجية):</label>
             <div style="display: flex; width: 100%;">
                 <input type="text" id="modal-p-service" placeholder="اكتب الخدمة أو اختر..." style="border-radius: 0 6px 6px 0; border-left: none; flex: 1;">
                 <button type="button" onclick="toggleServicesDropdown(event)" style="background: #e8f2f9; border: 1px solid #bdc3c7; border-radius: 6px 0 0 6px; width: 45px; cursor: pointer; color: #2980b9;">▼</button>
             </div>
             <div id="services-dropdown-menu" class="dropdown-menu">
+                <div class="dropdown-item" onclick="selectServiceItem('تركيبات تجميلية')">تركيبات تجميلية</div>
                 <div class="dropdown-item" onclick="selectServiceItem('حشو تجميلي')">حشو تجميلي</div>
                 <div class="dropdown-item" onclick="selectServiceItem('علاج عصب')">علاج عصب</div>
-                <div class="dropdown-item" onclick="selectServiceItem('تركيبات وتيجان')">تركيبات وتيجان</div>
                 <div class="dropdown-item" onclick="selectServiceItem('تنظيف وتلميع الأسنان')">تنظيف وتلميع الأسنان</div>
                 <div class="dropdown-item" onclick="selectServiceItem('خلع عادي / جراحي')">خلع عادي / جراحي</div>
             </div>
@@ -561,7 +558,7 @@
         </div>
 
         <div style="display: flex; gap: 10px; margin-top: 25px;">
-            <button onclick="savePatientFileChanges()" class="btn-submit" style="background-color: #2ecc71; flex: 2;">حفظ الملف على السحاب</button>
+            <button onclick="savePatientFileChanges()" class="btn-submit" style="background-color: #2ecc71; flex: 2;">حفظ الملف</button>
             <button onclick="closePatientModal()" class="btn-submit" style="background-color: #e74c3c; flex: 1;">إغلاق</button>
         </div>
     </div>
@@ -602,40 +599,32 @@
         </div>
 
         <div style="display: flex; gap: 10px; margin-top: 25px;">
-            <button onclick="saveLabFileChanges()" class="btn-submit" style="background-color: #2ecc71; flex: 2;">تحديث الحساب سحابياً</button>
+            <button onclick="saveLabFileChanges()" class="btn-submit" style="background-color: #2ecc71; flex: 2;">تحديث الحساب</button>
             <button onclick="closeLabModal()" class="btn-submit" style="background-color: #e74c3c; flex: 1;">إغلاق</button>
         </div>
     </div>
 </div>
 
 <script>
-    // ==========================================
-    // 🔑 ضع كود الإعداد (firebaseConfig) الخاص بك هنا
-    // ==========================================
-    const firebaseConfig = {
-        apiKey: "ضع_هنا_API_KEY",
-        authDomain: "ضع_هنا_AUTH_DOMAIN",
-        databaseURL: "ضع_هنا_DATABASE_URL",
-        projectId: "ضع_هنا_PROJECT_ID",
-        storageBucket: "ضع_هنا_STORAGE_BUCKET",
-        messagingSenderId: "ضع_هنا_MESSAGING_SENDER_ID",
-        appId: "ضع_هنا_APP_ID"
-    };
+    // 💾 كود الربط بالذاكرة المحلية للمتصفح (LocalStorage) لضمان العمل الفوري بنسبة 100%
+    let globalPatients = JSON.parse(localStorage.getItem('patients')) || {};
+    let globalReservations = JSON.parse(localStorage.getItem('reservations')) || {};
+    let globalExpenses = JSON.parse(localStorage.getItem('expenses')) || {};
+    let globalLabs = JSON.parse(localStorage.getItem('labs')) || {}; 
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // متغيرات النظام العامة
-    let globalPatients = {};
-    let globalReservations = {};
-    let globalExpenses = {};
-    let globalLabs = {}; // مصفوفة المعامل السحابية الجديدة
-    
     let tempPaymentsList = [];
     let tempXraysList = [];
-    let tempLabPaymentsList = []; // قائمة دفعات المعمل المؤقتة للشاشة المنبثقة
+    let tempLabPaymentsList = []; 
     let showDebtsOnly = false;
     let lastInitializedDate = "";
+
+    function saveToLocalStorage() {
+        localStorage.setItem('patients', JSON.stringify(globalPatients));
+        localStorage.setItem('reservations', JSON.stringify(globalReservations));
+        localStorage.setItem('expenses', JSON.stringify(globalExpenses));
+        localStorage.setItem('labs', JSON.stringify(globalLabs));
+        updateApp();
+    }
 
     function getLocalDateString() {
         const now = new Date();
@@ -653,17 +642,10 @@
         lastInitializedDate = todayStr;
     }
 
-    // 📥 المزامنة السحابية الحية (Realtime Listeners)
-    db.ref('patients').on('value', snapshot => { globalPatients = snapshot.val() || {}; updateApp(); });
-    db.ref('reservations').on('value', snapshot => { globalReservations = snapshot.val() || {}; updateApp(); });
-    db.ref('expenses').on('value', snapshot => { globalExpenses = snapshot.val() || {}; updateApp(); });
-    db.ref('labs').on('value', snapshot => { globalLabs = snapshot.val() || {}; updateApp(); });
-
     const currentToday = new Date();
     document.getElementById('monthly-month-select').value = currentToday.getMonth() + 1;
     document.getElementById('monthly-year-select').value = currentToday.getFullYear();
     syncDefaultDates();
-    setInterval(syncDefaultDates, 15000);
 
     function validateLogin() {
         if (document.getElementById('app-password').value === "1234") {
@@ -692,85 +674,93 @@
 
     function saveOldPatient(e) {
         e.preventDefault();
-        const newRef = db.ref('patients').push();
-        newRef.set({
-            id: newRef.key,
+        const id = 'p_' + Date.now();
+        globalPatients[id] = {
+            id: id,
             name: document.getElementById('old-p-name').value,
             phone: document.getElementById('old-p-phone').value,
             date: document.getElementById('old-p-date').value,
             totalAmount: 0,
             service: "",
-            nextVisit: ""
-        });
+            nextVisit: "",
+            payments: [],
+            xrays: []
+        };
         document.getElementById('old-patient-form').reset();
         syncDefaultDates();
+        saveToLocalStorage();
     }
 
-    // 📤 إضافة معمل جديد لقاعدة البيانات
     function saveNewLab(e) {
         e.preventDefault();
-        const newRef = db.ref('labs').push();
-        newRef.set({
-            id: newRef.key,
+        const id = 'lab_' + Date.now();
+        globalLabs[id] = {
+            id: id,
             name: document.getElementById('lab-name-input').value,
             date: document.getElementById('lab-date-input').value,
-            totalDebt: 0
-        });
+            totalDebt: 0,
+            payments: []
+        };
         document.getElementById('lab-form').reset();
         syncDefaultDates();
+        saveToLocalStorage();
     }
 
     function saveNewReservation(e) {
         e.preventDefault();
-        const newRef = db.ref('reservations').push();
-        newRef.set({
-            id: newRef.key,
+        const id = 'res_' + Date.now();
+        globalReservations[id] = {
+            id: id,
             name: document.getElementById('res-p-name').value,
             phone: document.getElementById('res-p-phone').value,
             date: document.getElementById('res-p-date').value
-        });
+        };
         document.getElementById('reservation-form').reset();
         syncDefaultDates();
+        saveToLocalStorage();
     }
 
     function transferToPatient(id) {
         const res = globalReservations[id];
         if(!res) return;
-        const newRef = db.ref('patients').push();
-        newRef.set({
-            id: newRef.key,
+        const pId = 'p_' + Date.now();
+        globalPatients[pId] = {
+            id: pId,
             name: res.name,
             phone: res.phone,
             date: res.date,
             totalAmount: 0,
             service: "",
-            nextVisit: ""
-        });
-        db.ref('reservations/' + id).remove();
+            nextVisit: "",
+            payments: [],
+            xrays: []
+        };
+        delete globalReservations[id];
+        saveToLocalStorage();
     }
 
-    function deleteReservation(id) { if(confirm("هل تريد إلغاء هذا الحجز؟")) { db.ref('reservations/' + id).remove(); } }
-    function deletePatient(id) { if(confirm("تحذير حرج: سيتم مسح ملف المريض بالكامل؟")) { db.ref('patients/' + id).remove(); } }
-    function deleteLab(id) { if(confirm("تحذير: هل تود مسح هذا المعمل وكل أرشيف دفعاته المالية نهائياً؟")) { db.ref('labs/' + id).remove(); } }
+    function deleteReservation(id) { if(confirm("هل تريد إلغاء هذا الحجز؟")) { delete globalReservations[id]; saveToLocalStorage(); } }
+    function deletePatient(id) { if(confirm("تحذير حرج: سيتم مسح ملف المريض بالكامل؟")) { delete globalPatients[id]; saveToLocalStorage(); } }
+    function deleteLab(id) { if(confirm("تحذير: هل تود مسح هذا المعمل وكل أرشيف دفعاته المالية نهائياً؟")) { delete globalLabs[id]; saveToLocalStorage(); } }
 
     function saveExpense(e) {
         e.preventDefault();
-        const newRef = db.ref('expenses').push();
-        newRef.set({
-            id: newRef.key,
+        const id = 'exp_' + Date.now();
+        globalExpenses[id] = {
+            id: id,
             title: document.getElementById('e-title').value,
             amount: parseFloat(document.getElementById('e-amount').value || 0),
             dateTime: new Date().toLocaleString('ar-EG')
-        });
+        };
         document.getElementById('expense-form').reset();
+        saveToLocalStorage();
     }
-    function deleteExpense(id) { if(confirm("هل تريد حذف بند المصروف هذا؟")) { db.ref('expenses/' + id).remove(); } }
+    function deleteExpense(id) { if(confirm("هل تريد حذف بند المصروف هذا؟")) { delete globalExpenses[id]; saveToLocalStorage(); } }
 
-    // 🔄 دالة التحديث لبناء كل الشاشات والجدول الجديد الخاص بالمعامل
     function updateApp() {
         const searchTerm = document.getElementById('search-patient-input').value.toLowerCase();
         
-        // 1. جدول المرضى الرئيسي
+        // 1. جدول المرضى
         const tableBody = document.getElementById('patients-table-body');
         tableBody.innerHTML = '';
         Object.keys(globalPatients).forEach(id => {
@@ -789,7 +779,7 @@
             }
         });
 
-        // 2. جدول المعامل الجديد وحساب المديونيات
+        // 2. جدول المعامل وحساب المديونيات بالتاريخ
         const labsTableBody = document.getElementById('labs-table-body');
         labsTableBody.innerHTML = '';
         Object.keys(globalLabs).forEach(id => {
@@ -816,7 +806,7 @@
             }
         });
 
-        // 4. جدول المتابعات المجدولة
+        // 4. جدول المتابعات
         const followupBody = document.getElementById('followups-table-body'); followupBody.innerHTML = ''; let followupCount = 0;
         Object.keys(globalPatients).forEach(id => {
             const p = globalPatients[id]; if(p && p.name && p.nextVisit) { followupCount++; followupBody.innerHTML += `<tr><td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td><td style="color:#00a3e0; font-weight:bold;">${p.nextVisit}</td><td>${p.service || 'فحص ومتابعة'}</td><td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️ ملف المريض</span></td></tr>`; }
@@ -845,7 +835,6 @@
 
     function toggleDebtFilter() { showDebtsOnly = !showDebtsOnly; document.getElementById('btn-toggle-debts').style.background = showDebtsOnly ? '#2c3e50' : '#f39c12'; updateApp(); }
 
-    // 📂 إدارة شاشة ملف المريض المنبثقة وحماية مصفوفاتها
     function openPatientModal(id) {
         const p = globalPatients[id]; if(!p) return;
         document.getElementById('modal-patient-id').value = id;
@@ -855,8 +844,8 @@
         document.getElementById('modal-p-next-visit').value = p.nextVisit || '';
         document.getElementById('modal-p-total-amount').value = p.totalAmount || 0;
         document.getElementById('modal-p-service').value = p.service || '';
-        tempPaymentsList = p.payments ? (Array.isArray(p.payments) ? p.payments : Object.values(p.payments)) : [];
-        tempXraysList = p.xrays ? (Array.isArray(p.xrays) ? p.xrays : Object.values(p.xrays)) : [];
+        tempPaymentsList = p.payments ? [...p.payments] : [];
+        tempXraysList = p.xrays ? [...p.xrays] : [];
         renderModalPayments(); renderModalXrays(); calculateFinancials();
         document.getElementById('patient-modal').style.display = 'flex';
     }
@@ -885,13 +874,12 @@
         });
     }
 
-    // 🔬 إدارة نافذة المعمل الجديدة كلياً
     function openLabModal(id) {
         const l = globalLabs[id]; if(!l) return;
         document.getElementById('modal-lab-id').value = id;
         document.getElementById('modal-l-name').value = l.name || '';
         document.getElementById('modal-l-total-debt').value = l.totalDebt || 0;
-        tempLabPaymentsList = l.payments ? (Array.isArray(l.payments) ? l.payments : Object.values(l.payments)) : [];
+        tempLabPaymentsList = l.payments ? [...l.payments] : [];
         renderLabModalPayments();
         calculateLabFinancials();
         document.getElementById('lab-modal').style.display = 'flex';
@@ -913,7 +901,7 @@
         
         tempLabPaymentsList.push({
             amount: amt,
-            date: dateInput.value || getLocalDateString() // ربط الدفعة بالتاريخ المختار يدوياً
+            date: dateInput.value || getLocalDateString()
         });
         amtInput.value = '';
         renderLabModalPayments();
@@ -937,20 +925,25 @@
 
     function saveLabFileChanges() {
         const id = document.getElementById('modal-lab-id').value; if(!id) return;
-        db.ref('labs/' + id).update({
-            name: document.getElementById('modal-l-name').value,
-            totalDebt: parseFloat(document.getElementById('modal-l-total-debt').value || 0),
-            payments: tempLabPaymentsList
-        });
+        globalLabs[id].name = document.getElementById('modal-l-name').value;
+        globalLabs[id].totalDebt = parseFloat(document.getElementById('modal-l-total-debt').value || 0);
+        globalLabs[id].payments = tempLabPaymentsList;
         closeLabModal();
+        saveToLocalStorage();
     }
 
     function savePatientFileChanges() {
         const id = document.getElementById('modal-patient-id').value; if(!id) return;
-        db.ref('patients/' + id).update({
-            name: document.getElementById('modal-p-name').value, phone: document.getElementById('modal-p-phone').value, date: document.getElementById('modal-p-date').value, nextVisit: document.getElementById('modal-p-next-visit').value, totalAmount: parseFloat(document.getElementById('modal-p-total-amount').value || 0), service: document.getElementById('modal-p-service').value, payments: tempPaymentsList, xrays: tempXraysList
-        });
+        globalPatients[id].name = document.getElementById('modal-p-name').value;
+        globalPatients[id].phone = document.getElementById('modal-p-phone').value;
+        globalPatients[id].date = document.getElementById('modal-p-date').value;
+        globalPatients[id].nextVisit = document.getElementById('modal-p-next-visit').value;
+        globalPatients[id].totalAmount = parseFloat(document.getElementById('modal-p-total-amount').value || 0);
+        globalPatients[id].service = document.getElementById('modal-p-service').value;
+        globalPatients[id].payments = tempPaymentsList;
+        globalPatients[id].xrays = tempXraysList;
         closePatientModal();
+        saveToLocalStorage();
     }
 
     function handleXrayUpload(e) {
@@ -976,9 +969,19 @@
 
     function toggleServicesDropdown(e) { e.stopPropagation(); const menu = document.getElementById('services-dropdown-menu'); menu.style.display = (menu.style.display === 'block') ? 'none' : 'block'; }
     function selectServiceItem(val) { document.getElementById('modal-p-service').value = val; document.getElementById('services-dropdown-menu').style.display = 'none'; }
-    function clearAllData() { if(confirm("هل أنت متأكد من مسح قاعدة البيانات بالكامل؟")) { db.ref().remove(); } }
+    
+    function clearAllData() { 
+        if(confirm("هل أنت متأكد من مسح قاعدة البيانات بالكامل؟")) { 
+            localStorage.clear(); 
+            globalPatients = {}; globalReservations = {}; globalExpenses = {}; globalLabs = {}; 
+            updateApp(); 
+        } 
+    }
 
     window.onclick = function(event) { if (!event.target.matches('.form-group *')) { document.getElementById('services-dropdown-menu').style.display = 'none'; } }
+    
+    // شحن وعرض أول تحديث للشاشة فور التشغيل
+    updateApp();
 </script>
 </body>
 </html>
