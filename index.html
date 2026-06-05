@@ -189,7 +189,6 @@
         .ratio-card .value { font-size: 22px; font-weight: bold; }
         .ratio-card .percentage-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; font-size: 12px; margin-top: 5px; }
 
-        /* ستايل المربعات الإحصائية الصغيرة بصفحة التقارير */
         .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
         .analytics-item { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; display: flex; flex-direction: column; gap: 5px; }
         .analytics-item .title { font-size: 13px; color: #7f8c8d; font-weight: bold; }
@@ -198,7 +197,6 @@
 </head>
 <body>
 
-<!-- 🔑 شاشة قفل تسجيل الدخول -->
 <div id="login-screen" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
     <div class="box" style="width: 100%; max-width: 400px; text-align: center;">
         <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول للعيادة</h2>
@@ -211,7 +209,6 @@
     </div>
 </div>
 
-<!-- 🏥 شاشة البرنامج الرئيسية -->
 <div class="container" id="app-screen" style="display: none;">
     
     <header>
@@ -236,10 +233,9 @@
         <button class="sidebar-btn" id="sidebar-btn-labs" onclick="switchPage('labs')">🔬 حسابات المعامل والتركيبات</button>
         <button class="sidebar-btn" id="sidebar-btn-expenses" onclick="switchPage('expenses')">💰 حسابات ومصروفات العيادة</button>
         <button class="sidebar-btn" id="sidebar-btn-percentages" onclick="switchPage('percentages')">📊 حساب نسب الأرباح والتوزيع</button>
-        <button class="sidebar-btn" id="sidebar-btn-reports" onclick="switchPage('reports')" style="border-right: 4px solid #6c5ce7; font-weight: bold; color: #6c5ce7;">📈 صفحة التقارير والأرباح الشهرية</button>
+        <button class="sidebar-btn" id="sidebar-btn-reports" onclick="switchPage('reports')">📈 صفحة التقارير والأرباح الشهرية</button>
     </div>
 
-    <!-- 1️⃣ صفحة المرضى الرئيسية -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
@@ -293,7 +289,6 @@
         </div>
     </div>
 
-    <!-- 📌 صفحة الحجوزات المسبقة الجديدة -->
     <div id="page-reservations" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -337,7 +332,6 @@
         </div>
     </div>
 
-    <!-- 2️⃣ صفحة المتابعات التلقائية مع فلتر التاريخ -->
     <div id="page-followups" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -373,7 +367,6 @@
         </div>
     </div>
 
-    <!-- 3️⃣ الصفحة الشهرية -->
     <div id="page-monthly" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -412,7 +405,6 @@
         </div>
     </div>
 
-    <!-- 🔬 5️⃣ صفحة حسابات المعامل والتركيبات -->
     <div id="page-labs" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -455,7 +447,6 @@
         </div>
     </div>
 
-    <!-- 4️⃣ صفحة حسابات ومصروفات العيادة -->
     <div id="page-expenses" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -501,50 +492,60 @@
         </div>
     </div>
 
-    <!-- 📊 6️⃣ صفحة حساب نسب الأرباح والتوزيع التلقائية اللحظية -->
     <div id="page-percentages" class="page-content">
         <div class="row">
             <div class="col-12">
                 <div class="box percentage-box">
-                    <h2>📊 تقرير توزيع نسب الأرباح التلقائي للعيادة (تراكمي عام)</h2>
+                    <h2>📊 تقرير توزيع نسب الأرباح وحساب الدخل الفعلي بالتاريخ</h2>
                     
+                    <div style="background-color: #f0fdf4; padding: 15px; border-radius: 6px; border: 1px solid #1abc9c; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="color: #16a085; font-weight: bold;">🔍 اختر التاريخ لعرض دخل ونسب هذا اليوم:</label>
+                            <input type="date" id="profit-custom-date" style="border-color: #1abc9c;">
+                        </div>
+                        <div style="padding-top: 22px; display: flex; gap: 8px;">
+                            <button type="button" onclick="updateApp()" style="background-color: #1abc9c; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;">👁️ اعرض دخل اليوم المختار</button>
+                            <button type="button" onclick="resetProfitToToday()" style="background-color: #95a5a6; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;">📅 اليوم الحالي</button>
+                        </div>
+                    </div>
+
                     <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px dashed #1abc9c; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-                        • 📥 <b>إجمالي الإيرادات المحصلة الكلية:</b> <span id="calc-total-revenues" style="font-weight: bold; color: #2ecc71;">0.00</span> ج.م<br>
-                        • 📤 <b>إجمالي المصروفات العامة الخصمية:</b> <span id="calc-total-expenses" style="font-weight: bold; color: #e74c3c;">0.00</span> ج.م
+                        • 📥 <b>إجمالي الإيرادات المحصلة الكلية (عام تراكمي):</b> <span id="calc-total-revenues" style="font-weight: bold; color: #2ecc71;">0.00</span> ج.م<br>
+                        • 📤 <b>إجمالي المصروفات العامة الخصمية (عام تراكمي):</b> <span id="calc-total-expenses" style="font-weight: bold; color: #e74c3c;">0.00</span> ج.م
                     </div>
 
                     <div class="ratio-cards-container">
                         <div class="ratio-card daily">
-                            <h3>💰 الربح اليومي الفعلي</h3>
+                            <h3>💰 صافي ربح اليوم المختار</h3>
                             <div class="value" id="calc-daily-profit">0.00 ج.م</div>
                             <span class="percentage-badge" id="daily-date-badge">خزينة اليوم</span>
                         </div>
-                        <div class="ratio-card total">
-                            <h3>💵 صافي الأرباح التراكمية</h3>
-                            <div class="value" id="calc-net-profit">0.00 ج.م</div>
-                            <span class="percentage-badge">إجمالي إيرادات - مصروفات</span>
-                        </div>
                         <div class="ratio-card dr">
-                            <h3>👨‍⚕️ حصة دكتور أحمد</h3>
+                            <h3>👨‍⚕️ حصة دكتور أحمد (اليوم المختار)</h3>
                             <div class="value" id="calc-dr-share">0.00 ج.م</div>
-                            <span class="percentage-badge">النسبة المحددة: 70%</span>
+                            <span class="percentage-badge">النسبة: 70% بعد خصم مصروفات اليوم</span>
                         </div>
                         <div class="ratio-card clinic">
-                            <h3>🏥 حصة إدارة العيادة</h3>
+                            <h3>🏥 حصة إدارة العيادة (اليوم المختار)</h3>
                             <div class="value" id="calc-clinic-share">0.00 ج.م</div>
-                            <span class="percentage-badge">النسبة المحددة: 30%</span>
+                            <span class="percentage-badge">النسبة: 30% بعد خصم مصروفات اليوم</span>
+                        </div>
+                        <div class="ratio-card total">
+                            <h3>💵 الأرباح التراكمية الكلية للبرنامج</h3>
+                            <div class="value" id="calc-net-profit">0.00 ج.م</div>
+                            <span class="percentage-badge">إجمالي عام</span>
                         </div>
                     </div>
 
                     <div style="margin-top: 30px;">
-                        <h3 style="font-size: 16px; color: #e67e22; border-bottom: 2px solid #f39c12; padding-bottom: 8px; margin-bottom: 15px;">📋 بيان حالات الإيراد والتحصيل اليومي المباشر</h3>
+                        <h3 style="font-size: 16px; color: #e67e22; border-bottom: 2px solid #f39c12; padding-bottom: 8px; margin-bottom: 15px;">📋 بيان الحالات والإيرادات لليوم المختار</h3>
                         <div style="overflow-x:auto;">
                             <table>
                                 <thead>
                                     <tr>
                                         <th>اسم المريض / رقم الهاتف</th>
                                         <th>الخدمة الطبية المسجلة</th>
-                                        <th>المبلغ المدفوع اليوم</th>
+                                        <th>المبلغ المدفوع في هذا اليوم</th>
                                         <th>الملف والتفاصيل</th>
                                     </tr>
                                 </thead>
@@ -557,13 +558,12 @@
         </div>
     </div>
 
-    <!-- 📈 7️⃣ الصفحة الجديدة: صفحة التقارير والتحليلات الشهرية المجمعة -->
     <div id="page-reports" class="page-content">
         <div class="row">
             <div class="col-12">
                 <div class="box reports-box">
                     <h2>📊 دفتر التقارير المالية والأرباح الشهرية المجمعة</h2>
-                    <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 20px;">يتم فرز وتجميع الإيرادات (بناءً على تاريخ دفعات الجلسات الفعلي) والمصروفات بشكل آلي لكل شهر على حدة لحساب الصافي وتوزيع النسب بدقة.</p>
+                    <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 20px;">يتم فرز وتجميع الإيرادات والمصروفات بشكل آلي لكل شهر على حدة لحساب الصافي وتوزيع النسب بدقة.</p>
                     
                     <div class="form-group" style="max-width: 200px; margin-bottom: 20px;">
                         <label>اختر السنة المالية المستهدفة:</label>
@@ -587,14 +587,11 @@
                                     <th style="background-color: #fcf3cf; color: #b7950b;">🏥 حصة العيادة (30%)</th>
                                 </tr>
                             </thead>
-                            <tbody id="monthly-summary-table-body">
-                                <!-- سيتم بناؤه برمجياً لـ 12 شهر -->
-                            </tbody>
+                            <tbody id="monthly-summary-table-body"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- 💡 ميزة إضافية ذكية: كروت الذكاء المالي للعيادة -->
                 <div class="box reports-box" style="border-top-color: #1abc9c;">
                     <h2>📈 مؤشرات الأداء المالي والخدمات الأكثر طلباً</h2>
                     <div class="analytics-grid">
@@ -612,14 +609,12 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
 </div>
 
-<!-- 📂 نافذة ملف المريض المنبثقة (Modal) -->
 <div id="patient-modal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
@@ -696,7 +691,6 @@
     </div>
 </div>
 
-<!-- 📂 نافذة حساب المعمل المنبثقة (Lab Modal) -->
 <div id="lab-modal" class="modal-overlay">
     <div class="modal-content" style="border-top-color: #e67e22;">
         <h2 style="color: #e67e22; margin-top: 0;" id="modal-lab-header">حساب المعمل التفصيلي</h2>
@@ -773,6 +767,13 @@
                 input.value = todayStr;
             }
         });
+        
+        // تعيين التاريخ الافتراضي لصفحة الأرباح والنسب
+        const pDateInput = document.getElementById('profit-custom-date');
+        if(pDateInput && !pDateInput.value) {
+            pDateInput.value = todayStr;
+        }
+
         lastInitializedDate = todayStr;
     }
 
@@ -780,6 +781,11 @@
     document.getElementById('monthly-month-select').value = currentToday.getMonth() + 1;
     document.getElementById('monthly-year-select').value = currentToday.getFullYear();
     syncDefaultDates();
+
+    function resetProfitToToday() {
+        document.getElementById('profit-custom-date').value = getLocalDateString();
+        updateApp();
+    }
 
     function resetFollowupToToday() {
         document.getElementById('followup-filter-date').value = getLocalDateString();
@@ -888,23 +894,24 @@
 
     function updateApp() {
         const searchTerm = document.getElementById('search-patient-input').value.toLowerCase();
-        const todayStr = getLocalDateString();
-        document.getElementById('daily-date-badge').innerText = todayStr;
+        
+        // 🔍 الحصول على التاريخ المحدد من خانة الاختيار في صفحة النسب والأرباح
+        const selectedTargetDate = document.getElementById('profit-custom-date').value || getLocalDateString();
+        document.getElementById('daily-date-badge').innerText = `يوم (${selectedTargetDate})`;
         
         const reportYearSelected = parseInt(document.getElementById('report-year-select').value);
 
-        // هياكل تجميع شهري مخصصة لصفحة التقارير الجديدة
         let monthlyRevenueMap = Array(12).fill(0);
         let monthlyExpenseMap = Array(12).fill(0);
-        let serviceRevenueMap = {}; // لحساب الخدمة الأكثر عائداً
+        let serviceRevenueMap = {}; 
 
         let totalRevenuesCollected = 0; 
-        let dailyProfitCalculated = 0; 
+        let targetDayRevenue = 0; // إيراد اليوم المختار
         
         const dailyTableBody = document.getElementById('daily-payments-table-body');
         dailyTableBody.innerHTML = ''; 
 
-        // 1. جدول المرضى + تجميع بيانات الشهور والخدمات
+        // 1. جدول المرضى وحساب إيرادات الأيام والشهور
         const tableBody = document.getElementById('patients-table-body');
         tableBody.innerHTML = '';
         Object.keys(globalPatients).forEach(id => {
@@ -919,18 +926,16 @@
                 patientPaidTotal += amt;
                 totalRevenuesCollected += amt;
 
-                // فرز مالي للتقارير الشهرية بناءً على تاريخ الدفعة
                 if (pay.date) {
                     const payDateObj = new Date(pay.date);
                     if (payDateObj.getFullYear() === reportYearSelected) {
-                        const mIndex = payDateObj.getMonth(); // 0 - 11
-                        monthlyRevenueMap[mIndex] += amt;
+                        monthlyRevenueMap[payDateObj.getMonth()] += amt;
                     }
                 }
 
-                // حساب الربح اليومي المباشر لشاشة النسب
-                if(pay.date === todayStr) {
-                    dailyProfitCalculated += amt;
+                // 🔍 مقارنة تاريخ الدفعة بالتاريخ المختار في الفلتر
+                if(pay.date === selectedTargetDate) {
+                    targetDayRevenue += amt;
                     dailyTableBody.innerHTML += `<tr>
                         <td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td>
                         <td><span style="color:#2980b9; font-weight:bold;">${p.service || 'فحص / استشارة'}</span></td>
@@ -940,7 +945,6 @@
                 }
             });
 
-            // تجميع عوائد الخدمات الطبية (الأكثر مبيعاً)
             if (p.service && patientPaidTotal > 0) {
                 let sName = p.service.trim();
                 serviceRevenueMap[sName] = (serviceRevenueMap[sName] || 0) + patientPaidTotal;
@@ -959,7 +963,7 @@
         });
 
         if(dailyTableBody.innerHTML === '') {
-            dailyTableBody.innerHTML = `<tr><td colspan="4" style="color: #95a5a6; padding: 15px;">🏁 لم يتم تحصيل أي مبالغ أو دفعات مالية اليوم حتى الآن.</td></tr>`;
+            dailyTableBody.innerHTML = `<tr><td colspan="4" style="color: #95a5a6; padding: 15px;">🏁 لم يتم تحصيل أي مبالغ أو دفعات مالية في هذا التاريخ المحدد حتى الآن.</td></tr>`;
         }
 
         // 2. جدول المعامل
@@ -994,7 +998,7 @@
         document.getElementById('followups-count-badge').innerText = `💡 عدد حالات المتابعة ليوم (${formattedDateLabel}): ${followupCount} مريض`;
         if (followupCount === 0) { followupBody.innerHTML = `<tr><td colspan="4" style="color: #7f8c8d; padding: 20px;">🎉 لا توجد جلسات متابعة مجدولة في هذا التاريخ.</td></tr>`; }
 
-        // 5. الأرشيف الشهري التقليدي
+        // 5. الأرشيف الشهري
         const mMonth = parseInt(document.getElementById('monthly-month-select').value); const mYear = parseInt(document.getElementById('monthly-year-select').value);
         const monthlyBody = document.getElementById('monthly-patients-table-body'); monthlyBody.innerHTML = '';
         Object.keys(globalPatients).forEach(id => {
@@ -1007,35 +1011,47 @@
             }
         });
 
-        // 6. جدول المصروفات وفرزها شهرياً
+        // 6. جدول المصروفات وحساب مصروفات اليوم المختار
         let totalExpensesCalculated = 0;
+        let targetDayExpenses = 0; // مصروفات اليوم المختار
+        
         const expenseBody = document.getElementById('expenses-table-body'); expenseBody.innerHTML = '';
         Object.keys(globalExpenses).forEach(id => {
             const e = globalExpenses[id]; if(e) { 
                 const amt = parseFloat(e.amount || 0);
                 totalExpensesCalculated += amt;
 
-                // التوزيع الشهري للمصروفات
                 let expDate = e.date ? new Date(e.date) : new Date();
                 if (expDate.getFullYear() === reportYearSelected) {
                     monthlyExpenseMap[expDate.getMonth()] += amt;
+                }
+
+                // 🔍 إذا كان المصروف مسجلاً في التاريخ المحدد
+                if(e.date === selectedTargetDate) {
+                    targetDayExpenses += amt;
                 }
 
                 expenseBody.innerHTML += `<tr><td>${e.title || '---'}</td><td style="color:#e74c3c; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td><small>${e.date || '---'}</small></td><td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td></tr>`; 
             }
         });
 
-        // 📊 7. الحسابات العامة التراكمية (شاشة النسب القديمة)
+        // 📊 7. تحديث الحسابات والنسب لليوم المختار (تحديث فوري وتفاعلي)
         document.getElementById('calc-total-revenues').innerText = totalRevenuesCollected.toFixed(2);
         document.getElementById('calc-total-expenses').innerText = totalExpensesCalculated.toFixed(2);
-        document.getElementById('calc-daily-profit').innerText = dailyProfitCalculated.toFixed(2) + " ج.م";
+        
+        // صافي ربح اليوم المختار = إيرادات اليوم المختار - مصروفات اليوم المختار
+        let netDayProfit = targetDayRevenue - targetDayExpenses;
+        document.getElementById('calc-daily-profit').innerText = netDayProfit.toFixed(2) + " ج.م";
+        
+        // توزيع نسب اليوم المختار بدقة 70% و 30%
+        document.getElementById('calc-dr-share').innerText = (netDayProfit > 0 ? netDayProfit * 0.70 : 0).toFixed(2) + " ج.م";
+        document.getElementById('calc-clinic-share').innerText = (netDayProfit > 0 ? netDayProfit * 0.30 : 0).toFixed(2) + " ج.م";
 
+        // الأرباح التراكمية الكلية العامة
         let netProfit = totalRevenuesCollected - totalExpensesCalculated;
         document.getElementById('calc-net-profit').innerText = netProfit.toFixed(2) + " ج.م";
-        document.getElementById('calc-dr-share').innerText = (netProfit > 0 ? netProfit * 0.70 : 0).toFixed(2) + " ج.م";
-        document.getElementById('calc-clinic-share').innerText = (netProfit > 0 ? netProfit * 0.30 : 0).toFixed(2) + " ج.م";
 
-        // 📈 8. بناء كشف حساب التقارير الشهرية المجمعة (الصفحة الجديدة)
+        // 📈 8. بناء كشف حساب التقارير الشهرية المجمعة
         const summaryTableBody = document.getElementById('monthly-summary-table-body');
         summaryTableBody.innerHTML = '';
         
@@ -1055,18 +1071,17 @@
                 bestMonthName = monthNamesAr[i];
             }
 
-            // إخفاء الشهور التي ليس بها أي حركة مالية لجعل الجدول نظيفاً وقابلاً للقراءة، أو عرضها كأصفار
             summaryTableBody.innerHTML += `<tr>
                 <td><strong>${monthNamesAr[i]}</strong></td>
                 <td style="color:#2ecc71; font-weight:bold;">${rev.toFixed(2)} ج.م</td>
                 <td style="color:#e74c3c;">${exp.toFixed(2)} ج.م</td>
                 <td style="color:${net >= 0 ? '#1565c0' : '#c62828'}; font-weight:bold; background-color:#f8fafc;">${net.toFixed(2)} ج.م</td>
                 <td style="color:#117a65; font-weight:bold;">${dr.toFixed(2)} ج.م</td>
-                <td style="color:#b7950b; font-weight:bold;">${cl.toFixed(2)} ج.m</td>
+                <td style="color:#b7950b; font-weight:bold;">${cl.toFixed(2)} ج.م</td>
             </tr>`;
         }
 
-        // 9. حساب مؤشرات الأداء والخدمات الأكثر تحقيقاً للأرباح
+        // 9. مؤشرات الأداء والخدمات الأكثر تحقيقاً للأرباح
         let topService = "لا يوجد بيانات حالياً";
         let topServiceRev = 0;
         Object.keys(serviceRevenueMap).forEach(s => {
