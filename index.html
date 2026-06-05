@@ -148,7 +148,6 @@
         
         .patient-clickable-name { color: #2c3e50; cursor: pointer; display: inline-block; font-weight: bold; }
         .patient-clickable-name:hover { color: #3498db; text-decoration: underline; }
-        .phone-call-link { color: #7f8c8d; text-decoration: none; font-weight: 500; }
 
         .action-icons-container { display: flex; justify-content: center; align-items: center; gap: 12px; }
         .eye-icon { font-size: 20px; cursor: pointer; }
@@ -179,14 +178,14 @@
         .xray-preview-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
         .xray-thumb { width: 70px; height: 70px; border-radius: 4px; object-fit: cover; border: 1px solid #bdc3c7; cursor: pointer; }
 
-        /* ستايل كروت النسب الجديد */
         .ratio-cards-container { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
-        .ratio-card { flex: 1; min-width: 220px; padding: 20px; border-radius: 8px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .ratio-card { flex: 1; min-width: 200px; padding: 20px; border-radius: 8px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .ratio-card.dr { background: linear-gradient(135deg, #1abc9c, #16a085); }
         .ratio-card.clinic { background: linear-gradient(135deg, #34495e, #2c3e50); }
         .ratio-card.total { background: linear-gradient(135deg, #3498db, #2980b9); }
-        .ratio-card h3 { margin: 0 0 10px 0; font-size: 16px; opacity: 0.9; }
-        .ratio-card .value { font-size: 24px; font-weight: bold; }
+        .ratio-card.daily { background: linear-gradient(135deg, #e67e22, #d35400); } /* ستايل مربع الأرباح اليومية */
+        .ratio-card h3 { margin: 0 0 10px 0; font-size: 15px; opacity: 0.9; }
+        .ratio-card .value { font-size: 22px; font-weight: bold; }
         .ratio-card .percentage-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; font-size: 12px; margin-top: 5px; }
     </style>
 </head>
@@ -488,7 +487,7 @@
         </div>
     </div>
 
-    <!-- 📊 6️⃣ صفحة حساب نسب الأرباح والتوزيع الجديدة -->
+    <!-- 📊 6️⃣ صفحة حساب نسب الأرباح والتوزيع التلقائية والمعدلة -->
     <div id="page-percentages" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -497,16 +496,23 @@
                     <p style="color: #7f8c8d; font-size: 14px;">يتم احتساب هذا التقرير حياً وبشكل تلقائي بناءً على إجمالي المبالغ التي تم تحصيلها فعلياً من المرضى مطروحاً منها المصروفات العامة للعيادة.</p>
                     
                     <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px dashed #1abc9c; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-                        • 📥 <b>إجمالي الإيرادات المحصلة (فعلياً):</b> <span id="calc-total-revenues" style="font-weight: bold; color: #2ecc71;">0.00</span> ج.م<br>
+                        • 📥 <b>إجمالي الإيرادات المحصلة الكلية:</b> <span id="calc-total-revenues" style="font-weight: bold; color: #2ecc71;">0.00</span> ج.م<br>
                         • 📤 <b>إجمالي المصروفات العامة الخصمية:</b> <span id="calc-total-expenses" style="font-weight: bold; color: #e74c3c;">0.00</span> ج.م
                     </div>
 
                     <div class="ratio-cards-container">
-                        <!-- كارت صافي الأرباح -->
+                        <!-- كارت الأرباح اليومية الجديد -->
+                        <div class="ratio-card daily">
+                            <h3>💰 الربح اليومي الفعلي</h3>
+                            <div class="value" id="calc-daily-profit">0.00 ج.م</div>
+                            <span class="percentage-badge" id="daily-date-badge">خزينة اليوم</span>
+                        </div>
+
+                        <!-- كارت صافي الأرباح الكلي -->
                         <div class="ratio-card total">
-                            <h3>💵 صافي الأرباح القابلة للتوزيع</h3>
+                            <h3>💵 صافي الأرباح التراكمية</h3>
                             <div class="value" id="calc-net-profit">0.00 ج.م</div>
-                            <span class="percentage-badge">إيرادات - مصروفات</span>
+                            <span class="percentage-badge">إجمالي إيرادات - مصروفات</span>
                         </div>
                         
                         <!-- كارت دكتور أحمد -->
@@ -523,6 +529,25 @@
                             <span class="percentage-badge">النسبة المحددة: 30%</span>
                         </div>
                     </div>
+
+                    <!-- 💵 جدول الحالات التي سددت دفعات اليوم -->
+                    <div style="margin-top: 30px;">
+                        <h3 style="font-size: 16px; color: #e67e22; border-bottom: 2px solid #f39c12; padding-bottom: 8px; margin-bottom: 15px;">📋 بيان حالات الإيراد والتحصيل اليومي المباشر</h3>
+                        <div style="overflow-x:auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>اسم المريض / رقم الهاتف</th>
+                                        <th>الخدمة الطبية المسجلة</th>
+                                        <th>المبلغ المدفوع اليوم</th>
+                                        <th>الملف والتفاصيل</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="daily-payments-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -796,17 +821,41 @@
 
     function updateApp() {
         const searchTerm = document.getElementById('search-patient-input').value.toLowerCase();
-        let totalRevenuesCollected = 0; // لحساب الإيرادات الفعلية للنسب
+        const todayStr = getLocalDateString();
+        document.getElementById('daily-date-badge').innerText = todayStr;
         
-        // 1. جدول المرضى
+        let totalRevenuesCollected = 0; 
+        let dailyProfitCalculated = 0; // لجمع الربح اليومي الفعلي المباشر
+        
+        const dailyTableBody = document.getElementById('daily-payments-table-body');
+        dailyTableBody.innerHTML = ''; // تصفير جدول الإيراد اليومي لإعادة البناء
+
+        // 1. جدول المرضى + استخراج دفعات اليوم
         const tableBody = document.getElementById('patients-table-body');
         tableBody.innerHTML = '';
         Object.keys(globalPatients).forEach(id => {
             const p = globalPatients[id]; if (!p || !p.name) return; 
             let payments = p.payments ? (Array.isArray(p.payments) ? p.payments : Object.values(p.payments)) : [];
-            const totalPaid = payments.reduce((sum, pay) => sum + parseFloat(pay ? pay.amount || 0 : 0), 0);
             
-            totalRevenuesCollected += totalPaid; // تجميع الإيرادات التراكمية الفورية
+            const totalPaid = payments.reduce((sum, pay) => {
+                const amt = parseFloat(pay ? pay.amount || 0 : 0);
+                
+                // فحص إذا كان تاريخ الدفعة يطابق تاريخ اليوم الحلي
+                if(pay && pay.date === todayStr) {
+                    dailyProfitCalculated += amt;
+                    // إضافة المريض والدفعة إلى الجدول الصغير اللحظي بصفحة النسب
+                    dailyTableBody.innerHTML += `<tr>
+                        <td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td>
+                        <td><span style="color:#2980b9; font-weight:bold;">${p.service || 'فحص / استشارة'}</span></td>
+                        <td style="color:#2ecc71; font-weight:bold;">${amt.toFixed(2)} ج.م</td>
+                        <td><span class="eye-icon" onclick="openPatientModal('${p.id}')">👁️ فتح الملف</span></td>
+                    </tr>`;
+                }
+                
+                return sum + amt;
+            }, 0);
+            
+            totalRevenuesCollected += totalPaid; 
             
             const remaining = (p.totalAmount || 0) - totalPaid;
             if (p.name.toLowerCase().includes(searchTerm) && (!showDebtsOnly || remaining > 0)) {
@@ -819,6 +868,11 @@
                 </tr>`;
             }
         });
+
+        // رسالة تنبيهية داخل جدول اليوم إذا كان فارغاً
+        if(dailyTableBody.innerHTML === '') {
+            dailyTableBody.innerHTML = `<tr><td colspan="4" style="color: #95a5a6; padding: 15px;">🏁 لم يتم تحصيل أي مبالغ أو دفعات مالية اليوم حتى الآن.</td></tr>`;
+        }
 
         // 2. جدول المعامل
         const labsTableBody = document.getElementById('labs-table-body'); labsTableBody.innerHTML = '';
@@ -865,7 +919,7 @@
             }
         });
 
-        // 6. جدول المصروفات وحساب إجماليها للنسب
+        // 6. جدول المصروفات وحساب إجماليها
         let totalExpensesCalculated = 0;
         const expenseBody = document.getElementById('expenses-table-body'); expenseBody.innerHTML = '';
         Object.keys(globalExpenses).forEach(id => {
@@ -875,15 +929,16 @@
             }
         });
 
-        // 📊 7. تشغيل الحسابات الرياضية التلقائية في صفحة النسب الجديدة
+        // 📊 7. الحسابات والنسب بصفحة التقارير
         document.getElementById('calc-total-revenues').innerText = totalRevenuesCollected.toFixed(2);
         document.getElementById('calc-total-expenses').innerText = totalExpensesCalculated.toFixed(2);
         
+        // تحديث وعرض مربع الربح اليومي الفعلي المباشر
+        document.getElementById('calc-daily-profit').innerText = dailyProfitCalculated.toFixed(2) + " ج.م";
+
         let netProfit = totalRevenuesCollected - totalExpensesCalculated;
-        // منع السوالب في العرض الجمالي لصافي الأرباح إذا زادت المصاريف مؤقتاً
         document.getElementById('calc-net-profit').innerText = netProfit.toFixed(2) + " ج.م";
         
-        // حساب نسبة دكتور أحمد 70% والعيادة 30%
         let drShare = netProfit > 0 ? (netProfit * 0.70) : 0;
         let clinicShare = netProfit > 0 ? (netProfit * 0.30) : 0;
         
@@ -950,7 +1005,6 @@
         document.getElementById('lbl-lab-remaining').innerText = (totalDebt - paid).toFixed(2);
     }
 
-    // ميزات المعمل المتبقية
     function addPaymentToLabList() {
         const amtInput = document.getElementById('new-lab-payment-amount'); const dateInput = document.getElementById('new-lab-payment-date');
         const amt = parseFloat(amtInput.value || 0); if(amt <= 0) return;
@@ -993,7 +1047,7 @@
         }
         e.target.value = "";
     }
-    function removeXray(idx) { if(confirm("هل تريد إزالة صورة الأشعة؟")) { tempXraysList.splice(idx, 1); renderModalXrays(); } }
+    function removeXray(idx) { if(confirm("هل تريد إزالة صورة أشعة؟")) { tempXraysList.splice(idx, 1); renderModalXrays(); } }
     function renderModalXrays() {
         const xrayZone = document.getElementById('modal-xrays-list'); xrayZone.innerHTML = ''; if(tempXraysList.length === 0) { xrayZone.innerText = 'لا توجد أشعة مرفوعة'; return; }
         const container = document.createElement('div'); container.className = 'xray-preview-container';
