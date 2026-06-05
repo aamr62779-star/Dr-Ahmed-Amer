@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة حسابات المعمل السحابية</title>
+    <title>Dr. Amer’s Clinic - Cloud</title>
     
     <!-- 🌐 استدعاء مكتبات Firebase من جوجل لتفعيل المزامنة السحابية -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -20,7 +20,7 @@
         .container { max-width: 1100px; margin: 0 auto; }
         
         header { 
-            background: #2c3e50; 
+            background: #3498db; 
             color: white; 
             padding: 15px 20px; 
             border-radius: 8px; 
@@ -32,9 +32,88 @@
         }
         header h1 { margin: 0; font-size: 22px; }
 
+        .menu-btn {
+            background: #2980b9;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .menu-btn:hover { background: #1f618d; }
+        .menu-btn:active { transform: scale(0.98); }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -280px; 
+            width: 280px;
+            height: 100%;
+            background: #ffffff;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 10px;
+            box-sizing: border-box;
+        }
+        .sidebar.open { right: 0; }
+        .sidebar-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2980b9;
+            border-bottom: 2px solid #eef5f9;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: #95a5a6;
+            cursor: pointer;
+        }
+        .sidebar-btn {
+            padding: 14px 18px;
+            border: none;
+            background: #f8fafc;
+            color: #55677d;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: right;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        .sidebar-btn:hover { background: #e2e8f0; color: #2c3e50; }
+        .sidebar-btn.active {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 3px 6px rgba(52, 152, 219, 0.2);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+        }
+        .sidebar-overlay.show { display: block; }
+
         .row { display: flex; gap: 20px; flex-wrap: wrap; }
-        .col-6 { flex: 1; min-width: 300px; }
-        .col-12 { width: 100%; }
+        .col-12 { flex: 1; width: 100%; }
 
         .box { 
             background: #ffffff; 
@@ -44,15 +123,17 @@
             border-top: 4px solid #3498db; 
             margin-bottom: 20px; 
         }
-        .box.lab-box { border-top-color: #9b59b6; }
-        .box.payment-box { border-top-color: #2ecc71; }
-        .box.stats-box { border-top-color: #e67e22; }
+        .box.expense-box { border-top-color: #e74c3c; }
+        .box.old-box { border-top-color: #2ecc71; } 
+        .box.monthly-box { border-top-color: #9b59b6; }
+        .box.followup-box { border-top-color: #00a3e0; }
+        .box.reservation-box { border-top-color: #f39c12; }
         
         h2 { font-size: 18px; margin-top: 0; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #eee; color: #2980b9; }
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #34495e; }
         
-        input[type="text"], input[type="number"], input[type="date"], select { 
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"], select, textarea { 
             width: 100%; 
             padding: 10px; 
             border: 1px solid #bdc3c7; 
@@ -62,7 +143,7 @@
             background-color: #fff;
             font-family: inherit;
         }
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #3498db;
             background-color: #f7faff;
@@ -81,150 +162,372 @@
             transition: background 0.2s;
         }
         .btn-submit:hover { background-color: #2980b9; }
-        .btn-payment { background-color: #2ecc71; }
-        .btn-payment:hover { background-color: #27ae60; }
+        .btn-expense { background-color: #e74c3c; }
+        .btn-expense:hover { background-color: #c0392b; }
+        .btn-old { background-color: #2ecc71; }
+        .btn-old:hover { background-color: #27ae60; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; background: white; }
         th, td { border: 1px solid #e2e8f0; padding: 11px; text-align: center; }
         th { background-color: #e8f2f9; color: #2980b9; font-weight: bold; }
         tr:nth-child(even) { background-color: #fcfdfe; }
         
+        .patient-clickable-name { color: #2c3e50; cursor: pointer; display: inline-block; }
+        .patient-clickable-name:hover { color: #3498db; text-decoration: underline; }
+        .phone-call-link { color: #7f8c8d; text-decoration: none; font-weight: 500; }
+        .phone-call-link:hover { color: #2ecc71; text-decoration: underline; }
+
+        .action-icons-container { display: flex; justify-content: center; align-items: center; gap: 12px; }
+        .eye-icon { font-size: 20px; cursor: pointer; transition: transform 0.1s; }
+        .eye-icon:hover { transform: scale(1.2); }
         .trash-icon { font-size: 18px; cursor: pointer; color: #e74c3c; }
         .trash-icon:hover { transform: scale(1.2); color: #c0392b; }
 
-        .summary-badge {
-            padding: 15px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 10px;
+        .clear-btn { background: #95a5a6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 10px; float: left; }
+        .page-content { display: none; }
+        .page-content.active-page { display: block; }
+
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); justify-content: center; align-items: center; z-index: 9999; padding: 10px; box-sizing: border-box;
         }
-        .badge-debt { background-color: #fdf2f2; color: #b91c1c; border: 1px solid #fecaca; }
-        .badge-paid { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .modal-content {
+            background: #fff; width: 100%; max-width: 520px; border-radius: 8px; padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid #3498db; max-height: 90vh; overflow-y: auto;
+        }
+
+        .dropdown-menu {
+            display: none; position: absolute; top: 100%; right: 0; left: 0; background: #fff;
+            border: 1px solid #bdc3c7; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10005; max-height: 220px; overflow-y: auto; margin-top: 2px;
+        }
+        .dropdown-item { padding: 11px 15px; cursor: pointer; text-align: right; font-size: 14px; color: #2c3e50; }
+        .dropdown-item:hover { background-color: #e8f2f9; color: #2980b9; font-weight: bold; }
+
+        .payment-item { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 5px; margin-bottom: 6px; border: 1px solid #e2e8f0; font-size: 13px; }
+        .delete-payment-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .xray-preview-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .xray-thumb { width: 70px; height: 70px; border-radius: 4px; object-fit: cover; border: 1px solid #bdc3c7; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<!-- 🔑 شاشة قفل تسجيل الدخول -->
+<div id="login-screen" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
+    <div class="box" style="width: 100%; max-width: 400px; text-align: center;">
+        <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول للعيادة</h2>
+        <div class="form-group" style="text-align: right;">
+            <label>أدخل الرقم السري:</label>
+            <input type="password" id="app-password" placeholder="••••" style="text-align: center; font-size: 20px; letter-spacing: 6px;">
+        </div>
+        <p id="login-error" style="color: #e74c3c; font-size: 14px; display: none; margin-bottom: 15px; font-weight: bold;">الرقم السري غير صحيح!</p>
+        <button onclick="validateLogin()" class="btn-submit">دخول للبرنامج</button>
+    </div>
+</div>
+
+<!-- 🏥 شاشة البرنامج الرئيسية -->
+<div class="container" id="app-screen" style="display: none;">
     
     <header>
-        <h1>🧪 إدارة حسابات ومديونيات المعامل السحابية</h1>
+        <h1>Dr. Amer’s Clinic - إدارة العيادة السحابية</h1>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button id="back-to-main-btn" class="menu-btn" onclick="switchPage('patients')" style="background: #ffffff; color: #3498db; display: none;">⬅️ الرجوع للرئيسية</button>
+            <button class="menu-btn" onclick="toggleSidebar(event)">☰ القائمة الرئيسية</button>
+        </div>
     </header>
 
-    <!-- صفحة الحسابات والملخص المالي للسنة -->
-    <div class="row">
-        <!-- كارت المديونية الإجمالية والفلوس المدفوعة خلال السنة الكلية -->
-        <div class="col-12">
-            <div class="box stats-box">
-                <h2>📊 التقرير والملخص المالي الشامل للمعامل</h2>
-                <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
-                    <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
-                        <label>اختر سنة التقرير المالي:</label>
-                        <select id="filter-year-select" onchange="updateLabDashboard()">
-                            <option value="2025">2025</option>
-                            <option value="2026" selected>2026</option>
-                            <option value="2027">2027</option>
-                            <option value="2028">2028</option>
-                        </select>
-                    </div>
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div id="app-sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <span>صفحات النظام</span>
+            <button class="close-sidebar-btn" onclick="toggleSidebar()">✕</button>
+        </div>
+        <button class="sidebar-btn active" id="sidebar-btn-patients" onclick="switchPage('patients')">👥 صفحة المرضى والتسجيل</button>
+        <button class="sidebar-btn" id="sidebar-btn-reservations" onclick="switchPage('reservations')">📅 قائمة الحجوزات الجديدة</button>
+        <button class="sidebar-btn" id="sidebar-btn-followups" onclick="switchPage('followups')">📋 جدول متابعات الحالات</button>
+        <button class="sidebar-btn" id="sidebar-btn-monthly" onclick="switchPage('monthly')">📅 سجل المرضى الشهري</button>
+        <button class="sidebar-btn" id="sidebar-btn-expenses" onclick="switchPage('expenses')">💰 حسابات ومصروفات العيادة</button>
+    </div>
+
+    <!-- 1️⃣ صفحة المرضى الرئيسية -->
+    <div id="page-patients" class="page-content active-page">
+        <div class="row">
+            <div class="col-12">
+                <div class="box old-box">
+                    <h2>إضافة وتسجيل مريض جديد بالتاريخ</h2>
+                    <form id="old-patient-form" onsubmit="saveOldPatient(event)">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1.5; min-width: 220px;">
+                                <label>اسم المريض:</label>
+                                <input type="text" id="old-p-name" required placeholder="اكتب اسم المريض">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label>رقم المريض (الهاتف):</label>
+                                <input type="text" id="old-p-phone" placeholder="اكتب الرقم هنا">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 180px;">
+                                <label>الزيارة (التاريخ قابل للتعديل):</label>
+                                <input type="date" id="old-p-date" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit btn-old" style="margin-top: 5px;">حفظ في سجل المرضى</button>
+                    </form>
                 </div>
-                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 240px;" class="summary-badge badge-debt">
-                        🔴 المديونية الإجمالية الحالية للمعمل: <span id="lbl-total-debt">0.00</span> ج.م
+
+                <div class="box">
+                    <h2>صفحة المرضى - السجل العام والمالي</h2>
+                    <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                        <div style="flex: 2; min-width: 260px;">
+                            <input type="text" id="search-patient-input" oninput="updateApp()" placeholder="🔍 اكتب اسم المريض للبحث الفوري المباشر..." style="padding: 11px;">
+                        </div>
+                        <div style="flex: 1; min-width: 210px;">
+                            <button type="button" id="btn-toggle-debts" onclick="toggleDebtFilter()" style="background-color: #f39c12; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; font-size: 14px;">⚠️ عرض الحالات المتأخرة فقط</button>
+                        </div>
                     </div>
-                    <div style="flex: 1; min-width: 240px;" class="summary-badge badge-paid">
-                        🟢 إجمالي المدفوعات للمعمل خلال سنة (<span id="lbl-selected-year">2026</span>): <span id="lbl-year-payments">0.00</span> ج.م
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الاسم ورقم المريض والحالة</th>
+                                    <th>الزيارة الأولية</th>
+                                    <th>إجمالي المدفوع</th>
+                                    <th>المتبقي الكلي</th>
+                                    <th>الملف والتحكم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patients-table-body"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <!-- 1️⃣ كارت تسجيل شغل المعمل الجديد (لتوليد مديونية) -->
-        <div class="col-6">
-            <div class="box lab-box">
-                <h2>📦 تسجيل مديونية جديدة لشغل المعمل</h2>
-                <form id="lab-job-form" onsubmit="saveLabJob(event)">
-                    <div class="form-group">
-                        <label>اسم المعمل / الشغل المطلوب:</label>
-                        <input type="text" id="job-title" required placeholder="مثال: معمل الأمل - تركيبات زدكون للمريض...">
-                    </div>
-                    <div class="form-group">
-                        <label>تكلفة الشغل الإجمالية الصافية (ج.م):</label>
-                        <input type="number" step="0.01" id="job-cost" required placeholder="0.00">
-                    </div>
-                    <div class="form-group">
-                        <label>تاريخ تسجيل الشغل:</label>
-                        <input type="date" id="job-date" required>
-                    </div>
-                    <button type="submit" class="btn-submit">تسجيل المديونية في الحساب</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- 2️⃣ كارت تسجيل دفعة مالية للمعمل بالتاريخ المخصص -->
-        <div class="col-6">
-            <div class="box payment-box">
-                <h2>💸 تسجيل دفعة مالية مسددة للمعمل</h2>
-                <form id="lab-payment-form" onsubmit="saveLabPayment(event)">
-                    <div class="form-group">
-                        <label>المبلغ المدفوع للمعمل (ج.م):</label>
-                        <input type="number" step="0.01" id="pay-amount" required placeholder="0.00">
-                    </div>
-                    <div class="form-group">
-                        <label>تاريخ الدفع الفعلي (قابل للتعديل):</label>
-                        <input type="date" id="pay-date" required>
-                    </div>
-                    <button type="submit" class="btn-submit btn-payment">حفظ الدفعة المالية المسددة</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- 📋 الجداول التفصيلية للحركات الماليّة -->
-    <div class="row">
-        <!-- جدول حركات مديونيات شغل المعمل -->
-        <div class="col-6">
-            <div class="box lab-box">
-                <h2>📋 سجل الشغل والمديونيات المطلوبة للمعمل</h2>
-                <div style="overflow-x:auto; max-height: 400px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>بيان الشغل المطلوب</th>
-                                <th>التكلفة</th>
-                                <th>التاريخ</th>
-                                <th>مسح</th>
-                            </tr>
-                        </thead>
-                        <tbody id="jobs-table-body"></tbody>
-                    </table>
+    <!-- 📌 صفحة الحجوزات المسبقة الجديدة -->
+    <div id="page-reservations" class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="box reservation-box">
+                    <h2>📅 تسجيل حجز مسبق جديد (مريض لم يحضر بعد)</h2>
+                    <form id="reservation-form" onsubmit="saveNewReservation(event)">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1.5; min-width: 220px;">
+                                <label>اسم المريض:</label>
+                                <input type="text" id="res-p-name" required placeholder="اكتب اسم المريض صاحب الحجز">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label>رقم تليفونه:</label>
+                                <input type="text" id="res-p-phone" placeholder="اكتب رقم الهاتف هنا">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 180px;">
+                                <label>تاريخ الحجز:</label>
+                                <input type="date" id="res-p-date" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit" style="margin-top: 5px; background-color: #f39c12;">تأكيد وحفظ الحجز المسبق</button>
+                    </form>
                 </div>
-            </div>
-        </div>
 
-        <!-- جدول المدفوعات المسددة للمعمل -->
-        <div class="col-6">
-            <div class="box payment-box">
-                <h2>📋 سجل المدفوعات التفصيلي للمعمل بالتاريخ</h2>
-                <div style="overflow-x:auto; max-height: 400px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>المبلغ المدفوع</th>
-                                <th>تاريخ الدفع</th>
-                                <th>مسح</th>
-                            </tr>
-                        </thead>
-                        <tbody id="payments-table-body"></tbody>
-                    </table>
+                <div class="box" style="border-top-color: #3498db;">
+                    <h2>📋 قائمة المواعيد المحجوزة الحالية</h2>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>اسم المريض ورقم تليفونه</th>
+                                    <th>تاريخ الحجز المحدد</th>
+                                    <th>حالة الحضور والتحكم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservations-table-body"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 2️⃣ صفحة المتابعات التلقائية -->
+    <div id="page-followups" class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="box followup-box">
+                    <h2>📋 جدول متابعات الحالات المجدولة بالتاريخ</h2>
+                    <div style="background-color: #e8f2f9; padding: 12px; border-radius: 6px; font-weight: bold; color: #2980b9; margin-bottom: 15px;" id="followups-count-badge">جاري تحميل المتابعات...</div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>اسم المريض وهاتفه</th>
+                                    <th>تاريخ المتابعة القادمة</th>
+                                    <th>الشغل المطلوب / الخدمة الطبية</th>
+                                    <th>الملف والتحكم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="followups-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3️⃣ الصفحة الشهرية -->
+    <div id="page-monthly" class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="box monthly-box">
+                    <h2>📅 سجل المرضى والأرشيف الشهري</h2>
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 150px;">
+                            <label>اختر الشهر:</label>
+                            <select id="monthly-month-select" onchange="updateApp()">
+                                <option value="1">يناير (01)</option><option value="2">فبراير (02)</option><option value="3">مارس (03)</option><option value="4">أبريل (04)</option><option value="5">مايو (05)</option><option value="6">يونيو (06)</option><option value="7">يوليو (07)</option><option value="8">أغسطس (08)</option><option value="9">سبتمبر (09)</option><option value="10">أكتوبر (10)</option><option value="11">نوفمبر (11)</option><option value="12">ديسمبر (12)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 150px;">
+                            <label>اختر السنة:</label>
+                            <select id="monthly-year-select" onchange="updateApp()">
+                                <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الاسم ورقم المريض والحالة</th>
+                                    <th>تاريخ الزيارة</th>
+                                    <th>إجمالي المدفوع</th>
+                                    <th>المتبقي الكلي</th>
+                                    <th>الملف والتحكم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthly-patients-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4️⃣ صفحة حسابات ومصروفات العيادة -->
+    <div id="page-expenses" class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="box box-expense-box">
+                    <h2>إضافة بند مصروفات جديد</h2>
+                    <form id="expense-form" onsubmit="saveExpense(event)">
+                        <div class="form-group">
+                            <label>بند المصروف:</label>
+                            <input type="text" id="e-title" required placeholder="مثال: أدوات، خامات، إيجار...">
+                        </div>
+                        <div class="form-group">
+                            <label>المبلغ المدفوع:</label>
+                            <input type="number" step="0.01" id="e-amount" required placeholder="0.00">
+                        </div>
+                        <button type="submit" class="btn-submit btn-expense">تسجيل وحفظ المصروف</button>
+                    </form>
+                </div>
+
+                <div class="box box-expense-box">
+                    <h2>بيان المصروفات التفصيلي</h2>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>بند المصروف</th>
+                                    <th>المبلغ</th>
+                                    <th>التاريخ والوقت</th>
+                                    <th>تحكم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenses-table-body"></tbody>
+                        </table>
+                    </div>
+                    <button class="clear-btn" onclick="clearAllData()">مسح كل البيانات لتهيئة الدورة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 📂 نافذة ملف المريض المنبثقة (Modal) -->
+<div id="patient-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
+        <input type="hidden" id="modal-patient-id">
+        
+        <div class="form-group">
+            <label>اسم المريض:</label>
+            <input type="text" id="modal-p-name">
+        </div>
+        <div class="form-group">
+            <label>رقم المريض (الهاتف):</label>
+            <input type="text" id="modal-p-phone">
+        </div>
+        <div class="form-group">
+            <label>تاريخ أول زيارة:</label>
+            <input type="date" id="modal-p-date">
+        </div>
+
+        <div class="form-group" style="background-color: #eef9ff; padding: 12px; border-radius: 6px; border: 1px solid #7dd3fc; margin-bottom: 15px;">
+            <label style="color: #0369a1; font-weight: bold; margin-bottom: 6px;">🗓️ موعد الجلسة / الزيارة القادمة:</label>
+            <input type="date" id="modal-p-next-visit" style="border-color: #7dd3fc;">
+        </div>
+
+        <div class="box" style="border-top: 3px solid #2ecc71; background: #fcfdfe; padding: 15px; margin-bottom: 15px;">
+            <h3 style="margin-top: 0; font-size: 15px; color: #27ae60; margin-bottom: 12px;">💸 الحسابات والمدفوعات لكل جلسة</h3>
+            <div class="form-group">
+                <label>المبلغ الإجمالي الكلي المطلوب (ج.م):</label>
+                <input type="number" step="0.01" id="modal-p-total-amount" oninput="calculateFinancials()">
+            </div>
+
+            <div style="background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px dashed #2ecc71; margin-bottom: 12px;">
+                <label style="color: #166534; font-weight: bold;">➕ تسجيل مدفوع لجلسة جديدة:</label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
+                    <input type="number" step="0.01" id="new-payment-amount" placeholder="المبلغ ج.م" style="flex: 1; min-width: 90px;">
+                    <input type="date" id="new-payment-date" style="flex: 1.2; min-width: 130px;">
+                    <button type="button" onclick="addPaymentToTempList()" style="background: #2ecc71; color: white; border: none; padding: 0 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">أضف</button>
+                </div>
+            </div>
+
+            <label>📋 سجل دفعات الجلسات:</label>
+            <div id="modal-payments-history-list" style="max-height: 130px; overflow-y: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;"></div>
+
+            <div style="display: flex; gap: 10px; margin-top: 12px; background: #e8f2f9; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold;">
+                <div style="flex: 1; color: #1e7e34; text-align: center;">تم دفع: <span id="lbl-total-paid">0.00</span> ج.م</div>
+                <div style="flex: 1; color: #bd2130; text-align: center;">المتبقي: <span id="lbl-total-remaining">0.00</span> ج.م</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>الخدمة الطبية للاسنان:</label>
+            <div style="display: flex; width: 100%;">
+                <input type="text" id="modal-p-service" placeholder="اكتب الخدمة أو اختر..." style="border-radius: 0 6px 6px 0; border-left: none; flex: 1;">
+                <button type="button" onclick="toggleServicesDropdown(event)" style="background: #e8f2f9; border: 1px solid #bdc3c7; border-radius: 6px 0 0 6px; width: 45px; cursor: pointer; color: #2980b9;">▼</button>
+            </div>
+            <div id="services-dropdown-menu" class="dropdown-menu">
+                <div class="dropdown-item" onclick="selectServiceItem('حشو تجميلي')">حشو تجميلي</div>
+                <div class="dropdown-item" onclick="selectServiceItem('علاج عصب')">علاج عصب</div>
+                <div class="dropdown-item" onclick="selectServiceItem('تركيبات وتيجان')">تركيبات وتيجان</div>
+                <div class="dropdown-item" onclick="selectServiceItem('تنظيف وتلميع الأسنان')">تنظيف وتلميع الأسنان</div>
+                <div class="dropdown-item" onclick="selectServiceItem('خلع عادي / جراحي')">خلع عادي / جراحي</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>صور الأشعة المرفقة:</label>
+            <div id="modal-xrays-list" style="background: #f8fafc; padding: 8px; border-radius: 6px; min-height: 40px; border: 1px dashed #cbd5e1;">لا توجد أشعة</div>
+            <input type="file" id="modal-p-xray" multiple accept="image/*" style="font-size: 13px; margin-top: 5px;" onchange="handleXrayUpload(event)">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 25px;">
+            <button onclick="savePatientFileChanges()" class="btn-submit" style="background-color: #2ecc71; flex: 2;">حفظ الملف على السحاب</button>
+            <button onclick="closePatientModal()" class="btn-submit" style="background-color: #e74c3c; flex: 1;">إغلاق</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -241,129 +544,443 @@
         appId: "ضع_هنا_APP_ID"
     };
 
-    // بدء تشغيل الفايربيس والربط بقاعدة البيانات
+    // تشغيل الفايربيس والربط بالسيرفر
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // متغيرات النظام العامة للمعامل
-    let globalLabJobs = {};
-    let globalLabPayments = {};
+    // متغيرات النظام العامة
+    let globalPatients = {};
+    let globalReservations = {};
+    let globalExpenses = {};
+    
+    let tempPaymentsList = [];
+    let tempXraysList = [];
+    let showDebtsOnly = false;
+    let lastInitializedDate = "";
 
     function getLocalDateString() {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     }
 
-    function initDefaultDates() {
+    function syncDefaultDates() {
         const todayStr = getLocalDateString();
-        document.getElementById('job-date').value = todayStr;
-        document.getElementById('pay-date').value = todayStr;
-    }
-
-    // 📥 المزامنة السحابية اللحظية من السيرفر
-    db.ref('lab_jobs').on('value', snapshot => {
-        globalLabJobs = snapshot.val() || {};
-        updateLabDashboard();
-    });
-
-    db.ref('lab_payments').on('value', snapshot => {
-        globalLabPayments = snapshot.val() || {};
-        updateLabDashboard();
-    });
-
-    // تهيئة التواريخ تلقائياً عند التشغيل الأول
-    initDefaultDates();
-
-    // 📤 وظيفة حفظ مديونية شغل معمل جديد
-    function saveLabJob(e) {
-        e.preventDefault();
-        const newRef = db.ref('lab_jobs').push();
-        newRef.set({
-            id: newRef.key,
-            title: document.getElementById('job-title').value,
-            cost: parseFloat(document.getElementById('job-cost').value || 0),
-            date: document.getElementById('job-date').value
-        });
-        document.getElementById('lab-job-form').reset();
-        initDefaultDates();
-    }
-
-    // 📤 وظيفة حفظ دفعة مالية مسددة للمعمل بالتاريخ المحدد
-    function saveLabPayment(e) {
-        e.preventDefault();
-        const newRef = db.ref('lab_payments').push();
-        newRef.set({
-            id: newRef.key,
-            amount: parseFloat(document.getElementById('pay-amount').value || 0),
-            date: document.getElementById('pay-date').value
-        });
-        document.getElementById('lab-payment-form').reset();
-        initDefaultDates();
-    }
-
-    // 🗑️ حذف حركات من السيرفر السحابي
-    function deleteLabJob(id) {
-        if(confirm("هل تريد بالتأكيد حذف حركة مديونية المعمل هذه؟")) {
-            db.ref('lab_jobs/' + id).remove();
-        }
-    }
-
-    function deleteLabPayment(id) {
-        if(confirm("هل تريد بالتأكيد حذف هذه الدفعة المالية المسددة للمعمل؟")) {
-            db.ref('lab_payments/' + id).remove();
-        }
-    }
-
-    // 🔄 الحسابات الكلية وبناء الجداول طبقاً لتحديثات السيرفر اللحظية
-    function updateLabDashboard() {
-        const selectedYear = document.getElementById('filter-year-select').value;
-        document.getElementById('lbl-selected-year').innerText = selectedYear;
-
-        let totalCosts = 0;
-        let totalPaymentsAllTime = 0;
-        let yearPaymentsOnly = 0;
-
-        // بناء جدول المديونيات وحساب إجمالي التكلفة الكلية
-        const jobsBody = document.getElementById('jobs-table-body');
-        jobsBody.innerHTML = '';
-        Object.keys(globalLabJobs).forEach(id => {
-            const job = globalLabJobs[id];
-            totalCosts += parseFloat(job.cost || 0);
-            
-            jobsBody.innerHTML += `<tr>
-                <td><strong>${job.title}</strong></td>
-                <td style="color:#b91c1c; font-weight:bold;">${parseFloat(job.cost).toFixed(2)} ج.م</td>
-                <td>${job.date}</td>
-                <td><span class="trash-icon" onclick="deleteLabJob('${id}')">🗑️</span></td>
-            </tr>`;
-        });
-
-        // بناء جدول المدفوعات وحساب إجمالي الفلوس المدفوعة (العامة وخلال السنة المحددة)
-        const paymentsBody = document.getElementById('payments-table-body');
-        paymentsBody.innerHTML = '';
-        Object.keys(globalLabPayments).forEach(id => {
-            const pay = globalLabPayments[id];
-            const pAmount = parseFloat(pay.amount || 0);
-            totalPaymentsAllTime += pAmount;
-
-            // فلترة وحساب المدفوعات خلال السنة المختارة فقط
-            if(pay.date && pay.date.startsWith(selectedYear)) {
-                yearPaymentsOnly += pAmount;
+        ['old-p-date', 'new-payment-date', 'res-p-date'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input && (!input.value || input.value === lastInitializedDate)) {
+                input.value = todayStr;
             }
+        });
+        lastInitializedDate = todayStr;
+    }
 
-            paymentsBody.innerHTML += `<tr>
-                <td style="color:#166534; font-weight:bold;">${pAmount.toFixed(2)} ج.م</td>
-                <td>${pay.date}</td>
-                <td><span class="trash-icon" onclick="deleteLabPayment('${id}')">🗑️</span></td>
-            </tr>`;
+    // 📥 المزامنة السحابية الحية (Realtime Listeners)
+    db.ref('patients').on('value', snapshot => {
+        globalPatients = snapshot.val() || {};
+        updateApp();
+    });
+
+    db.ref('reservations').on('value', snapshot => {
+        globalReservations = snapshot.val() || {};
+        updateApp();
+    });
+
+    db.ref('expenses').on('value', snapshot => {
+        globalExpenses = snapshot.val() || {};
+        updateApp();
+    });
+
+    // إعداد القائمة الافتراضية للشهور والسنوات
+    const currentToday = new Date();
+    document.getElementById('monthly-month-select').value = currentToday.getMonth() + 1;
+    document.getElementById('monthly-year-select').value = currentToday.getFullYear();
+    syncDefaultDates();
+    setInterval(syncDefaultDates, 15000);
+
+    function validateLogin() {
+        if (document.getElementById('app-password').value === "1234") {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'block';
+            updateApp();
+        } else {
+            document.getElementById('login-error').style.display = 'block';
+        }
+    }
+
+    function switchPage(pageId) {
+        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active-page'));
+        document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active-page');
+        document.getElementById('sidebar-btn-' + pageId).classList.add('active');
+        document.getElementById('back-to-main-btn').style.display = (pageId === 'patients') ? 'none' : 'block';
+        toggleSidebar();
+    }
+
+    function toggleSidebar(e) {
+        if(e) e.stopPropagation();
+        document.getElementById('app-sidebar').classList.toggle('open');
+        document.getElementById('sidebar-overlay').classList.toggle('show');
+    }
+
+    // 📤 وظائف الإرسال والحفظ على السيرفر
+    function saveOldPatient(e) {
+        e.preventDefault();
+        const newRef = db.ref('patients').push();
+        const newPatient = {
+            id: newRef.key,
+            name: document.getElementById('old-p-name').value,
+            phone: document.getElementById('old-p-phone').value,
+            date: document.getElementById('old-p-date').value,
+            totalAmount: 0,
+            service: "",
+            nextVisit: ""
+        };
+        newRef.set(newPatient);
+        document.getElementById('old-patient-form').reset();
+        syncDefaultDates();
+    }
+
+    function saveNewReservation(e) {
+        e.preventDefault();
+        const newRef = db.ref('reservations').push();
+        const res = {
+            id: newRef.key,
+            name: document.getElementById('res-p-name').value,
+            phone: document.getElementById('res-p-phone').value,
+            date: document.getElementById('res-p-date').value
+        };
+        newRef.set(res);
+        document.getElementById('reservation-form').reset();
+        syncDefaultDates();
+    }
+
+    function transferToPatient(id) {
+        const res = globalReservations[id];
+        if(!res) return;
+        
+        const newRef = db.ref('patients').push();
+        newRef.set({
+            id: newRef.key,
+            name: res.name,
+            phone: res.phone,
+            date: res.date,
+            totalAmount: 0,
+            service: "",
+            nextVisit: ""
+        });
+        db.ref('reservations/' + id).remove();
+    }
+
+    function deleteReservation(id) {
+        if(confirm("هل تريد إلغاء هذا الحجز؟")) {
+            db.ref('reservations/' + id).remove();
+        }
+    }
+
+    function saveExpense(e) {
+        e.preventDefault();
+        const newRef = db.ref('expenses').push();
+        newRef.set({
+            id: newRef.key,
+            title: document.getElementById('e-title').value,
+            amount: parseFloat(document.getElementById('e-amount').value || 0),
+            dateTime: new Date().toLocaleString('ar-EG')
+        });
+        document.getElementById('expense-form').reset();
+    }
+
+    function deleteExpense(id) {
+        if(confirm("هل تريد حذف بند المصروف هذا؟")) {
+            db.ref('expenses/' + id).remove();
+        }
+    }
+
+    function deletePatient(id) {
+        if(confirm("تحذير حرج: سيتم مسح ملف المريض وكل مالياته وأشعته نهائياً من السيرفر؟")) {
+            db.ref('patients/' + id).remove();
+        }
+    }
+
+    // 🔄 دالة بناء وتحديث الشاشة والمحتوى
+    function updateApp() {
+        const searchTerm = document.getElementById('search-patient-input').value.toLowerCase();
+        
+        // 1. جدول المرضى
+        const tableBody = document.getElementById('patients-table-body');
+        tableBody.innerHTML = '';
+        Object.keys(globalPatients).forEach(id => {
+            const p = globalPatients[id];
+            
+            // إصلاح وحماية مصفوفة الدفعات حتى لا يحدث خطأ عند القراءة من الفايربيس
+            let payments = [];
+            if (p.payments) {
+                payments = Array.isArray(p.payments) ? p.payments : Object.values(p.payments);
+            }
+            
+            const totalPaid = payments.reduce((sum, pay) => sum + parseFloat(pay.amount || 0), 0);
+            const remaining = (p.totalAmount || 0) - totalPaid;
+            
+            if (p.name && p.name.toLowerCase().includes(searchTerm) && (!showDebtsOnly || remaining > 0)) {
+                tableBody.innerHTML += `<tr>
+                    <td><span class="patient-clickable-name" onclick="openPatientModal('${id}')"><strong>${p.name}</strong></span><br><a href="tel:${p.phone}" class="phone-call-link">📞 ${p.phone || 'بدون رقم'}</a></td>
+                    <td>${p.date || '---'}</td>
+                    <td>${totalPaid.toFixed(2)} ج.م</td>
+                    <td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td>
+                    <td>
+                        <div class="action-icons-container">
+                            <span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span>
+                            <span class="trash-icon" onclick="deletePatient('${id}')">🗑️</span>
+                        </div>
+                    </td>
+                </tr>`;
+            }
         });
 
-        // احتساب المديونية الإجمالية الحالية المتبقية للمعمل (كل التكلفة الكلية ناقص كل المدفوعات التاريخية)
-        const currentRemainingDebt = totalCosts - totalPaymentsAllTime;
+        // 2. جدول الحجوزات
+        const resTableBody = document.getElementById('reservations-table-body');
+        resTableBody.innerHTML = '';
+        Object.keys(globalReservations).forEach(id => {
+            const r = globalReservations[id];
+            if(r.name) {
+                resTableBody.innerHTML += `<tr>
+                    <td><strong>${r.name}</strong><br><small>📞 ${r.phone || '---'}</small></td>
+                    <td>${r.date}</td>
+                    <td>
+                        <button onclick="transferToPatient('${id}')" style="background:#2ecc71; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">حضر</button>
+                        <button onclick="deleteReservation('${id}')" style="background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">إلغاء</button>
+                    </td>
+                </tr>`;
+            }
+        });
 
-        // عرض الأرقام النهائية على لوحة التقرير
-        document.getElementById('lbl-total-debt').innerText = currentRemainingDebt.toFixed(2);
-        document.getElementById('lbl-year-payments').innerText = yearPaymentsOnly.toFixed(2);
+        // 3. جدول المتابعات المجدولة
+        const followupBody = document.getElementById('followups-table-body');
+        followupBody.innerHTML = '';
+        let followupCount = 0;
+        Object.keys(globalPatients).forEach(id => {
+            const p = globalPatients[id];
+            if(p.name && p.nextVisit) {
+                followupCount++;
+                followupBody.innerHTML += `<tr>
+                    <td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td>
+                    <td style="color:#00a3e0; font-weight:bold;">${p.nextVisit}</td>
+                    <td>${p.service || 'فحص ومتابعة'}</td>
+                    <td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️ ملف المريض</span></td>
+                </tr>`;
+            }
+        });
+        document.getElementById('followups-count-badge').innerText = `💡 إجمالي الحالات التي تنتظر متابعة جدولة قادمة: ${followupCount} مريض`;
+
+        // 4. الأرشيف الشهري
+        const mMonth = parseInt(document.getElementById('monthly-month-select').value);
+        const mYear = parseInt(document.getElementById('monthly-year-select').value);
+        const monthlyBody = document.getElementById('monthly-patients-table-body');
+        monthlyBody.innerHTML = '';
+        Object.keys(globalPatients).forEach(id => {
+            const p = globalPatients[id];
+            if(p.name && p.date) {
+                const pDate = new Date(p.date);
+                if((pDate.getMonth() + 1) === mMonth && pDate.getFullYear() === mYear) {
+                    let payments = [];
+                    if (p.payments) {
+                        payments = Array.isArray(p.payments) ? p.payments : Object.values(p.payments);
+                    }
+                    const totalPaid = payments.reduce((sum, pay) => sum + parseFloat(pay.amount || 0), 0);
+                    const remaining = (p.totalAmount || 0) - totalPaid;
+                    monthlyBody.innerHTML += `<tr>
+                        <td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td>
+                        <td>${p.date}</td>
+                        <td>${totalPaid.toFixed(2)} ج.م</td>
+                        <td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td>
+                        <td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span></td>
+                    </tr>`;
+                }
+            }
+        });
+
+        // 5. جدول المصروفات
+        const expenseBody = document.getElementById('expenses-table-body');
+        expenseBody.innerHTML = '';
+        Object.keys(globalExpenses).forEach(id => {
+            const e = globalExpenses[id];
+            expenseBody.innerHTML += `<tr>
+                <td>${e.title}</td>
+                <td style="color:#e74c3c; font-weight:bold;">${parseFloat(e.amount).toFixed(2)} ج.م</td>
+                <td><small>${e.dateTime}</small></td>
+                <td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td>
+            </tr>`;
+        });
+    }
+
+    function toggleDebtFilter() {
+        showDebtsOnly = !showDebtsOnly;
+        document.getElementById('btn-toggle-debts').style.background = showDebtsOnly ? '#2c3e50' : '#f39c12';
+        updateApp();
+    }
+
+    // 📂 إدارة شاشة ملف المريض (Modal)
+    function openPatientModal(id) {
+        const p = globalPatients[id];
+        if(!p) return;
+        
+        document.getElementById('modal-patient-id').value = id;
+        document.getElementById('modal-p-name').value = p.name || '';
+        document.getElementById('modal-p-phone').value = p.phone || '';
+        document.getElementById('modal-p-date').value = p.date || '';
+        document.getElementById('modal-p-next-visit').value = p.nextVisit || '';
+        document.getElementById('modal-p-total-amount').value = p.totalAmount || 0;
+        document.getElementById('modal-p-service').value = p.service || '';
+        
+        if (p.payments) {
+            tempPaymentsList = Array.isArray(p.payments) ? p.payments : Object.values(p.payments);
+        } else {
+            tempPaymentsList = [];
+        }
+
+        if (p.xrays) {
+            tempXraysList = Array.isArray(p.xrays) ? p.xrays : Object.values(p.xrays);
+        } else {
+            tempXraysList = [];
+        }
+        
+        renderModalPayments();
+        renderModalXrays();
+        calculateFinancials();
+        
+        document.getElementById('patient-modal').style.display = 'flex';
+    }
+
+    function closePatientModal() {
+        document.getElementById('patient-modal').style.display = 'none';
+    }
+
+    function calculateFinancials() {
+        const total = parseFloat(document.getElementById('modal-p-total-amount').value || 0);
+        const paid = tempPaymentsList.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+        const remaining = total - paid;
+        document.getElementById('lbl-total-paid').innerText = paid.toFixed(2);
+        document.getElementById('lbl-total-remaining').innerText = remaining.toFixed(2);
+    }
+
+    function addPaymentToTempList() {
+        const amtInput = document.getElementById('new-payment-amount');
+        const dateInput = document.getElementById('new-payment-date');
+        const amt = parseFloat(amtInput.value || 0);
+        
+        if(amt <= 0) return;
+        
+        tempPaymentsList.push({
+            amount: amt,
+            date: dateInput.value || getLocalDateString()
+        });
+        
+        amtInput.value = '';
+        renderModalPayments();
+        calculateFinancials();
+    }
+
+    function deleteTempPayment(idx) {
+        tempPaymentsList.splice(idx, 1);
+        renderModalPayments();
+        calculateFinancials();
+    }
+
+    function renderModalPayments() {
+        const listDiv = document.getElementById('modal-payments-history-list');
+        listDiv.innerHTML = '';
+        if(tempPaymentsList.length === 0) {
+            listDiv.innerHTML = '<span style="color:#aaa; font-size:12px;">لا يوجد دفعات مسجلة.</span>';
+            return;
+        }
+        tempPaymentsList.forEach((p, idx) => {
+            listDiv.innerHTML += `<div class="payment-item">
+                <span>📅 <strong>${p.date}</strong> - دفع: <b>${parseFloat(p.amount).toFixed(2)} ج.م</b></span>
+                <button type="button" class="delete-payment-btn" onclick="deleteTempPayment(${idx})">✕</button>
+            </div>`;
+        });
+    }
+
+    function handleXrayUpload(e) {
+        const files = e.target.files;
+        if(!files) return;
+        for(let i=0; i<files.length; i++) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                tempXraysList.push(event.target.result);
+                renderModalXrays();
+            };
+            reader.readAsDataURL(files[i]);
+        }
+        e.target.value = "";
+    }
+
+    function removeXray(idx) {
+        if(confirm("هل تريد إزالة صورة الأشعة؟")) {
+            tempXraysList.splice(idx, 1);
+            renderModalXrays();
+        }
+    }
+
+    function renderModalXrays() {
+        const xrayZone = document.getElementById('modal-xrays-list');
+        xrayZone.innerHTML = '';
+        if(tempXraysList.length === 0) {
+            xrayZone.innerText = 'لا توجد أشعة مرفوعة';
+            return;
+        }
+        const container = document.createElement('div');
+        container.className = 'xray-preview-container';
+        tempXraysList.forEach((src, idx) => {
+            const img = document.createElement('img');
+            img.src = src; img.className = 'xray-thumb';
+            img.onclick = function() {
+                const newTab = window.open();
+                newTab.document.body.innerHTML = `<img src="${src}" style="max-width:100%; height:auto;">`;
+            };
+            img.ondblclick = function() { removeXray(idx); };
+            container.appendChild(img);
+        });
+        xrayZone.appendChild(container);
+    }
+
+    function savePatientFileChanges() {
+        const id = document.getElementById('modal-patient-id').value;
+        if(!id) return;
+        
+        db.ref('patients/' + id).update({
+            name: document.getElementById('modal-p-name').value,
+            phone: document.getElementById('modal-p-phone').value,
+            date: document.getElementById('modal-p-date').value,
+            nextVisit: document.getElementById('modal-p-next-visit').value,
+            totalAmount: parseFloat(document.getElementById('modal-p-total-amount').value || 0),
+            service: document.getElementById('modal-p-service').value,
+            payments: tempPaymentsList,
+            xrays: tempXraysList
+        });
+        closePatientModal();
+    }
+
+    function toggleServicesDropdown(e) {
+        e.stopPropagation();
+        const menu = document.getElementById('services-dropdown-menu');
+        menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function selectServiceItem(val) {
+        document.getElementById('modal-p-service').value = val;
+        document.getElementById('services-dropdown-menu').style.display = 'none';
+    }
+
+    function clearAllData() {
+        if(confirm("تحذير حرج جداً: هل أنت متأكد من تصفير ومسح قاعدة البيانات بالكامل من السيرفر السحابي؟")) {
+            db.ref().remove();
+        }
+    }
+
+    window.onclick = function(event) {
+        if (!event.target.matches('.form-group *')) {
+            document.getElementById('services-dropdown-menu').style.display = 'none';
+        }
     }
 </script>
 </body>
