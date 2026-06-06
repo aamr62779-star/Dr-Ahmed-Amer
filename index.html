@@ -436,8 +436,7 @@
 
     // 📡 ربط البرنامج بقاعدة البيانات اللحظية المستقلة تماماً
     // ⚠️ استبدل الرابط أدناه برابط الـ Firebase الخاص بمشروعك ليعمل التزامن بشكل حقيقي
-    const FIREBASE_DB_URL = "رابط_قاعدة_بيانات_فيربيس_الخاصة_بك"; 
-
+     const FIREBASE_DB_URL = "https://amer-dent-default-rtdb.firebaseio.com";
     function initFirebaseSync() {
         if (FIREBASE_DB_URL.includes("رابط_قاعدة_بيانات")) {
             document.getElementById('sync-status').innerText = "⚠️ لم يتم ربط رابط الفيربيس بالكود";
