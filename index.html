@@ -63,13 +63,14 @@
         .ratio-card .value { font-size: 22px; font-weight: bold; }
         .ratio-card .percentage-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; font-size: 12px; margin-top: 5px; }
         .sync-indicator { font-size: 12px; padding: 4px 10px; border-radius: 20px; background: #27ae60; color: white; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
+        .backup-btn { background: #34495e; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="login-screen" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
     <div class="box" style="width: 100%; max-width: 400px; text-align: center;">
-        <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول السحابي المباشر</h2>
+        <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول للنظام</h2>
         <div class="form-group" style="text-align: right;">
             <label>أدخل الرقم السري للعيادة:</label>
             <input type="password" id="app-password" placeholder="••••" style="text-align: center; font-size: 20px; letter-spacing: 6px;">
@@ -83,7 +84,7 @@
     <header>
         <div>
             <h1>إدارة العيادة الذكية الموحدة</h1>
-            <span id="sync-status" class="sync-indicator">🟢 النظام جاهز ومستقر</span>
+            <span id="sync-status" class="sync-indicator">🔒 حفظ محلي مستقر وآمن 100%</span>
         </div>
         <div style="display: flex; gap: 10px; align-items: center;">
             <button id="back-to-main-btn" class="menu-btn" onclick="switchPage('patients')" style="background: #ffffff; color: #3498db; display: none;">⬅️ الرئيسية</button>
@@ -106,6 +107,7 @@
         <button class="sidebar-btn" id="sidebar-btn-reports" onclick="switchPage('reports')">📈 صفحة التقارير السنوية</button>
     </div>
 
+    <!-- صفحة التسجيل الرئيسية -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
@@ -132,11 +134,19 @@
                             <tbody id="patients-table-body"></tbody>
                         </table>
                     </div>
+                    
+                    <!-- أدوات النسخ الاحتياطي اليدوية للأمان الكامل -->
+                    <div style="margin-top: 25px; padding-top: 15px; border-top: 1px dashed #cbd5e1; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="exportBackupData()" class="backup-btn">📥 تحميل نسخة احتياطية (ملف خارجي)</button>
+                        <button onclick="document.getElementById('import-file-input').click()" class="backup-btn" style="background:#27ae60;">📤 رفع واستعادة نسخة احتياطية</button>
+                        <input type="file" id="import-file-input" style="display:none;" accept=".json" onchange="importBackupData(event)">
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- صفحة دليل الهاتف -->
     <div id="page-phonebook" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -154,6 +164,7 @@
         </div>
     </div>
 
+    <!-- صفحة الحجوزات -->
     <div id="page-reservations" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -181,6 +192,7 @@
         </div>
     </div>
 
+    <!-- صفحة المتابعات -->
     <div id="page-followups" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -202,6 +214,7 @@
         </div>
     </div>
 
+    <!-- صفحة السجل الشهري -->
     <div id="page-monthly" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -227,6 +240,7 @@
         </div>
     </div>
 
+    <!-- صفحة حسابات المعامل -->
     <div id="page-labs" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -253,6 +267,7 @@
         </div>
     </div>
 
+    <!-- صفحة المصروفات -->
     <div id="page-expenses" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -281,6 +296,7 @@
         </div>
     </div>
 
+    <!-- صفحة النسب والأرباح -->
     <div id="page-percentages" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -317,6 +333,7 @@
         </div>
     </div>
 
+    <!-- صفحة التقارير المجمعة -->
     <div id="page-reports" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -344,6 +361,7 @@
     </div>
 </div>
 
+<!-- المودالات الخاصة بالتعديل وتفاصيل الحالات -->
 <div id="patient-modal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
@@ -383,13 +401,8 @@
                 <div class="dropdown-item" onclick="selectServiceItem('خلع عادي / جراحي')">خلع عادي / جراحي</div>
             </div>
         </div>
-        <div class="form-group">
-            <label>صور الأشعة المرفقة:</label>
-            <div id="modal-xrays-list" style="background: #f8fafc; padding: 8px; border-radius: 6px; min-height: 40px; border: 1px dashed #cbd5e1;">لا توجد أشعة</div>
-            <input type="file" id="modal-p-xray" multiple accept="image/*" style="font-size: 13px; margin-top: 5px;" onchange="handleXrayUpload(event)">
-        </div>
         <div style="display: flex; gap: 10px; margin-top: 25px;">
-            <button onclick="savePatientFileChanges()" style="background-color: #2ecc71; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; flex: 2; font-size:16px; font-weight:bold;">حفظ البيانات سحابياً</button>
+            <button onclick="savePatientFileChanges()" style="background-color: #2ecc71; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; flex: 2; font-size:16px; font-weight:bold;">حفظ البيانات الحالية</button>
             <button onclick="closePatientModal()" style="background-color: #e74c3c; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; flex: 1; font-size:16px; font-weight:bold;">إغلاق</button>
         </div>
     </div>
@@ -418,18 +431,16 @@
             </div>
         </div>
         <div style="display: flex; gap: 10px; margin-top: 25px;">
-            <button onclick="saveLabFileChanges()" style="background-color: #2ecc71; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; flex: 2; font-size:16px; font-weight:bold;">تحديث الحساب سحابياً</button>
+            <button onclick="saveLabFileChanges()" style="background-color: #2ecc71; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; flex: 2; font-size:16px; font-weight:bold;">تحديث الحساب الحالي</button>
             <button onclick="closeLabModal()" style="background-color: #e74c3c; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; flex: 1; font-size:16px; font-weight:bold;">إغلاق</button>
         </div>
     </div>
 </div>
 
 <script>
-    // 🌐 دمج الرابط السحابي الجديد المستقر والمفتوح بنسبة 100%
-    const CLOUD_API_URL = "https://api.npoint.io/08a3f8510db9fe792751";
-
+    // 💾 تم إلغاء الروابط الخارجية والاعتماد الكامل على التخزين المحلي والنسخ اليدوي لضمان عدم ظهور "خطأ مزامنة"
     let globalPatients = {}; let globalReservations = {}; let globalExpenses = {}; let globalLabs = {}; 
-    let tempPaymentsList = []; let tempXraysList = []; let tempLabPaymentsList = []; 
+    let tempPaymentsList = []; let tempLabPaymentsList = []; 
     let showDebtsOnly = false; let lastInitializedDate = "";
     const monthNamesAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
@@ -441,48 +452,57 @@
     }
     setupYearDropdowns();
 
-    // دالة الحفظ السحابي التلقائي
-    function saveToServer() {
+    // 💾 الحفظ المحلي الآمن والسلس في ذاكرة المتصفح
+    function saveLocalStorageData() {
+        const fullBackup = { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs };
+        localStorage.setItem('amer_dent_local_db', JSON.stringify(fullBackup));
         updateApp();
-        const syncStatus = document.getElementById('sync-status');
-        syncStatus.innerHTML = "⏳ جاري حفظ الأسماء بالسحابة...";
-        syncStatus.style.background = "#d35400";
-        
-        const backupData = { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs };
-        
-        fetch(CLOUD_API_URL, {
-            method: 'POST', // تم تعديل الـ Method لضمان الحفظ المباشر على سيرفرات nPoint دون مشاكل
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(backupData)
-        })
-        .then(res => {
-            if(res.ok) {
-                syncStatus.innerHTML = "🟢 تم التعديل والمزامنة بنجاح تام";
-                syncStatus.style.background = "#27ae60";
-            } else { throw new Error(); }
-        })
-        .catch(() => {
-            syncStatus.innerHTML = "🔴 خطأ مزامنة.. يرجى التحقق من الشبكة";
-            syncStatus.style.background = "#e74c3c";
-        });
     }
 
-    // جلب الداتا فور فتح التطبيق
-    function loadDataFromServer() {
-        fetch(CLOUD_API_URL, { method: 'GET', cache: 'no-store' })
-        .then(res => { if(!res.ok) return null; return res.json(); })
-        .then(innerData => {
-            if (innerData) {
-                globalPatients = innerData.patients || {};
-                globalReservations = innerData.reservations || {};
-                globalExpenses = innerData.expenses || {};
-                globalLabs = innerData.labs || {};
-                updateApp();
-                document.getElementById('sync-status').innerHTML = "🟢 متصل ومزامن سحابياً";
-                document.getElementById('sync-status').style.background = "#27ae60";
+    // 📥 استرجاع الداتا من الذاكرة فور فتح البرنامج
+    function loadLocalStorageData() {
+        const stored = localStorage.getItem('amer_dent_local_db');
+        if (stored) {
+            const innerData = JSON.parse(stored);
+            globalPatients = innerData.patients || {};
+            globalReservations = innerData.reservations || {};
+            globalExpenses = innerData.expenses || {};
+            globalLabs = innerData.labs || {};
+        }
+        updateApp();
+    }
+
+    // 📥 دالة تحميل نسخة احتياطية كملف خارجي
+    function exportBackupData() {
+        const fullBackup = { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `نسخة_احتياطية_العيادة_${getLocalDateString()}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    // 📤 دالة رفع واستعادة النسخة الاحتياطية من ملف خارجي
+    function importBackupData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                globalPatients = importedData.patients || {};
+                globalReservations = importedData.reservations || {};
+                globalExpenses = importedData.expenses || {};
+                globalLabs = importedData.labs || {};
+                saveLocalStorageData();
+                alert("🟢 تم استعادة كافة أسامي وبيانات الحالات بنجاح وتحديث المتصفح!");
+            } catch (err) {
+                alert("❌ عذراً، الملف غير صالح أو تالف.");
             }
-        })
-        .catch(() => {});
+        };
+        reader.readAsText(file);
     }
 
     function getLocalDateString() {
@@ -511,8 +531,7 @@
         if (document.getElementById('app-password').value === "1234") {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'block';
-            loadDataFromServer();
-            setInterval(loadDataFromServer, 8000); 
+            loadLocalStorageData();
         } else {
             document.getElementById('login-error').style.display = 'block';
         }
@@ -531,38 +550,38 @@
 
     function saveOldPatient(e) {
         e.preventDefault(); const id = 'p_' + Date.now();
-        globalPatients[id] = { id: id, name: document.getElementById('old-p-name').value, phone: document.getElementById('old-p-phone').value, date: document.getElementById('old-p-date').value, totalAmount: 0, service: "", nextVisit: "", payments: [], xrays: [] };
-        document.getElementById('old-patient-form').reset(); syncDefaultDates(); saveToServer();
+        globalPatients[id] = { id: id, name: document.getElementById('old-p-name').value, phone: document.getElementById('old-p-phone').value, date: document.getElementById('old-p-date').value, totalAmount: 0, service: "", nextVisit: "", payments: [] };
+        document.getElementById('old-patient-form').reset(); syncDefaultDates(); saveLocalStorageData();
     }
 
     function saveNewLab(e) {
         e.preventDefault(); const id = 'lab_' + Date.now();
         globalLabs[id] = { id: id, name: document.getElementById('lab-name-input').value, date: document.getElementById('lab-date-input').value, totalDebt: 0, payments: [] };
-        document.getElementById('lab-form').reset(); syncDefaultDates(); saveToServer();
+        document.getElementById('lab-form').reset(); syncDefaultDates(); saveLocalStorageData();
     }
 
     function saveNewReservation(e) {
         e.preventDefault(); const id = 'res_' + Date.now();
         globalReservations[id] = { id: id, name: document.getElementById('res-p-name').value, phone: document.getElementById('res-p-phone').value, date: document.getElementById('res-p-date').value };
-        document.getElementById('reservation-form').reset(); syncDefaultDates(); saveToServer();
+        document.getElementById('reservation-form').reset(); syncDefaultDates(); saveLocalStorageData();
     }
 
     function transferToPatient(id) {
         const res = globalReservations[id]; if(!res) return; const pId = 'p_' + Date.now();
-        globalPatients[pId] = { id: pId, name: res.name, phone: res.phone, date: res.date, totalAmount: 0, service: "", nextVisit: "", payments: [], xrays: [] };
-        delete globalReservations[id]; saveToServer();
+        globalPatients[pId] = { id: pId, name: res.name, phone: res.phone, date: res.date, totalAmount: 0, service: "", nextVisit: "", payments: [] };
+        delete globalReservations[id]; saveLocalStorageData();
     }
 
-    function deleteReservation(id) { if(confirm("هل تريد إلغاء هذا الحجز؟")) { delete globalReservations[id]; saveToServer(); } }
-    function deletePatient(id) { if(confirm("تحذير: سيتم مسح ملف المريض بالكامل؟")) { delete globalPatients[id]; saveToServer(); } }
-    function deleteLab(id) { if(confirm("هل تود مسح حساب هذا المعمل نهائياً؟")) { delete globalLabs[id]; saveToServer(); } }
+    function deleteReservation(id) { if(confirm("هل تريد إلغاء هذا الحجز؟")) { delete globalReservations[id]; saveLocalStorageData(); } }
+    function deletePatient(id) { if(confirm("تحذير: سيتم مسح ملف المريض بالكامل؟")) { delete globalPatients[id]; saveLocalStorageData(); } }
+    function deleteLab(id) { if(confirm("هل تود مسح حساب هذا المعمل نهائياً؟")) { delete globalLabs[id]; saveLocalStorageData(); } }
 
     function saveExpense(e) {
         e.preventDefault(); const id = 'exp_' + Date.now();
         globalExpenses[id] = { id: id, title: document.getElementById('e-title').value, amount: parseFloat(document.getElementById('e-amount').value || 0), date: document.getElementById('e-date').value || getLocalDateString() };
-        document.getElementById('expense-form').reset(); syncDefaultDates(); saveToServer();
+        document.getElementById('expense-form').reset(); syncDefaultDates(); saveLocalStorageData();
     }
-    function deleteExpense(id) { if(confirm("هل تريد حذف بند المصروف هذا?")) { delete globalExpenses[id]; saveToServer(); } }
+    function deleteExpense(id) { if(confirm("هل تريد حذف بند المصروف هذا?")) { delete globalExpenses[id]; saveLocalStorageData(); } }
 
     function updateApp() {
         const searchTerm = document.getElementById('search-patient-input').value.toLowerCase();
@@ -593,7 +612,7 @@
             
             const remaining = (p.totalAmount || 0) - patientPaidTotal;
             if (p.name.toLowerCase().includes(searchTerm) && (!showDebtsOnly || remaining > 0)) {
-                tableBody.innerHTML += `<tr><td><span class="patient-clickable-name" onclick="openPatientModal('${id}')">${p.name}</span><br><small>📞 ${p.phone || 'بدون رقم'}</small></td><td>${p.date || '---'}</td><td>${patientPaidTotal.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.m</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span><span class="trash-icon" onclick="deletePatient('${id}')">🗑️</span></div></td></tr>`;
+                tableBody.innerHTML += `<tr><td><span class="patient-clickable-name" onclick="openPatientModal('${id}')">${p.name}</span><br><small>📞 ${p.phone || 'بدون رقم'}</small></td><td>${p.date || '---'}</td><td>${patientPaidTotal.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span><span class="trash-icon" onclick="deletePatient('${id}')">🗑️</span></div></td></tr>`;
             }
 
             if (phonebookTableBody) {
@@ -674,8 +693,8 @@
         document.getElementById('modal-p-phone').value = p.phone || ''; document.getElementById('modal-p-date').value = p.date || '';
         document.getElementById('modal-p-next-visit').value = p.nextVisit || ''; document.getElementById('modal-p-total-amount').value = p.totalAmount || 0;
         document.getElementById('modal-p-service').value = p.service || '';
-        tempPaymentsList = p.payments ? [...p.payments] : []; tempXraysList = p.xrays ? [...p.xrays] : [];
-        renderModalPayments(); renderModalXrays(); calculateFinancials(); document.getElementById('patient-modal').style.display = 'flex';
+        tempPaymentsList = p.payments ? [...p.payments] : [];
+        renderModalPayments(); calculateFinancials(); document.getElementById('patient-modal').style.display = 'flex';
     }
     function closePatientModal() { document.getElementById('patient-modal').style.display = 'none'; }
 
@@ -734,7 +753,7 @@
         const id = document.getElementById('modal-lab-id').value; if(!id) return;
         globalLabs[id].name = document.getElementById('modal-l-name').value;
         globalLabs[id].totalDebt = parseFloat(document.getElementById('modal-l-total-debt').value || 0);
-        globalLabs[id].payments = tempLabPaymentsList; closeLabModal(); saveToServer();
+        globalLabs[id].payments = tempLabPaymentsList; closeLabModal(); saveLocalStorageData();
     }
 
     function savePatientFileChanges() {
@@ -742,33 +761,13 @@
         globalPatients[id].name = document.getElementById('modal-p-name').value; globalPatients[id].phone = document.getElementById('modal-p-phone').value;
         globalPatients[id].date = document.getElementById('modal-p-date').value; globalPatients[id].nextVisit = document.getElementById('modal-p-next-visit').value;
         globalPatients[id].totalAmount = parseFloat(document.getElementById('modal-p-total-amount').value || 0); globalPatients[id].service = document.getElementById('modal-p-service').value;
-        globalPatients[id].payments = tempPaymentsList; globalPatients[id].xrays = tempXraysList;
-        closePatientModal(); saveToServer();
-    }
-
-    function handleXrayUpload(e) {
-        const files = e.target.files; if(!files) return;
-        for(let i=0; i<files.length; i++) {
-            const r = new FileReader(); r.onload = function(event) { tempXraysList.push(event.target.result); renderModalXrays(); }; r.readAsDataURL(files[i]);
-        }
-        e.target.value = "";
-    }
-    function removeXray(idx) { if(confirm("هل تريد إزالة صورة أشعة؟")) { tempXraysList.splice(idx, 1); renderModalXrays(); } }
-    function renderModalXrays() {
-        const xrayZone = document.getElementById('modal-xrays-list'); xrayZone.innerHTML = ''; if(tempXraysList.length === 0) { xrayZone.innerText = 'لا توجد أشعة مرفوعة'; return; }
-        const container = document.createElement('div'); container.className = 'xray-preview-container';
-        tempXraysList.forEach((src, idx) => {
-            if (src) {
-                const img = document.createElement('img'); img.src = src; img.className = 'xray-thumb';
-                img.onclick = function() { const nTab = window.open(); nTab.document.body.innerHTML = `<img src="${src}" style="max-width:100%; height:auto;">`; };
-                img.ondblclick = function() { removeXray(idx); }; container.appendChild(img);
-            }
-        }); xrayZone.appendChild(container);
+        globalPatients[id].payments = tempPaymentsList;
+        closePatientModal(); saveLocalStorageData();
     }
 
     function toggleServicesDropdown(e) { e.stopPropagation(); const menu = document.getElementById('services-dropdown-menu'); menu.style.display = (menu.style.display === 'block') ? 'none' : 'block'; }
     function selectServiceItem(val) { document.getElementById('modal-p-service').value = val; document.getElementById('services-dropdown-menu').style.display = 'none'; }
-    function clearAllData() { if(confirm("هل أنت متأكد من مسح قاعدة البيانات بالكامل سحابياً؟")) { globalPatients = {}; globalReservations = {}; globalExpenses = {}; globalLabs = {}; saveToServer(); } }
+    function clearAllData() { if(confirm("هل أنت متأكد من مسح قاعدة البيانات بالكامل؟")) { globalPatients = {}; globalReservations = {}; globalExpenses = {}; globalLabs = {}; saveLocalStorageData(); } }
     window.onclick = function(event) { if (!event.target.matches('.form-group *')) { const menu = document.getElementById('services-dropdown-menu'); if(menu) menu.style.display = 'none'; } }
 </script>
 </body>
