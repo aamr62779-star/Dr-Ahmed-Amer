@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة العيادة الذكية - النظام السحابي المستقر</title>
+    <title>إدارة العيادة الذكية - د. أحمد حسن عامر</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef5f9; color: #2c3e50; padding: 15px; margin: 0; }
         .container { max-width: 1100px; margin: 0 auto; }
@@ -102,7 +102,7 @@
         <button class="sidebar-btn" id="sidebar-btn-monthly" onclick="switchPage('monthly')">📅 سجل المرضى الشهري</button>
         <button class="sidebar-btn" id="sidebar-btn-labs" onclick="switchPage('labs')">🔬 حسابات المعامل والتركيبات</button>
         <button class="sidebar-btn" id="sidebar-btn-expenses" onclick="switchPage('expenses')">💰 مصروفات العيادة</button>
-        <button class="sidebar-btn" id="sidebar-btn-percentages" onclick="switchPage('percentages')">📊 حساب نسب الأرباح (70% / 30%)</button>
+        <button class="sidebar-btn" id="sidebar-btn-percentages" onclick="switchPage('percentages')">📊 حساب نسب الأرباح</button>
         <button class="sidebar-btn" id="sidebar-btn-reports" onclick="switchPage('reports')">📈 صفحة التقارير السنوية</button>
     </div>
 
@@ -260,7 +260,7 @@
                     <h2>إضافة بند مصروفات جديد للعيادة</h2>
                     <form id="expense-form" onsubmit="saveExpense(event)">
                         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                            <div class="form-group" style="flex: 1.5; min-width: 200px;"><label>بند المصروف:</label><input type="text" id="e-title" required placeholder="مثال: خامات، أدوات، إيجار..."></div>
+                            <div class="form-group" style="flex: 1.5; min-width: 200px;"><label>بند المصروف:</label><input type="text" id="e-title" required placeholder="مثال: خامات، أدوات..."></div>
                             <div class="form-group" style="flex: 1; min-width: 130px;"><label>المبلغ المدفوع:</label><input type="number" step="0.01" id="e-amount" required placeholder="0.00"></div>
                             <div class="form-group" style="flex: 1; min-width: 150px;"><label>تاريخ الصرف:</label><input type="date" id="e-date" required></div>
                         </div>
@@ -294,8 +294,8 @@
                         </div>
                     </div>
                     <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px dashed #1abc9c; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-                        • 📥 <b>إجمالي الإيرادات المحصلة (تراكمي):</b> <span id="calc-total-revenues" style="font-weight: bold; color: #2ecc71;">0.00</span> ج.م<br>
-                        • 📤 <b>إجمالي المصروفات العامة (تراكمي):</b> <span id="calc-total-expenses" style="font-weight: bold; color: #e74c3c;">0.00</span> ج.م
+                        • 📥 <b>إجمالي الإيرادات المحصلة:</b> <span id="calc-total-revenues" style="font-weight: bold; color: #2ecc71;">0.00</span> ج.م<br>
+                        • 📤 <b>إجمالي المصروفات العامة:</b> <span id="calc-total-expenses" style="font-weight: bold; color: #e74c3c;">0.00</span> ج.م
                     </div>
                     <div class="ratio-cards-container">
                         <div class="ratio-card daily"><h3>💰 صافي ربح اليوم المختار</h3><div class="value" id="calc-daily-profit">0.00 ج.م</div><span class="percentage-badge" id="daily-date-badge">خزينة اليوم</span></div>
@@ -373,7 +373,7 @@
         </div>
 
         <div class="form-group">
-            <label>الخدمة الطبية للأسنان (التجميلية والعلاجية):</label>
+            <label>الخدمة الطبية للأسنان:</label>
             <div style="display: flex; width: 100%;"><input type="text" id="modal-p-service" placeholder="اكتب الخدمة أو اختر..." style="border-radius: 0 6px 6px 0; border-left: none; flex: 1;"><button type="button" onclick="toggleServicesDropdown(event)" style="background: #e8f2f9; border: 1px solid #bdc3c7; border-radius: 6px 0 0 6px; width: 45px; cursor: pointer; color: #2980b9;">▼</button></div>
             <div id="services-dropdown-menu" class="dropdown-menu">
                 <div class="dropdown-item" onclick="selectServiceItem('تركيبات تجميلية')">تركيبات تجميلية</div>
@@ -425,7 +425,7 @@
 </div>
 
 <script>
-    // 🌐 السيرفر العالمي المستقر والجديد تماماً (nPoint الدائم)
+    // 🌐 دمج الرابط السحابي الجديد المستقر والمفتوح بنسبة 100%
     const CLOUD_API_URL = "https://api.npoint.io/08a3f8510db9fe792751";
 
     let globalPatients = {}; let globalReservations = {}; let globalExpenses = {}; let globalLabs = {}; 
@@ -441,17 +441,17 @@
     }
     setupYearDropdowns();
 
-    // 🚀 دالة الحفظ الفوري الموثوقة 
+    // دالة الحفظ السحابي التلقائي
     function saveToServer() {
         updateApp();
         const syncStatus = document.getElementById('sync-status');
-        syncStatus.innerHTML = "⏳ جاري الحفظ الآمن بالسحابة...";
+        syncStatus.innerHTML = "⏳ جاري حفظ الأسماء بالسحابة...";
         syncStatus.style.background = "#d35400";
         
         const backupData = { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs };
         
         fetch(CLOUD_API_URL, {
-            method: 'JSON',
+            method: 'POST', // تم تعديل الـ Method لضمان الحفظ المباشر على سيرفرات nPoint دون مشاكل
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(backupData)
         })
@@ -467,7 +467,7 @@
         });
     }
 
-    // 📥 جلب الداتا فور فتح التطبيق
+    // جلب الداتا فور فتح التطبيق
     function loadDataFromServer() {
         fetch(CLOUD_API_URL, { method: 'GET', cache: 'no-store' })
         .then(res => { if(!res.ok) return null; return res.json(); })
@@ -562,7 +562,7 @@
         globalExpenses[id] = { id: id, title: document.getElementById('e-title').value, amount: parseFloat(document.getElementById('e-amount').value || 0), date: document.getElementById('e-date').value || getLocalDateString() };
         document.getElementById('expense-form').reset(); syncDefaultDates(); saveToServer();
     }
-    function deleteExpense(id) { if(confirm("هل تريد حذف بند المصروف هذا؟")) { delete globalExpenses[id]; saveToServer(); } }
+    function deleteExpense(id) { if(confirm("هل تريد حذف بند المصروف هذا?")) { delete globalExpenses[id]; saveToServer(); } }
 
     function updateApp() {
         const searchTerm = document.getElementById('search-patient-input').value.toLowerCase();
@@ -593,7 +593,7 @@
             
             const remaining = (p.totalAmount || 0) - patientPaidTotal;
             if (p.name.toLowerCase().includes(searchTerm) && (!showDebtsOnly || remaining > 0)) {
-                tableBody.innerHTML += `<tr><td><span class="patient-clickable-name" onclick="openPatientModal('${id}')">${p.name}</span><br><small>📞 ${p.phone || 'بدون رقم'}</small></td><td>${p.date || '---'}</td><td>${patientPaidTotal.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span><span class="trash-icon" onclick="deletePatient('${id}')">🗑️</span></div></td></tr>`;
+                tableBody.innerHTML += `<tr><td><span class="patient-clickable-name" onclick="openPatientModal('${id}')">${p.name}</span><br><small>📞 ${p.phone || 'بدون رقم'}</small></td><td>${p.date || '---'}</td><td>${patientPaidTotal.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.m</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span><span class="trash-icon" onclick="deletePatient('${id}')">🗑️</span></div></td></tr>`;
             }
 
             if (phonebookTableBody) {
