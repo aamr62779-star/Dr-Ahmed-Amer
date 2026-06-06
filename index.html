@@ -61,7 +61,6 @@
         .ratio-card .value { font-size: 22px; font-weight: bold; }
         .ratio-card .percentage-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; font-size: 12px; margin-top: 5px; }
         .sync-indicator { font-size: 12px; padding: 4px 12px; border-radius: 20px; background: #e67e22; color: white; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
-        .backup-btn { background: #34495e; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -105,7 +104,6 @@
         <button class="sidebar-btn" id="sidebar-btn-reports" onclick="switchPage('reports')">📈 صفحة التقارير السنوية</button>
     </div>
 
-    <!-- صفحة التسجيل الرئيسية -->
     <div id="page-patients" class="page-content active-page">
         <div class="row">
             <div class="col-12">
@@ -137,7 +135,6 @@
         </div>
     </div>
 
-    <!-- دليل الهاتف -->
     <div id="page-phonebook" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -155,7 +152,6 @@
         </div>
     </div>
 
-    <!-- صفحة الحجوزات -->
     <div id="page-reservations" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -183,7 +179,6 @@
         </div>
     </div>
 
-    <!-- صفحة المتابعات -->
     <div id="page-followups" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -205,7 +200,6 @@
         </div>
     </div>
 
-    <!-- صفحة السجل الشهري -->
     <div id="page-monthly" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -231,7 +225,6 @@
         </div>
     </div>
 
-    <!-- صفحة حسابات المعامل -->
     <div id="page-labs" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -258,7 +251,6 @@
         </div>
     </div>
 
-    <!-- صفحة المصروفات -->
     <div id="page-expenses" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -287,7 +279,6 @@
         </div>
     </div>
 
-    <!-- صفحة النسب والأرباح -->
     <div id="page-percentages" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -324,7 +315,6 @@
         </div>
     </div>
 
-    <!-- صفحة التقارير المجمعة -->
     <div id="page-reports" class="page-content">
         <div class="row">
             <div class="col-12">
@@ -352,7 +342,6 @@
     </div>
 </div>
 
-<!-- المودالات الشخصية -->
 <div id="patient-modal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color: #2980b9; margin-top: 0;" id="modal-patient-header">ملف المريض الشخصي</h2>
@@ -434,44 +423,83 @@
     let showDebtsOnly = false; let lastInitializedDate = "";
     const monthNamesAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
-    // 📡 ربط البرنامج بقاعدة البيانات اللحظية المستقلة تماماً
-    // ⚠️ استبدل الرابط أدناه برابط الـ Firebase الخاص بمشروعك ليعمل التزامن بشكل حقيقي
-     const FIREBASE_DB_URL = "https://amer-dent-default-rtdb.firebaseio.com";
+    // 📡 الرابط الخاص بك مدمج مباشرة الآن
+    const FIREBASE_DB_URL = "https://amer-dent-default-rtdb.firebaseio.com"; 
+
     function initFirebaseSync() {
-        if (FIREBASE_DB_URL.includes("رابط_قاعدة_بيانات")) {
-            document.getElementById('sync-status').innerText = "⚠️ لم يتم ربط رابط الفيربيس بالكود";
-            document.getElementById('sync-status').style.background = "#e74c3c";
+        if (FIREBASE_DB_URL.includes("رابط_قاعدة_بيانات") || FIREBASE_DB_URL === "") {
+            activateLocalStorageMode();
             return;
         }
 
-        // الاستماع اللحظي التلقائي لأي تعديل يحدث من أي جهاز بدون تدخل بشري
+        // محاولة سحب البيانات لأول مرة لتجنب تصفير الشاشة
+        fetch(`${FIREBASE_DB_URL}/clinic_data.json`)
+        .then(res => res.json())
+        .then(data => {
+            if (data && (data.patients || data.reservations || data.expenses || data.labs)) {
+                globalPatients = data.patients || {};
+                globalReservations = data.reservations || {};
+                globalExpenses = data.expenses || {};
+                globalLabs = data.labs || {};
+                updateApp();
+            } else {
+                // لو السحابة لسة فاضية، اسحب الداتا القديمة من الموبايل عشان الشغل مايضيعش
+                globalPatients = JSON.parse(localStorage.getItem('amer_dent_patients')) || {};
+                globalReservations = JSON.parse(localStorage.getItem('amer_dent_reservations')) || {};
+                globalExpenses = JSON.parse(localStorage.getItem('amer_dent_expenses')) || {};
+                globalLabs = JSON.parse(localStorage.getItem('amer_dent_labs')) || {};
+                updateApp();
+            }
+            document.getElementById('sync-status').innerText = "🔗 شبكة العيادة متصلة ومحدثة لحظياً 🟢";
+            document.getElementById('sync-status').style.background = "#27ae60";
+        }).catch(e => {
+            activateLocalStorageMode();
+        });
+
+        // التحديث السحابي المستمر كل 4 ثوانٍ في الخلفية بدون مسح المكتوب
         setInterval(() => {
-            fetch(`${FIREBASE_DB_URL}/clinic_data.json`)
-            .then(res => res.json())
-            .then(data => {
-                if (data) {
-                    globalPatients = data.patients || {};
-                    globalReservations = data.reservations || {};
-                    globalExpenses = data.expenses || {};
-                    globalLabs = data.labs || {};
-                    updateApp();
-                    document.getElementById('sync-status').innerText = "🔗 شبكة العيادة متصلة ومحدثة لحظياً 🟢";
-                    document.getElementById('sync-status').style.background = "#27ae60";
-                }
-            }).catch(e => {
-                document.getElementById('sync-status').innerText = "📡 مشكلة في اتصال الشبكة...";
-                document.getElementById('sync-status').style.background = "#f39c12";
-            });
-        }, 3000); // يفحص ويحدث الجداول تلقائياً كل 3 ثوانٍ في الخلفية صامتاً تماماً
+            if (!FIREBASE_DB_URL.includes("رابط_قاعدة_بيانات") && FIREBASE_DB_URL !== "") {
+                fetch(`${FIREBASE_DB_URL}/clinic_data.json`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && (data.patients || data.reservations || data.expenses || data.labs)) {
+                        globalPatients = data.patients || {};
+                        globalReservations = data.reservations || {};
+                        globalExpenses = data.expenses || {};
+                        globalLabs = data.labs || {};
+                        updateApp();
+                    }
+                }).catch(e => console.log("خطأ مؤقت بالشبكة"));
+            }
+        }, 4000);
+    }
+
+    function activateLocalStorageMode() {
+        document.getElementById('sync-status').innerText = "📱 وضع الحفظ المحلي النشط والآمن (جهاز واحد)";
+        document.getElementById('sync-status').style.background = "#34495e";
+        globalPatients = JSON.parse(localStorage.getItem('amer_dent_patients')) || {};
+        globalReservations = JSON.parse(localStorage.getItem('amer_dent_reservations')) || {};
+        globalExpenses = JSON.parse(localStorage.getItem('amer_dent_expenses')) || {};
+        globalLabs = JSON.parse(localStorage.getItem('amer_dent_labs')) || {};
+        updateApp();
     }
 
     function pushDataToCloud() {
-        if (FIREBASE_DB_URL.includes("رابط_قاعدة_بيانات")) return;
+        // تأمين كامل: حفظ البيانات فوراً على ذاكرة الموبايل لمنع أي مسح نهائياً
+        localStorage.setItem('amer_dent_patients', JSON.stringify(globalPatients));
+        localStorage.setItem('amer_dent_reservations', JSON.stringify(globalReservations));
+        localStorage.setItem('amer_dent_expenses', JSON.stringify(globalExpenses));
+        localStorage.setItem('amer_dent_labs', JSON.stringify(globalLabs));
+        
+        updateApp();
+
+        if (FIREBASE_DB_URL.includes("رابط_قاعدة_بيانات") || FIREBASE_DB_URL === "") return;
+        
         const payload = { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs };
         fetch(`${FIREBASE_DB_URL}/clinic_data.json`, {
             method: 'PUT',
             body: JSON.stringify(payload)
-        }).then(() => updateApp()).catch(e => console.log("خطأ في تحديث السحابة"));
+        }).catch(e => console.log("محفوظ محلياً، في انتظار الإنترنت ليرفع للسحابة"));
     }
 
     function setupYearDropdowns() {
@@ -646,7 +674,7 @@
                 let expDate = e.date ? new Date(e.date) : new Date();
                 if (expDate.getFullYear() === reportYearSelected) mExp[expDate.getMonth()] += amt;
                 if(e.date === selectedTargetDate) targetDayExpenses += amt;
-                expenseBody.innerHTML += `<tr><td>${e.title || '---'}</td><td style="color:#e74c3c; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td><small>${e.date || '---'}</small></td><td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td></tr>`; 
+                expenseBody.innerHTML += `<tr><td>${e.title || '---'}</td><td style="color:#e74c3c; font-weight:bold;">${amt.toFixed(2)} ج.m</td><td><small>${e.date || '---'}</small></td><td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td></tr>`; 
             }
         });
 
@@ -674,7 +702,7 @@
         document.getElementById('modal-p-phone').value = p.phone || ''; document.getElementById('modal-p-date').value = p.date || '';
         document.getElementById('modal-p-next-visit').value = p.nextVisit || ''; document.getElementById('modal-p-total-amount').value = p.totalAmount || 0;
         document.getElementById('modal-p-service').value = p.service || '';
-        tempPaymentsList = p.payments ? [...p.payments] : [];
+        tempPaymentsList = p.payments ? (Array.isArray(p.payments) ? [...p.payments] : Object.values(p.payments)) : [];
         renderModalPayments(); calculateFinancials(); document.getElementById('patient-modal').style.display = 'flex';
     }
     function closePatientModal() { document.getElementById('patient-modal').style.display = 'none'; }
@@ -704,7 +732,7 @@
     function openLabModal(id) {
         const l = globalLabs[id]; if(!l) return;
         document.getElementById('modal-lab-id').value = id; document.getElementById('modal-l-name').value = l.name || '';
-        document.getElementById('modal-l-total-debt').value = l.totalDebt || 0; tempLabPaymentsList = l.payments ? [...l.payments] : [];
+        document.getElementById('modal-l-total-debt').value = l.totalDebt || 0; tempLabPaymentsList = l.payments ? (Array.isArray(l.payments) ? [...l.payments] : Object.values(l.payments)) : [];
         renderLabModalPayments(); calculateLabFinancials(); document.getElementById('lab-modal').style.display = 'flex';
     }
     function closeLabModal() { document.getElementById('lab-modal').style.display = 'none'; }
@@ -730,6 +758,7 @@
         });
     }
 
+    // تصحيح دوال الحفظ والرفع لعدم مسح البيانات نهائياً
     function saveLabFileChanges() {
         const id = document.getElementById('modal-lab-id').value; if(!id) return;
         globalLabs[id].name = document.getElementById('modal-l-name').value;
