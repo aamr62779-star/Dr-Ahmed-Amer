@@ -23,6 +23,7 @@
         .box { background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); border-top: 4px solid #3498db; margin-bottom: 20px; }
         .box.expense-box { border-top-color: #e74c3c; }
         .box.old-box { border-top-color: #2ecc71; } 
+        .box.notebook-box { border-top-color: #1abc9c; }
         .box.monthly-box { border-top-color: #9b59b6; }
         .box.followup-box { border-top-color: #00a3e0; }
         .box.reservation-box { border-top-color: #f39c12; }
@@ -94,6 +95,7 @@
     <div id="app-sidebar" class="sidebar">
         <div class="sidebar-header"><span>صفحات النظام</span><button class="close-sidebar-btn" onclick="toggleSidebar()">✕</button></div>
         <button class="sidebar-btn active" id="sidebar-btn-patients" onclick="switchPage('patients')">👥 صفحة المرضى والتسجيل</button>
+        <button class="sidebar-btn" id="sidebar-btn-notebook" onclick="switchPage('notebook')">📔 كشكول الحالات الجديد</button>
         <button class="sidebar-btn" id="sidebar-btn-phonebook" onclick="switchPage('phonebook')">📱 دليل هواتف المرضى</button>
         <button class="sidebar-btn" id="sidebar-btn-reservations" onclick="switchPage('reservations')">📅 قائمة الحجوزات</button>
         <button class="sidebar-btn" id="sidebar-btn-followups" onclick="switchPage('followups')">📋 جدول متابعات الحالات</button>
@@ -128,6 +130,34 @@
                         <table>
                             <thead><tr><th>الاسم والبيانات</th><th>الزيارة</th><th>إجمالي المدفوع</th><th>المتبقي الكلي</th><th>الملف والتحكم</th></tr></thead>
                             <tbody id="patients-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-notebook" class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <div class="box notebook-box">
+                    <h2>📔 تسجيل حالة قديمة / سريعة في الكشكول</h2>
+                    <form id="notebook-form" onsubmit="saveNotebookEntry(event)">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1.5; min-width: 220px;"><label>اسم الحالة / المريض:</label><input type="text" id="note-p-name" required placeholder="اكتب الاسم هنا"></div>
+                            <div class="form-group" style="flex: 1; min-width: 130px;"><label>المبلغ المدفوع (ج.م):</label><input type="number" step="0.01" id="note-p-amount" required placeholder="0.00"></div>
+                            <div class="form-group" style="flex: 1; min-width: 180px;"><label>تاريخ الحالة (يمكنك تعديله للماضي 📅):</label><input type="date" id="note-p-date" required></div>
+                        </div>
+                        <button type="submit" style="background-color: #1abc9c; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold;">حفظ وتسجيل في الكشكول 📔</button>
+                    </form>
+                </div>
+                <div class="box" style="border-top-color: #1abc9c;">
+                    <h2>📋 الحالات المسجلة بكشكول العيادة</h2>
+                    <div style="margin-bottom: 15px;"><input type="text" id="notebook-search-input" oninput="updateApp()" placeholder="🔍 ابحث بالاسم داخل الكشكول..."></div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr style="background-color: #1abc9c; color: white;"><th>اسم الحالة</th><th>المبلغ المدفوع</th><th>التاريخ المسجل</th><th>تحكم</th></tr></thead>
+                            <tbody id="notebook-table-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -292,7 +322,7 @@
                         </div>
                     </div>
                     <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px dashed #1abc9c; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-                        • 📥 <b>إجمالي الإيرادات المحصلة:</b> <span id="calc-total-revenues" style="font-weight: bold; color: #2ecc71;">0.00</span> ج.م<br>
+                        • 📥 <b>إجمالي الإيرادات المحصلة (عيادة + كشكول):</b> <span id="calc-total-revenues" style="font-weight: bold; color: #2ecc71;">0.00</span> ج.م<br>
                         • 📤 <b>إجمالي المصروفات العامة:</b> <span id="calc-total-expenses" style="font-weight: bold; color: #e74c3c;">0.00</span> ج.م
                     </div>
                     <div class="ratio-cards-container">
@@ -305,7 +335,7 @@
                         <h3 style="font-size: 16px; color: #e67e22; border-bottom: 2px solid #f39c12; padding-bottom: 8px; margin-bottom: 15px;">📋 بيان إيرادات الحالات لليوم المختار</h3>
                         <div style="overflow-x:auto;">
                             <table>
-                                <thead><tr><th>اسم المريض / الهاتف</th><th>الخدمة الطبية</th><th>المبلغ المدفوع اليوم</th><th>الملف والتفاصيل</th></tr></thead>
+                                <thead><tr><th>اسم المريض / الهاتف</th><th>الخدمة الطبية / المصدر</th><th>المبلغ المدفوع اليوم</th><th>الملف والتفاصيل</th></tr></thead>
                                 <tbody id="daily-payments-table-body"></tbody>
                             </table>
                         </div>
@@ -418,13 +448,13 @@
 </div>
 
 <script>
-    let globalPatients = {}; let globalReservations = {}; let globalExpenses = {}; let globalLabs = {}; 
+    let globalPatients = {}; let globalReservations = {}; let globalExpenses = {}; let globalLabs = {}; let globalNotebook = {};
     let tempPaymentsList = []; let tempLabPaymentsList = []; 
     let showDebtsOnly = false; let lastInitializedDate = "";
     const monthNamesAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
-    // 📡 الرابط الخاص بك مدمج مباشرة الآن
-    const FIREBASE_DB_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com";
+    // 📡 رابط عيادتك الحقيقي والمجرب
+    const FIREBASE_DB_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com"; 
 
     function initFirebaseSync() {
         if (FIREBASE_DB_URL.includes("رابط_قاعدة_بيانات") || FIREBASE_DB_URL === "") {
@@ -432,22 +462,22 @@
             return;
         }
 
-        // محاولة سحب البيانات لأول مرة لتجنب تصفير الشاشة
         fetch(`${FIREBASE_DB_URL}/clinic_data.json`)
         .then(res => res.json())
         .then(data => {
-            if (data && (data.patients || data.reservations || data.expenses || data.labs)) {
+            if (data && (data.patients || data.reservations || data.expenses || data.labs || data.notebook)) {
                 globalPatients = data.patients || {};
                 globalReservations = data.reservations || {};
                 globalExpenses = data.expenses || {};
                 globalLabs = data.labs || {};
+                globalNotebook = data.notebook || {};
                 updateApp();
             } else {
-                // لو السحابة لسة فاضية، اسحب الداتا القديمة من الموبايل عشان الشغل مايضيعش
                 globalPatients = JSON.parse(localStorage.getItem('amer_dent_patients')) || {};
                 globalReservations = JSON.parse(localStorage.getItem('amer_dent_reservations')) || {};
                 globalExpenses = JSON.parse(localStorage.getItem('amer_dent_expenses')) || {};
                 globalLabs = JSON.parse(localStorage.getItem('amer_dent_labs')) || {};
+                globalNotebook = JSON.parse(localStorage.getItem('amer_dent_notebook')) || {};
                 updateApp();
             }
             document.getElementById('sync-status').innerText = "🔗 شبكة العيادة متصلة ومحدثة لحظياً 🟢";
@@ -456,17 +486,17 @@
             activateLocalStorageMode();
         });
 
-        // التحديث السحابي المستمر كل 4 ثوانٍ في الخلفية بدون مسح المكتوب
         setInterval(() => {
             if (!FIREBASE_DB_URL.includes("رابط_قاعدة_بيانات") && FIREBASE_DB_URL !== "") {
                 fetch(`${FIREBASE_DB_URL}/clinic_data.json`)
                 .then(res => res.json())
                 .then(data => {
-                    if (data && (data.patients || data.reservations || data.expenses || data.labs)) {
+                    if (data && (data.patients || data.reservations || data.expenses || data.labs || data.notebook)) {
                         globalPatients = data.patients || {};
                         globalReservations = data.reservations || {};
                         globalExpenses = data.expenses || {};
                         globalLabs = data.labs || {};
+                        globalNotebook = data.notebook || {};
                         updateApp();
                     }
                 }).catch(e => console.log("خطأ مؤقت بالشبكة"));
@@ -481,25 +511,26 @@
         globalReservations = JSON.parse(localStorage.getItem('amer_dent_reservations')) || {};
         globalExpenses = JSON.parse(localStorage.getItem('amer_dent_expenses')) || {};
         globalLabs = JSON.parse(localStorage.getItem('amer_dent_labs')) || {};
+        globalNotebook = JSON.parse(localStorage.getItem('amer_dent_notebook')) || {};
         updateApp();
     }
 
     function pushDataToCloud() {
-        // تأمين كامل: حفظ البيانات فوراً على ذاكرة الموبايل لمنع أي مسح نهائياً
         localStorage.setItem('amer_dent_patients', JSON.stringify(globalPatients));
         localStorage.setItem('amer_dent_reservations', JSON.stringify(globalReservations));
         localStorage.setItem('amer_dent_expenses', JSON.stringify(globalExpenses));
         localStorage.setItem('amer_dent_labs', JSON.stringify(globalLabs));
+        localStorage.setItem('amer_dent_notebook', JSON.stringify(globalNotebook));
         
         updateApp();
 
         if (FIREBASE_DB_URL.includes("رابط_قاعدة_بيانات") || FIREBASE_DB_URL === "") return;
         
-        const payload = { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs };
+        const payload = { patients: globalPatients, reservations: globalReservations, expenses: globalExpenses, labs: globalLabs, notebook: globalNotebook };
         fetch(`${FIREBASE_DB_URL}/clinic_data.json`, {
             method: 'PUT',
             body: JSON.stringify(payload)
-        }).catch(e => console.log("محفوظ محلياً، في انتظار الإنترنت ليرفع للسحابة"));
+        }).catch(e => console.log("محفوظ محلياً، في انتظار الإنترنت"));
     }
 
     function setupYearDropdowns() {
@@ -520,7 +551,7 @@
 
     function syncDefaultDates() {
         const todayStr = getLocalDateString();
-        ['old-p-date', 'new-payment-date', 'res-p-date', 'lab-date-input', 'new-lab-payment-date', 'followup-filter-date', 'e-date'].forEach(id => {
+        ['old-p-date', 'new-payment-date', 'res-p-date', 'lab-date-input', 'new-lab-payment-date', 'followup-filter-date', 'e-date', 'note-p-date'].forEach(id => {
             const input = document.getElementById(id); if (input && (!input.value || input.value === lastInitializedDate)) input.value = todayStr;
         });
         const pDateInput = document.getElementById('profit-custom-date'); if(pDateInput && !pDateInput.value) pDateInput.value = todayStr;
@@ -563,6 +594,12 @@
         document.getElementById('old-patient-form').reset(); syncDefaultDates(); pushDataToCloud();
     }
 
+    function saveNotebookEntry(e) {
+        e.preventDefault(); const id = 'note_' + Date.now();
+        globalNotebook[id] = { id: id, name: document.getElementById('note-p-name').value, amount: parseFloat(document.getElementById('note-p-amount').value || 0), date: document.getElementById('note-p-date').value };
+        document.getElementById('notebook-form').reset(); syncDefaultDates(); pushDataToCloud();
+    }
+
     function saveNewLab(e) {
         e.preventDefault(); const id = 'lab_' + Date.now();
         globalLabs[id] = { id: id, name: document.getElementById('lab-name-input').value, date: document.getElementById('lab-date-input').value, totalDebt: 0, payments: [] };
@@ -584,6 +621,7 @@
     function deleteReservation(id) { if(confirm("هل تريد إلغاء هذا الحجز؟")) { delete globalReservations[id]; pushDataToCloud(); } }
     function deletePatient(id) { if(confirm("تحذير: سيتم مسح ملف المريض بالكامل؟")) { delete globalPatients[id]; pushDataToCloud(); } }
     function deleteLab(id) { if(confirm("هل تود مسح حساب هذا المعمل نهائياً؟")) { delete globalLabs[id]; pushDataToCloud(); } }
+    function deleteNotebookEntry(id) { if(confirm("هل تود مسح هذه الحالة من الكشكول؟")) { delete globalNotebook[id]; pushDataToCloud(); } }
 
     function saveExpense(e) {
         e.preventDefault(); const id = 'exp_' + Date.now();
@@ -594,8 +632,11 @@
 
     function updateApp() {
         const searchTerm = document.getElementById('search-patient-input').value.toLowerCase();
+        const notebookSearchTerm = document.getElementById('notebook-search-input').value.toLowerCase();
         const phonebookSearchTerm = document.getElementById('phonebook-search-input').value.toLowerCase();
+        
         const phonebookTableBody = document.getElementById('phonebook-table-body'); if(phonebookTableBody) phonebookTableBody.innerHTML = ''; 
+        const notebookTableBody = document.getElementById('notebook-table-body'); if(notebookTableBody) notebookTableBody.innerHTML = '';
 
         const selectedTargetDate = document.getElementById('profit-custom-date').value || getLocalDateString();
         document.getElementById('daily-date-badge').innerText = `يوم (${selectedTargetDate})`;
@@ -605,6 +646,7 @@
         const dailyTableBody = document.getElementById('daily-payments-table-body'); dailyTableBody.innerHTML = ''; 
         const tableBody = document.getElementById('patients-table-body'); tableBody.innerHTML = '';
 
+        // 1. معالجة حسابات وجدول المرضى الأساسي
         Object.keys(globalPatients).forEach(id => {
             const p = globalPatients[id]; if (!p || !p.name) return; 
             let payments = p.payments ? (Array.isArray(p.payments) ? p.payments : Object.values(p.payments)) : [];
@@ -631,6 +673,27 @@
             }
         });
 
+        // 2. معالجة وعرض كشكول الحالات (إضافة الدخل للأرباح والنسب)
+        Object.keys(globalNotebook).forEach(id => {
+            const e = globalNotebook[id]; if(!e || !e.name) return;
+            const amt = parseFloat(e.amount || 0);
+            totalRevenuesCollected += amt;
+
+            if (e.date) {
+                const nDateObj = new Date(e.date);
+                if (nDateObj.getFullYear() === reportYearSelected) mRev[nDateObj.getMonth()] += amt;
+                if (e.date === selectedTargetDate) {
+                    targetDayRevenue += amt;
+                    dailyTableBody.innerHTML += `<tr><td><strong>${e.name}</strong><br><small>📔 (كشكول)</small></td><td><span style="color:#1abc9c; font-weight:bold;">دفعة سريعة</span></td><td style="color:#2ecc71; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td>---</td></tr>`;
+                }
+            }
+
+            if (e.name.toLowerCase().includes(notebookSearchTerm)) {
+                notebookTableBody.innerHTML += `<tr><td><b>${e.name}</b></td><td style="color:#2ecc71; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td style="color:#1abc9c; font-weight:bold;">📅 ${e.date || '---'}</td><td><span class="trash-icon" onclick="deleteNotebookEntry('${id}')">🗑️ مسح</span></td></tr>`;
+            }
+        });
+
+        // 3. كشف حساب المعامل
         const labsTableBody = document.getElementById('labs-table-body');
         if (labsTableBody) {
             labsTableBody.innerHTML = '';
@@ -642,6 +705,7 @@
             });
         }
 
+        // 4. الحجوزات والمتابعات
         const resTableBody = document.getElementById('reservations-table-body'); resTableBody.innerHTML = '';
         Object.keys(globalReservations).forEach(id => {
             const r = globalReservations[id]; if(r && r.name) resTableBody.innerHTML += `<tr><td><strong>${r.name}</strong><br><small>📞 ${r.phone || '---'}</small></td><td>${r.date || '---'}</td><td><button onclick="transferToPatient('${id}')" style="background:#2ecc71; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">حضر</button> <button onclick="deleteReservation('${id}')" style="background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">إلغاء</button></td></tr>`;
@@ -654,6 +718,7 @@
         });
         document.getElementById('followups-count-badge').innerText = `💡 حالات المتابعة لهذا اليوم: ${fCount} مريض`;
 
+        // 5. الأرشيف الشهري
         const mMonth = parseInt(document.getElementById('monthly-month-select').value); const mYear = parseInt(document.getElementById('monthly-year-select').value || currentToday.getFullYear());
         const monthlyBody = document.getElementById('monthly-patients-table-body'); monthlyBody.innerHTML = '';
         Object.keys(globalPatients).forEach(id => {
@@ -666,6 +731,7 @@
             }
         });
 
+        // 6. المصروفات وتجميع الإجماليات والنسب
         let totalExpensesCalculated = 0; let targetDayExpenses = 0; 
         const expenseBody = document.getElementById('expenses-table-body'); expenseBody.innerHTML = '';
         Object.keys(globalExpenses).forEach(id => {
@@ -732,7 +798,7 @@
     function openLabModal(id) {
         const l = globalLabs[id]; if(!l) return;
         document.getElementById('modal-lab-id').value = id; document.getElementById('modal-l-name').value = l.name || '';
-        document.getElementById('modal-l-total-debt').value = l.totalDebt || 0; tempLabPaymentsList = l.payments ? (Array.isArray(l.payments) ? [...l.payments] : Object.values(l.payments)) : [];
+        document.getElementById('modal-lab-total-debt').value = l.totalDebt || 0; tempLabPaymentsList = l.payments ? (Array.isArray(l.payments) ? [...l.payments] : Object.values(l.payments)) : [];
         renderLabModalPayments(); calculateLabFinancials(); document.getElementById('lab-modal').style.display = 'flex';
     }
     function closeLabModal() { document.getElementById('lab-modal').style.display = 'none'; }
@@ -758,7 +824,6 @@
         });
     }
 
-    // تصحيح دوال الحفظ والرفع لعدم مسح البيانات نهائياً
     function saveLabFileChanges() {
         const id = document.getElementById('modal-lab-id').value; if(!id) return;
         globalLabs[id].name = document.getElementById('modal-l-name').value;
@@ -777,7 +842,7 @@
 
     function toggleServicesDropdown(e) { e.stopPropagation(); const menu = document.getElementById('services-dropdown-menu'); menu.style.display = (menu.style.display === 'block') ? 'none' : 'block'; }
     function selectServiceItem(val) { document.getElementById('modal-p-service').value = val; document.getElementById('services-dropdown-menu').style.display = 'none'; }
-    function clearAllData() { if(confirm("هل أنت متأكد من مسح قاعدة البيانات بالكامل؟")) { globalPatients = {}; globalReservations = {}; globalExpenses = {}; globalLabs = {}; pushDataToCloud(); } }
+    function clearAllData() { if(confirm("هل أنت متأكد من مسح قاعدة البيانات بالكامل؟")) { globalPatients = {}; globalReservations = {}; globalExpenses = {}; globalLabs = {}; globalNotebook = {}; pushDataToCloud(); } }
     window.onclick = function(event) { if (!event.target.matches('.form-group *')) { const menu = document.getElementById('services-dropdown-menu'); if(menu) menu.style.display = 'none'; } }
 </script>
 </body>
