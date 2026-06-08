@@ -8,7 +8,8 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef5f9; color: #2c3e50; padding: 15px; margin: 0; }
         .container { max-width: 1100px; margin: 0 auto; }
         header { background: #3498db; color: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        header h1 { margin: 0; font-size: 22px; }
+        header h1 { margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .header-logo { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; background: #fff; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .menu-btn { background: #2980b9; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
         .sidebar { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: #ffffff; box-shadow: -4px 0 15px rgba(0,0,0,0.1); transition: right 0.3s ease; z-index: 10000; display: flex; flex-direction: column; padding: 20px 10px; box-sizing: border-box; }
         .sidebar.open { right: 0; }
@@ -62,12 +63,14 @@
         .ratio-card .value { font-size: 22px; font-weight: bold; }
         .ratio-card .percentage-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; font-size: 12px; margin-top: 5px; }
         .sync-indicator { font-size: 12px; padding: 4px 12px; border-radius: 20px; background: #e67e22; color: white; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
+        .login-logo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin: 0 auto 20px auto; display: block; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 3px solid #3498db; }
     </style>
 </head>
 <body>
 
 <div id="login-screen" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
     <div class="box" style="width: 100%; max-width: 400px; text-align: center;">
+        <img src="https://raw.githubusercontent.com/aamr6277/dr3amer-clinic/main/44116.jpg" onerror="this.src='https://i.ibb.co/68XyK7B/44116.jpg'" class="login-logo" alt="Amer Dent Logo">
         <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول لنظام العيادة</h2>
         <div class="form-group" style="text-align: right;">
             <label>أدخل الرقم السري الموحد:</label>
@@ -81,7 +84,10 @@
 <div class="container" id="app-screen" style="display: none;">
     <header>
         <div>
-            <h1>إدارة العيادة الذكية الموحدة</h1>
+            <h1>
+                <img src="https://raw.githubusercontent.com/aamr6277/dr3amer-clinic/main/44116.jpg" onerror="this.src='https://i.ibb.co/68XyK7B/44116.jpg'" class="header-logo" alt="Icon">
+                إدارة العيادة الذكية الموحدة
+            </h1>
             <span id="sync-status" class="sync-indicator">⏳ جاري ربط شبكة العيادة اللحظية...</span>
         </div>
         <div style="display: flex; gap: 10px; align-items: center;">
@@ -110,7 +116,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="box old-box">
-                    <h2>إضافة وتسجيل مريض جديد</h2>
+                    <h2>إضافة وتسجيل مريض جديد (مساحة غير محدودة 🚀)</h2>
                     <form id="old-patient-form" onsubmit="saveOldPatient(event)">
                         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                             <div class="form-group" style="flex: 1.5; min-width: 220px;"><label>اسم المريض:</label><input type="text" id="old-p-name" required placeholder="اكتب اسم المريض"></div>
@@ -123,7 +129,7 @@
                 <div class="box">
                     <h2>سجل العيادة المالي والعام</h2>
                     <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
-                        <div style="flex: 2; min-width: 260px;"><input type="text" id="search-patient-input" oninput="updateApp()" placeholder="🔍 اكتب اسم المريض للبحث الفوري..."></div>
+                        <div style="flex: 2; min-width: 260px;"><input type="text" id="search-patient-input" oninput="updateApp()" placeholder="🔍 اكتب اسم المريض للبحث الفوري المسرّع..."></div>
                         <div style="flex: 1; min-width: 210px;"><button type="button" id="btn-toggle-debts" onclick="toggleDebtFilter()" style="background-color: #f39c12; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold;">⚠️ عرض الحالات المتأخرة فقط</button></div>
                     </div>
                     <div style="overflow-x:auto;">
@@ -146,7 +152,7 @@
                         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                             <div class="form-group" style="flex: 1.5; min-width: 220px;"><label>اسم الحالة / المريض:</label><input type="text" id="note-p-name" required placeholder="اكتب الاسم هنا"></div>
                             <div class="form-group" style="flex: 1; min-width: 130px;"><label>المبلغ المدفوع (ج.م):</label><input type="number" step="0.01" id="note-p-amount" required placeholder="0.00"></div>
-                            <div class="form-group" style="flex: 1; min-width: 180px;"><label>تاريخ الحالة (يمكنك تعديله للماضي 📅):</label><input type="date" id="note-p-date" required></div>
+                            <div class="form-group" style="flex: 1; min-width: 180px;"><label>تاريخ الحالة:</label><input type="date" id="note-p-date" required></div>
                         </div>
                         <button type="submit" style="background-color: #1abc9c; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold;">حفظ وتسجيل في الكشكول 📔</button>
                     </form>
@@ -429,7 +435,7 @@
         <div class="box" style="border-top: 3px solid #e67e22; background: #fffdfb; padding: 15px;">
             <div class="form-group"><label>إجمالي المديونية الكلية (ج.م):</label><input type="number" step="0.01" id="modal-l-total-debt" oninput="calculateLabFinancials()"></div>
             <div style="background: #fff9f2; padding: 12px; border-radius: 6px; border: 1px dashed #e67e22; margin-bottom: 12px;">
-                <label style="color: #d35400; font-weight: bold;">➕ تسجيل مبلـغ مدفوع للمعمل:</label>
+                <label style="color: #d35400; font-weight: bold;">➕ تسجيل مبلـغ مدفوع للممعمل:</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
                     <input type="number" step="0.01" id="new-lab-payment-amount" placeholder="المبلغ" style="flex: 1;">
                     <input type="date" id="new-lab-payment-date" style="flex: 1.2;">
@@ -456,6 +462,7 @@
     let showDebtsOnly = false; let lastInitializedDate = "";
     const monthNamesAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
+    // رابط السحابة الأساسي الخاص بك من لقطة شاشة Firebase
     const FIREBASE_DB_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com"; 
 
     function initFirebaseSync() {
@@ -532,7 +539,7 @@
         fetch(`${FIREBASE_DB_URL}/clinic_data.json`, {
             method: 'PUT',
             body: JSON.stringify(payload)
-        }).catch(e => console.log("محفوظ محلياً، في انتظار الإنترنت"));
+        }).catch(e => console.log("محفوظ محلياً"));
     }
 
     function setupYearDropdowns() {
@@ -648,7 +655,10 @@
         const dailyTableBody = document.getElementById('daily-payments-table-body'); dailyTableBody.innerHTML = ''; 
         const tableBody = document.getElementById('patients-table-body'); tableBody.innerHTML = '';
 
-        // 1. معالجة حسابات وجدول المرضى الأساسي
+        let patientRowsHTML = '';
+        let phonebookRowsHTML = '';
+        let dailyPaymentsHTML = '';
+
         Object.keys(globalPatients).forEach(id => {
             const p = globalPatients[id]; if (!p || !p.name) return; 
             let payments = p.payments ? (Array.isArray(p.payments) ? p.payments : Object.values(p.payments)) : [];
@@ -660,23 +670,27 @@
                 if(pay.date === selectedTargetDate) {
                     targetDayRevenue += amt;
                     let sessionLabel = pay.session ? ` (جـ ${pay.session})` : '';
-                    dailyTableBody.innerHTML += `<tr><td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td><td><span style="color:#2980b9; font-weight:bold;">${p.service || 'علاج أسنان'}${sessionLabel}</span></td><td style="color:#2ecc71; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td><span class="eye-icon" onclick="openPatientModal('${p.id}')">👁️ فتح</span></td></tr>`;
+                    dailyPaymentsHTML += `<tr><td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td><td><span style="color:#2980b9; font-weight:bold;">${p.service || 'علاج أسنان'}${sessionLabel}</span></td><td style="color:#2ecc71; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td><span class="eye-icon" onclick="openPatientModal('${p.id}')">👁️ فتح</span></td></tr>`;
                 }
             });
             
             const remaining = (p.totalAmount || 0) - patientPaidTotal;
             if (p.name.toLowerCase().includes(searchTerm) && (!showDebtsOnly || remaining > 0)) {
-                tableBody.innerHTML += `<tr><td><span class="patient-clickable-name" onclick="openPatientModal('${id}')">${p.name}</span><br><small>📞 ${p.phone || 'بدون رقم'}</small></td><td>${p.date || '---'}</td><td>${patientPaidTotal.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span><span class="trash-icon" onclick="deletePatient('${id}')">🗑️</span></div></td></tr>`;
+                patientRowsHTML += `<tr><td><span class="patient-clickable-name" onclick="openPatientModal('${id}')">${p.name}</span><br><small>📞 ${p.phone || 'بدون رقم'}</small></td><td>${p.date || '---'}</td><td>${patientPaidTotal.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span><span class="trash-icon" onclick="deletePatient('${id}')">🗑️</span></div></td></tr>`;
             }
 
             if (phonebookTableBody) {
                 if (p.name.toLowerCase().includes(phonebookSearchTerm) || (p.phone || '').toString().includes(phonebookSearchTerm)) {
-                    phonebookTableBody.innerHTML += `<tr><td style="text-align:right; font-weight: bold;">👤 ${p.name}</td><td style="direction: ltr; font-weight: bold; color: #2980b9;">📞 ${p.phone || 'بدون رقم'}</td><td>${p.date || '---'}</td><td>${p.service || 'لم يحدد'}</td><td><button onclick="openPatientModal('${id}')" style="background:#34495e; color:white; border:none; padding:5px 12px; border-radius:5px; cursor:pointer; font-weight:bold;">👁️ افتح</button></td></tr>`;
+                    phonebookRowsHTML += `<tr><td style="text-align:right; font-weight: bold;">👤 ${p.name}</td><td style="direction: ltr; font-weight: bold; color: #2980b9;">📞 ${p.phone || 'بدون رقم'}</td><td>${p.date || '---'}</td><td>${p.service || 'لم يحدد'}</td><td><button onclick="openPatientModal('${id}')" style="background:#34495e; color:white; border:none; padding:5px 12px; border-radius:5px; cursor:pointer; font-weight:bold;">👁️ افتح</button></td></tr>`;
                 }
             }
         });
 
-        // 2. معالجة وعرض كشكول الحالات
+        tableBody.innerHTML = patientRowsHTML;
+        if(phonebookTableBody) phonebookTableBody.innerHTML = phonebookRowsHTML;
+        dailyTableBody.innerHTML = dailyPaymentsHTML;
+
+        let notebookRowsHTML = '';
         Object.keys(globalNotebook).forEach(id => {
             const e = globalNotebook[id]; if(!e || !e.name) return;
             const amt = parseFloat(e.amount || 0);
@@ -692,88 +706,86 @@
             }
 
             if (e.name.toLowerCase().includes(notebookSearchTerm)) {
-                notebookTableBody.innerHTML += `<tr><td><b>${e.name}</b></td><td style="color:#2ecc71; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td style="color:#1abc9c; font-weight:bold;">📅 ${e.date || '---'}</td><td><span class="trash-icon" onclick="deleteNotebookEntry('${id}')">🗑️ مسح</span></td></tr>`;
+                notebookRowsHTML += `<tr><td><b>${e.name}</b></td><td style="color:#2ecc71; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td style="color:#1abc9c; font-weight:bold;">📅 ${e.date || '---'}</td><td><span class="trash-icon" onclick="deleteNotebookEntry('${id}')">🗑️ مسح</span></td></tr>`;
             }
         });
+        if(notebookTableBody) notebookTableBody.innerHTML = notebookRowsHTML;
 
-        // 3. كشف حساب المعامل
         const labsTableBody = document.getElementById('labs-table-body');
         if (labsTableBody) {
-            labsTableBody.innerHTML = '';
+            let labsRowsHTML = '';
             Object.keys(globalLabs).forEach(id => {
                 const l = globalLabs[id]; if(!l || !l.name) return;
                 let lPays = l.payments ? (Array.isArray(l.payments) ? l.payments : Object.values(l.payments)) : [];
                 const totalLabPaid = lPays.reduce((sum, lp) => sum + parseFloat(lp ? lp.amount || 0 : 0), 0); const labRemaining = (l.totalDebt || 0) - totalLabPaid;
-                labsTableBody.innerHTML += `<tr><td><span style="cursor:pointer; font-weight:bold;" onclick="openLabModal('${id}')">🔬 ${l.name}</span></td><td>${l.date || '---'}</td><td>${parseFloat(l.totalDebt || 0).toFixed(2)} ج.م</td><td>${totalLabPaid.toFixed(2)} ج.م</td><td style="color:${labRemaining > 0 ? '#e67e22' : '#7f8c8d'}; font-weight:bold;">${labRemaining.toFixed(2)} ج.م</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openLabModal('${id}')">👁️</span><span class="trash-icon" onclick="deleteLab('${id}')">🗑️</span></div></td></tr>`;
+                labsRowsHTML += `<tr><td><span style="cursor:pointer; font-weight:bold;" onclick="openLabModal('${id}')">🔬 ${l.name}</span></td><td>${l.date || '---'}</td><td>${parseFloat(l.totalDebt || 0).toFixed(2)} ج.م</td><td>${totalLabPaid.toFixed(2)} ج.م</td><td style="color:${labRemaining > 0 ? '#e67e22' : '#7f8c8d'}; font-weight:bold;">${labRemaining.toFixed(2)} ج.م</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openLabModal('${id}')">👁️</span><span class="trash-icon" onclick="deleteLab('${id}')">🗑️</span></div></td></tr>`;
             });
+            labsTableBody.innerHTML = labsRowsHTML;
         }
 
-        // 4. الحجوزات والمتابعات
-        const resTableBody = document.getElementById('reservations-table-body'); resTableBody.innerHTML = '';
+        const resTableBody = document.getElementById('reservations-table-body'); let resRowsHTML = '';
         Object.keys(globalReservations).forEach(id => {
-            const r = globalReservations[id]; if(r && r.name) resTableBody.innerHTML += `<tr><td><strong>${r.name}</strong><br><small>📞 ${r.phone || '---'}</small></td><td>${r.date || '---'}</td><td><button onclick="transferToPatient('${id}')" style="background:#2ecc71; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">حضر</button> <button onclick="deleteReservation('${id}')" style="background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">إلغاء</button></td></tr>`;
+            const r = globalReservations[id]; if(r && r.name) resRowsHTML += `<tr><td><strong>${r.name}</strong><br><small>📞 ${r.phone || '---'}</small></td><td>${r.date || '---'}</td><td><button onclick="transferToPatient('${id}')" style="background:#2ecc71; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">حضر</button> <button onclick="deleteReservation('${id}')" style="background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">إلغاء</button></td></tr>`;
         });
+        resTableBody.innerHTML = resRowsHTML;
 
-        const followupBody = document.getElementById('followups-table-body'); followupBody.innerHTML = ''; let fCount = 0;
+        const followupBody = document.getElementById('followups-table-body'); let followupRowsHTML = ''; let fCount = 0;
         const selectedFilterDate = document.getElementById('followup-filter-date').value;
         Object.keys(globalPatients).forEach(id => {
-            const p = globalPatients[id]; if(p && p.name && p.nextVisit && p.nextVisit === selectedFilterDate) { fCount++; followupBody.innerHTML += `<tr><td><strong>${p.name}</strong></td><td style="color:#00a3e0; font-weight:bold;">📅 ${p.nextVisit}</td><td>${p.service || 'متابعة'}</td><td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️ الملف</span></td></tr>`; }
+            const p = globalPatients[id]; if(p && p.name && p.nextVisit && p.nextVisit === selectedFilterDate) { fCount++; followupRowsHTML += `<tr><td><strong>${p.name}</strong></td><td style="color:#00a3e0; font-weight:bold;">📅 ${p.nextVisit}</td><td>${p.service || 'متابعة'}</td><td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️ الملف</span></td></tr>`; }
         });
+        followupBody.innerHTML = followupRowsHTML;
         document.getElementById('followups-count-badge').innerText = `💡 حالات المتابعة لهذا اليوم: ${fCount} مريض`;
 
-        // 5. الأرشيف الشهري
         const mMonth = parseInt(document.getElementById('monthly-month-select').value); const mYear = parseInt(document.getElementById('monthly-year-select').value || currentToday.getFullYear());
-        const monthlyBody = document.getElementById('monthly-patients-table-body'); monthlyBody.innerHTML = '';
+        const monthlyBody = document.getElementById('monthly-patients-table-body'); let monthlyRowsHTML = '';
         Object.keys(globalPatients).forEach(id => {
             const p = globalPatients[id]; if(p && p.name && p.date) {
                 const pDate = new Date(p.date); if((pDate.getMonth() + 1) === mMonth && pDate.getFullYear() === mYear) {
                     let payments = p.payments ? (Array.isArray(p.payments) ? p.payments : Object.values(p.payments)) : [];
                     const totalPaid = payments.reduce((sum, pay) => sum + parseFloat(pay ? pay.amount || 0 : 0), 0); const remaining = (p.totalAmount || 0) - totalPaid;
-                    monthlyBody.innerHTML += `<tr><td><strong>${p.name}</strong></td><td>${p.date}</td><td>${totalPaid.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td><td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span></td></tr>`;
+                    monthlyRowsHTML += `<tr><td><strong>${p.name}</strong></td><td>${p.date}</td><td>${totalPaid.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td><td><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span></td></tr>`;
                 }
             }
         });
+        monthlyBody.innerHTML = monthlyRowsHTML;
 
-        // 6. المصروفات وتجميع الإجماليات والنسب (تطبيق التحديث الجديد بالخصم من الـ 30%)
         let totalExpensesCalculated = 0; let targetDayExpenses = 0; 
-        const expenseBody = document.getElementById('expenses-table-body'); expenseBody.innerHTML = '';
+        const expenseBody = document.getElementById('expenses-table-body'); let expenseRowsHTML = '';
         Object.keys(globalExpenses).forEach(id => {
             const e = globalExpenses[id]; if(e) { 
                 const amt = parseFloat(e.amount || 0); totalExpensesCalculated += amt;
                 let expDate = e.date ? new Date(e.date) : new Date();
                 if (expDate.getFullYear() === reportYearSelected) mExp[expDate.getMonth()] += amt;
                 if(e.date === selectedTargetDate) targetDayExpenses += amt;
-                expenseBody.innerHTML += `<tr><td>${e.title || '---'}</td><td style="color:#e74c3c; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td><small>${e.date || '---'}</small></td><td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td></tr>`; 
+                expenseRowsHTML += `<tr><td>${e.title || '---'}</td><td style="color:#e74c3c; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td><small>${e.date || '---'}</small></td><td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td></tr>`; 
             }
         });
+        expenseBody.innerHTML = expenseRowsHTML;
 
-        // عرض الإحصائيات في كروت صفحة الأرباح والنسب
         document.getElementById('calc-total-revenues').innerText = targetDayRevenue.toFixed(2);
         document.getElementById('calc-total-expenses').innerText = targetDayExpenses.toFixed(2);
         
-        // ⚡ تعديل الحسبة لليوم المختار: خصم المصروف بالكامل من حصة العيادة (30%)
         let drDayShare = targetDayRevenue * 0.70;
         let clinicDayShare = (targetDayRevenue * 0.30) - targetDayExpenses; 
-        let netDayProfit = drDayShare + clinicDayShare; // أو يساوي عملياً (الدخل الكلي - المصروف)
+        let netDayProfit = drDayShare + clinicDayShare;
 
         document.getElementById('calc-daily-profit').innerText = netDayProfit.toFixed(2) + " ج.م";
         document.getElementById('calc-dr-share').innerText = drDayShare.toFixed(2) + " ج.م";
         document.getElementById('calc-clinic-share').innerText = clinicDayShare.toFixed(2) + " ج.م";
         
-        // الأرباح التراكمية الكلية الكبرى في البرنامج
         let totalNetProfit = totalRevenuesCollected - totalExpensesCalculated;
         document.getElementById('calc-net-profit').innerText = totalNetProfit.toFixed(2) + " ج.م";
 
-        // بناء جدول التقارير السنوية المجمعة طبقاً للنظام الجديد
-        const summaryTableBody = document.getElementById('monthly-summary-table-body'); summaryTableBody.innerHTML = '';
+        const summaryTableBody = document.getElementById('monthly-summary-table-body'); let summaryRowsHTML = '';
         for (let i = 0; i < 12; i++) {
             let rev = mRev[i]; let exp = mExp[i]; 
             let drMonthShare = rev * 0.70;
             let clinicMonthShare = (rev * 0.30) - exp;
             let netMonthProfit = drMonthShare + clinicMonthShare;
-            
-            summaryTableBody.innerHTML += `<tr><td><strong>${monthNamesAr[i]}</strong></td><td style="color:#2ecc71; font-weight:bold;">${rev.toFixed(2)} ج.م</td><td style="color:#e74c3c;">${exp.toFixed(2)} ج.م</td><td style="color:#117a65; font-weight:bold;">${drMonthShare.toFixed(2)} ج.م</td><td style="color:#b7950b; font-weight:bold;">${clinicMonthShare.toFixed(2)} ج.م</td><td style="color:${netMonthProfit >= 0 ? '#1565c0' : '#c62828'}; font-weight:bold;">${netMonthProfit.toFixed(2)} ج.م</td></tr>`;
+            summaryRowsHTML += `<tr><td><strong>${monthNamesAr[i]}</strong></td><td style="color:#2ecc71; font-weight:bold;">${rev.toFixed(2)} ج.م</td><td style="color:#e74c3c;">${exp.toFixed(2)} ج.م</td><td style="color:#117a65; font-weight:bold;">${drMonthShare.toFixed(2)} ج.م</td><td style="color:#b7950b; font-weight:bold;">${clinicMonthShare.toFixed(2)} ج.م</td><td style="color:${netMonthProfit >= 0 ? '#1565c0' : '#c62828'}; font-weight:bold;">${netMonthProfit.toFixed(2)} ج.م</td></tr>`;
         }
+        summaryTableBody.innerHTML = summaryRowsHTML;
     }
 
     function toggleDebtFilter() { showDebtsOnly = !showDebtsOnly; document.getElementById('btn-toggle-debts').style.background = showDebtsOnly ? '#2c3e50' : '#f39c12'; updateApp(); }
@@ -819,12 +831,14 @@
     function renderModalPayments() {
         const listDiv = document.getElementById('modal-payments-history-list'); listDiv.innerHTML = '';
         if(tempPaymentsList.length === 0) { listDiv.innerHTML = '<span style="color:#aaa; font-size:12px;">لا يوجد دفعات مسجلة.</span>'; return; }
+        let historyHTML = '';
         tempPaymentsList.forEach((p, idx) => {
             if (p) {
                 let sessionText = p.session ? ` [الجلسة: ${p.session}]` : '';
-                listDiv.innerHTML += `<div class="payment-item"><span>📅 <strong>${p.date || '---'}</strong> - دفعة: <b>${parseFloat(p.amount || 0).toFixed(2)} ج.م</b> <span style="color:#16a085; font-weight:bold;">${sessionText}</span></span><button type="button" class="delete-payment-btn" onclick="deleteTempPayment(${idx})">✕</button></div>`;
+                historyHTML += `<div class="payment-item"><span>📅 <strong>${p.date || '---'}</strong> - دفعة: <b>${parseFloat(p.amount || 0).toFixed(2)} ج.م</b> <span style="color:#16a085; font-weight:bold;">${sessionText}</span></span><button type="button" class="delete-payment-btn" onclick="deleteTempPayment(${idx})">✕</button></div>`;
             }
         });
+        listDiv.innerHTML = historyHTML;
     }
 
     function openLabModal(id) {
@@ -851,9 +865,11 @@
     function renderLabModalPayments() {
         const listDiv = document.getElementById('modal-lab-payments-list'); listDiv.innerHTML = '';
         if(tempLabPaymentsList.length === 0) { listDiv.innerHTML = '<span style="color:#aaa; font-size:12px;">لم يتم صرف دفعات.</span>'; return; }
+        let labHistoryHTML = '';
         tempLabPaymentsList.forEach((p, idx) => {
-            if(p) listDiv.innerHTML += `<div class="payment-item"><span>📅 <b>${p.date || '---'}</b> - تم دفع: <b>${parseFloat(p.amount || 0).toFixed(2)} ج.م</b></span><button type="button" class="delete-payment-btn" onclick="deleteTempLabPayment(${idx})">✕</button></div>`;
+            if(p) labHistoryHTML += `<div class="payment-item"><span>📅 <b>${p.date || '---'}</b> - تم دفع: <b>${parseFloat(p.amount || 0).toFixed(2)} ج.م</b></span><button type="button" class="delete-payment-btn" onclick="deleteTempLabPayment(${idx})">✕</button></div>`;
         });
+        listDiv.innerHTML = labHistoryHTML;
     }
 
     function saveLabFileChanges() {
