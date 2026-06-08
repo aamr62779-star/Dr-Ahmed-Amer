@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة العيادة الذكية الموحدة - د. أحمد حسن عامر</title>
+    <title>عيادة دكتور أحمد حسن عامر لتجميل الأسنان</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef5f9; color: #2c3e50; padding: 15px; margin: 0; }
         .container { max-width: 1100px; margin: 0 auto; }
         header { background: #3498db; color: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        header h1 { margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
-        .header-logo { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; background: #fff; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 22px; display: flex; align-items: center; gap: 12px; }
+        .header-logo { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #fff; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .menu-btn { background: #2980b9; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
         .sidebar { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: #ffffff; box-shadow: -4px 0 15px rgba(0,0,0,0.1); transition: right 0.3s ease; z-index: 10000; display: flex; flex-direction: column; padding: 20px 10px; box-sizing: border-box; }
         .sidebar.open { right: 0; }
@@ -63,21 +63,21 @@
         .ratio-card .value { font-size: 22px; font-weight: bold; }
         .ratio-card .percentage-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; font-size: 12px; margin-top: 5px; }
         .sync-indicator { font-size: 12px; padding: 4px 12px; border-radius: 20px; background: #e67e22; color: white; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
-        .login-logo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin: 0 auto 20px auto; display: block; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 3px solid #3498db; }
+        .login-logo { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; margin: 0 auto 20px auto; display: block; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 3px solid #3498db; }
     </style>
 </head>
 <body>
 
 <div id="login-screen" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
-    <div class="box" style="width: 100%; max-width: 400px; text-align: center;">
-        <img src="https://raw.githubusercontent.com/aamr6277/dr3amer-clinic/main/44116.jpg" onerror="this.src='https://i.ibb.co/68XyK7B/44116.jpg'" class="login-logo" alt="Amer Dent Logo">
-        <h2 style="color: #2980b9; margin-bottom: 25px;">تسجيل الدخول لنظام العيادة</h2>
+    <div class="box" style="width: 100%; max-width: 420px; text-align: center;">
+        <div id="login-logo-container"></div>
+        <h2 style="color: #2980b9; margin-bottom: 25px; font-size: 20px;">عيادة دكتور أحمد حسن عامر لتجميل الأسنان</h2>
         <div class="form-group" style="text-align: right;">
-            <label>أدخل الرقم السري الموحد:</label>
+            <label>أدخل الرقم السري الموحد للعيادة:</label>
             <input type="password" id="app-password" placeholder="••••" style="text-align: center; font-size: 20px; letter-spacing: 6px;">
         </div>
         <p id="login-error" style="color: #e74c3c; font-size: 14px; display: none; margin-bottom: 15px; font-weight: bold;">الرقم السري غير صحيح!</p>
-        <button onclick="validateLogin()" style="background-color:#3498db; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; width:100%; font-weight:bold;">دخول للبرنامج</button>
+        <button onclick="validateLogin()" style="background-color:#3498db; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; width:100%; font-weight:bold; font-size: 16px;">دخول للنظام 🔓</button>
     </div>
 </div>
 
@@ -85,8 +85,8 @@
     <header>
         <div>
             <h1>
-                <img src="https://raw.githubusercontent.com/aamr6277/dr3amer-clinic/main/44116.jpg" onerror="this.src='https://i.ibb.co/68XyK7B/44116.jpg'" class="header-logo" alt="Icon">
-                إدارة العيادة الذكية الموحدة
+                <div id="header-logo-container" style="display: inline-block; vertical-align: middle;"></div>
+                عيادة دكتور أحمد حسن عامر لتجميل الأسنان
             </h1>
             <span id="sync-status" class="sync-indicator">⏳ جاري ربط شبكة العيادة اللحظية...</span>
         </div>
@@ -457,12 +457,30 @@
 </div>
 
 <script>
+    // تضمين اللوجو الأزرق الأصلي ككود SVG مدمج لضمان الاستقرار التام وعرضه بدقة عالية
+    const AMER_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" style="width:100%; height:100%;">
+        <circle cx="250" cy="250" r="230" fill="#0c1d33" stroke="#cca43b" stroke-width="8"/>
+        <circle cx="250" cy="250" r="210" fill="none" stroke="#ffffff" stroke-width="2" stroke-dasharray="8 6"/>
+        <path d="M250,110 C180,110 140,160 140,240 C140,330 210,380 250,410 C290,380 360,330 360,240 C360,160 320,110 250,110 Z" fill="#ffffff"/>
+        <path d="M250,130 C200,130 165,175 165,240 C165,310 220,350 250,380 C280,350 335,310 335,240 C335,175 300,130 250,130 Z" fill="#0c1d33"/>
+        <path d="M190,190 Q250,150 310,190 Q320,270 280,330 Q250,300 220,330 Q180,270 190,190 Z" fill="#ffffff"/>
+        <path d="M210,210 Q250,185 290,210 Q295,260 270,300 Q250,280 230,300 Q205,260 210,210 Z" fill="#0c1d33"/>
+        <circle cx="235" cy="230" r="8" fill="#cca43b"/>
+        <circle cx="265" cy="230" r="8" fill="#cca43b"/>
+        <path d="M230,260 Q250,275 270,260" stroke="#cca43b" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M130,250 A120,120 0 0,1 370,250" fill="none" stroke="#cca43b" stroke-width="4"/>
+        <text x="250" y="70" font-family="'Segoe UI', Arial" font-size="28" font-weight="bold" fill="#cca43b" text-anchor="middle" letter-spacing="2">DR. AHMED AMER</text>
+        <text x="250" y="460" font-family="'Segoe UI', Arial" font-size="24" font-weight="bold" fill="#ffffff" text-anchor="middle">CLINIC</text>
+    </svg>`;
+
+    document.getElementById('login-logo-container').innerHTML = `<div class="login-logo">${AMER_LOGO_SVG}</div>`;
+    document.getElementById('header-logo-container').innerHTML = `<div class="header-logo" style="width:38px; height:38px; padding:2px;">${AMER_LOGO_SVG}</div>`;
+
     let globalPatients = {}; let globalReservations = {}; let globalExpenses = {}; let globalLabs = {}; let globalNotebook = {};
     let tempPaymentsList = []; let tempLabPaymentsList = []; 
     let showDebtsOnly = false; let lastInitializedDate = "";
     const monthNamesAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
-    // رابط السحابة الأساسي الخاص بك من لقطة شاشة Firebase
     const FIREBASE_DB_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com"; 
 
     function initFirebaseSync() {
