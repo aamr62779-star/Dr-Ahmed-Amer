@@ -46,7 +46,7 @@
         .page-content { display: none; }
         .page-content.active-page { display: block; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); justify-content: center; align-items: center; z-index: 9999; padding: 10px; box-sizing: border-box; }
-        .modal-content { background: #fff; width: 100%; max-width: 520px; border-radius: 8px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid #3498db; max-height: 90vh; overflow-y: auto; }
+        .modal-content { background: #fff; width: 100%; max-width: 550px; border-radius: 8px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid #3498db; max-height: 95vh; overflow-y: auto; }
         .dropdown-menu { display: none; position: absolute; top: 100%; right: 0; left: 0; background: #fff; border: 1px solid #bdc3c7; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10005; max-height: 220px; overflow-y: auto; margin-top: 2px; }
         .dropdown-item { padding: 11px 15px; cursor: pointer; text-align: right; font-size: 14px; }
         .dropdown-item:hover { background-color: #e8f2f9; color: #2980b9; font-weight: bold; }
@@ -384,16 +384,19 @@
         <div class="box" style="border-top: 3px solid #2ecc71; background: #fcfdfe; padding: 15px; margin-bottom: 15px;">
             <h3 style="margin-top: 0; font-size: 15px; color: #27ae60;">💸 الحسابات والمدفوعات للجلسات</h3>
             <div class="form-group"><label>المبلغ الإجمالي الكلي المطلوب (ج.م):</label><input type="number" step="0.01" id="modal-p-total-amount" oninput="calculateFinancials()"></div>
+            
             <div style="background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px dashed #2ecc71; margin-bottom: 12px;">
-                <label style="color: #166534; font-weight: bold;">➕ تسجيل مدفوع لجلسة جديدة:</label>
+                <label style="color: #166534; font-weight: bold;">➕ تسجيل مبلغ مدفوع لجلسة جديدة:</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
-                    <input type="number" step="0.01" id="new-payment-amount" placeholder="المبلغ" style="flex: 1;">
-                    <input type="date" id="new-payment-date" style="flex: 1.2;">
-                    <button type="button" onclick="addPaymentToTempList()" style="background: #2ecc71; color: white; border: none; padding: 0 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">أضف</button>
+                    <input type="number" step="0.01" id="new-payment-amount" placeholder="المبلغ" style="flex: 1; min-width: 80px;">
+                    <input type="text" id="new-payment-session" placeholder="رقم/اسم الجلسة" style="flex: 1; min-width: 100px;">
+                    <input type="date" id="new-payment-date" style="flex: 1.2; min-width: 120px;">
+                    <button type="button" onclick="addPaymentToTempList()" style="background: #2ecc71; color: white; border: none; padding: 0 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">أضف</button>
                 </div>
             </div>
+            
             <label>📋 سجل دفعات الجلسات:</label>
-            <div id="modal-payments-history-list" style="max-height: 130px; overflow-y: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;"></div>
+            <div id="modal-payments-history-list" style="max-height: 150px; overflow-y: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;"></div>
             <div style="display: flex; gap: 10px; margin-top: 12px; background: #e8f2f9; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold;">
                 <div style="flex: 1; color: #1e7e34; text-align: center;">تم دفع: <span id="lbl-total-paid">0.00</span> ج.م</div>
                 <div style="flex: 1; color: #bd2130; text-align: center;">المتبقي: <span id="lbl-total-remaining">0.00</span> ج.م</div>
@@ -453,7 +456,7 @@
     let showDebtsOnly = false; let lastInitializedDate = "";
     const monthNamesAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
-    // 📡 رابط عيادتك الحقيقي والمجرب
+    // 📡 رابط السحابة الحقيقي المحدث لعيادتك
     const FIREBASE_DB_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com"; 
 
     function initFirebaseSync() {
@@ -657,7 +660,8 @@
                 if (pay.date) { const pDateObj = new Date(pay.date); if (pDateObj.getFullYear() === reportYearSelected) mRev[pDateObj.getMonth()] += amt; }
                 if(pay.date === selectedTargetDate) {
                     targetDayRevenue += amt;
-                    dailyTableBody.innerHTML += `<tr><td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td><td><span style="color:#2980b9; font-weight:bold;">${p.service || 'علاج أسنان'}</span></td><td style="color:#2ecc71; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td><span class="eye-icon" onclick="openPatientModal('${p.id}')">👁️ فتح</span></td></tr>`;
+                    let sessionLabel = pay.session ? ` (جـ ${pay.session})` : '';
+                    dailyTableBody.innerHTML += `<tr><td><strong>${p.name}</strong><br><small>📞 ${p.phone || '---'}</small></td><td><span style="color:#2980b9; font-weight:bold;">${p.service || 'علاج أسنان'}${sessionLabel}</span></td><td style="color:#2ecc71; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td><span class="eye-icon" onclick="openPatientModal('${p.id}')">👁️ فتح</span></td></tr>`;
                 }
             });
             
@@ -673,7 +677,7 @@
             }
         });
 
-        // 2. معالجة وعرض كشكول الحالات (إضافة الدخل للأرباح والنسب)
+        // 2. معالجة وعرض كشكول الحالات
         Object.keys(globalNotebook).forEach(id => {
             const e = globalNotebook[id]; if(!e || !e.name) return;
             const amt = parseFloat(e.amount || 0);
@@ -768,7 +772,12 @@
         document.getElementById('modal-p-phone').value = p.phone || ''; document.getElementById('modal-p-date').value = p.date || '';
         document.getElementById('modal-p-next-visit').value = p.nextVisit || ''; document.getElementById('modal-p-total-amount').value = p.totalAmount || 0;
         document.getElementById('modal-p-service').value = p.service || '';
+        
         tempPaymentsList = p.payments ? (Array.isArray(p.payments) ? [...p.payments] : Object.values(p.payments)) : [];
+        
+        // ✨ الميزة الذكية: اقتراح رقم الجلسة الجديدة تلقائياً بناءً على عدد الدفعات السابقة
+        document.getElementById('new-payment-session').value = tempPaymentsList.length + 1;
+        
         renderModalPayments(); calculateFinancials(); document.getElementById('patient-modal').style.display = 'flex';
     }
     function closePatientModal() { document.getElementById('patient-modal').style.display = 'none'; }
@@ -781,9 +790,20 @@
 
     function addPaymentToTempList() {
         const amtInput = document.getElementById('new-payment-amount'); const dateInput = document.getElementById('new-payment-date');
+        const sessionInput = document.getElementById('new-payment-session');
         const amt = parseFloat(amtInput.value || 0); if(amt <= 0) return;
-        tempPaymentsList.push({ amount: amt, date: dateInput.value || getLocalDateString() });
-        amtInput.value = ''; renderModalPayments(); calculateFinancials();
+        
+        tempPaymentsList.push({ 
+            amount: amt, 
+            date: dateInput.value || getLocalDateString(),
+            session: sessionInput.value || (tempPaymentsList.length + 1)
+        });
+        
+        amtInput.value = ''; 
+        // تحديث رقم الجلسة المقترح للجلسة اللي بعدها تلقائياً
+        sessionInput.value = tempPaymentsList.length + 1;
+        
+        renderModalPayments(); calculateFinancials();
     }
     function deleteTempPayment(idx) { tempPaymentsList.splice(idx, 1); renderModalPayments(); calculateFinancials(); }
 
@@ -791,7 +811,10 @@
         const listDiv = document.getElementById('modal-payments-history-list'); listDiv.innerHTML = '';
         if(tempPaymentsList.length === 0) { listDiv.innerHTML = '<span style="color:#aaa; font-size:12px;">لا يوجد دفعات مسجلة.</span>'; return; }
         tempPaymentsList.forEach((p, idx) => {
-            if (p) listDiv.innerHTML += `<div class="payment-item"><span>📅 <strong>${p.date || '---'}</strong> - دفعة: <b>${parseFloat(p.amount || 0).toFixed(2)} ج.م</b></span><button type="button" class="delete-payment-btn" onclick="deleteTempPayment(${idx})">✕</button></div>`;
+            if (p) {
+                let sessionText = p.session ? ` [الجلسة: ${p.session}]` : '';
+                listDiv.innerHTML += `<div class="payment-item"><span>📅 <strong>${p.date || '---'}</strong> - دفعة: <b>${parseFloat(p.amount || 0).toFixed(2)} ج.م</b> <span style="color:#16a085; font-weight:bold;">${sessionText}</span></span><button type="button" class="delete-payment-btn" onclick="deleteTempPayment(${idx})">✕</button></div>`;
+            }
         });
     }
 
