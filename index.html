@@ -322,14 +322,14 @@
                         </div>
                     </div>
                     <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px dashed #1abc9c; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-                        • 📥 <b>إجمالي الإيرادات المحصلة (عيادة + كشكول):</b> <span id="calc-total-revenues" style="font-weight: bold; color: #2ecc71;">0.00</span> ج.م<br>
-                        • 📤 <b>إجمالي المصروفات العامة:</b> <span id="calc-total-expenses" style="font-weight: bold; color: #e74c3c;">0.00</span> ج.م
+                        • 📥 <b>إجمالي الإيرادات المحصلة اليوم:</b> <span id="calc-total-revenues" style="font-weight: bold; color: #2ecc71;">0.00</span> ج.م<br>
+                        • 📤 <b>مصروفات اليوم (تخصم من العيادة):</b> <span id="calc-total-expenses" style="font-weight: bold; color: #e74c3c;">0.00</span> ج.م
                     </div>
                     <div class="ratio-cards-container">
-                        <div class="ratio-card daily"><h3>💰 صافي ربح اليوم المختار</h3><div class="value" id="calc-daily-profit">0.00 ج.م</div><span class="percentage-badge" id="daily-date-badge">خزينة اليوم</span></div>
-                        <div class="ratio-card dr"><h3>👨‍⚕️ حصة دكتور أحمد (اليوم)</h3><div class="value" id="calc-dr-share">0.00 ج.م</div><span class="percentage-badge">النسبة: 70% بعد خصم مصروف اليوم</span></div>
-                        <div class="ratio-card clinic"><h3>🏥 حصة إدارة العيادة (اليوم)</h3><div class="value" id="calc-clinic-share">0.00 ج.م</div><span class="percentage-badge">النسبة: 30% بعد خصم مصروف اليوم</span></div>
-                        <div class="ratio-card total"><h3>💵 الأرباح التراكمية الكلية</h3><div class="value" id="calc-net-profit">0.00 ج.م</div><span class="percentage-badge">إجمالي عام للبرنامج</span></div>
+                        <div class="ratio-card daily"><h3>💰 صافي ربح اليوم الفعلي الكلي</h3><div class="value" id="calc-daily-profit">0.00 ج.م</div><span class="percentage-badge" id="daily-date-badge">خزينة اليوم</span></div>
+                        <div class="ratio-card dr"><h3>👨‍⚕️ حصة دكتور أحمد (70%)</h3><div class="value" id="calc-dr-share">0.00 ج.م</div><span class="percentage-badge">صافية 70% بالكامل بدون خصم مصروفات</span></div>
+                        <div class="ratio-card clinic"><h3>🏥 حصة العيادة (30% بعد المصروف)</h3><div class="value" id="calc-clinic-share">0.00 ج.م</div><span class="percentage-badge">30% من الدخل مخصوماً منها مصروف اليوم</span></div>
+                        <div class="ratio-card total"><h3>💵 الأرباح التراكمية الكلية بالنظام</h3><div class="value" id="calc-net-profit">0.00 ج.م</div><span class="percentage-badge">إجمالي صافي الأرباح العام</span></div>
                     </div>
                     <div style="margin-top: 30px;">
                         <h3 style="font-size: 16px; color: #e67e22; border-bottom: 2px solid #f39c12; padding-bottom: 8px; margin-bottom: 15px;">📋 بيان إيرادات الحالات لليوم المختار</h3>
@@ -356,11 +356,11 @@
                             <thead>
                                 <tr>
                                     <th>الشهر</th>
-                                    <th style="background-color: #eafaf1; color: #2e7d32;">📥 الدخل (ج.م)</th>
+                                    <th style="background-color: #eafaf1; color: #2e7d32;">📥 الدخل المجمع (ج.م)</th>
                                     <th style="background-color: #fdf2f2; color: #c62828;">📤 المصروفات (ج.م)</th>
-                                    <th style="background-color: #edf2fa; color: #1565c0;">💵 صافي الدخل</th>
-                                    <th style="background-color: #e8f8f5; color: #117a65;">👨‍⚕️ د. أحمد (70%)</th>
-                                    <th style="background-color: #fcf3cf; color: #b7950b;">🏥 العيادة (30%)</th>
+                                    <th style="background-color: #e8f8f5; color: #117a65;">👨‍⚕️ د. أحمد (صافي 70%)</th>
+                                    <th style="background-color: #fcf3cf; color: #b7950b;">🏥 العيادة (30% - المصروف)</th>
+                                    <th style="background-color: #edf2fa; color: #1565c0;">💵 صافي الربح الكلي للشهر</th>
                                 </tr>
                             </thead>
                             <tbody id="monthly-summary-table-body"></tbody>
@@ -456,7 +456,6 @@
     let showDebtsOnly = false; let lastInitializedDate = "";
     const monthNamesAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
-    // 📡 رابط السحابة الحقيقي المحدث لعيادتك
     const FIREBASE_DB_URL = "https://dr3amer-clinic-default-rtdb.firebaseio.com"; 
 
     function initFirebaseSync() {
@@ -735,7 +734,7 @@
             }
         });
 
-        // 6. المصروفات وتجميع الإجماليات والنسب
+        // 6. المصروفات وتجميع الإجماليات والنسب (تطبيق التحديث الجديد بالخصم من الـ 30%)
         let totalExpensesCalculated = 0; let targetDayExpenses = 0; 
         const expenseBody = document.getElementById('expenses-table-body'); expenseBody.innerHTML = '';
         Object.keys(globalExpenses).forEach(id => {
@@ -744,23 +743,36 @@
                 let expDate = e.date ? new Date(e.date) : new Date();
                 if (expDate.getFullYear() === reportYearSelected) mExp[expDate.getMonth()] += amt;
                 if(e.date === selectedTargetDate) targetDayExpenses += amt;
-                expenseBody.innerHTML += `<tr><td>${e.title || '---'}</td><td style="color:#e74c3c; font-weight:bold;">${amt.toFixed(2)} ج.m</td><td><small>${e.date || '---'}</small></td><td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td></tr>`; 
+                expenseBody.innerHTML += `<tr><td>${e.title || '---'}</td><td style="color:#e74c3c; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td><small>${e.date || '---'}</small></td><td><span class="trash-icon" onclick="deleteExpense('${id}')">🗑️</span></td></tr>`; 
             }
         });
 
-        document.getElementById('calc-total-revenues').innerText = totalRevenuesCollected.toFixed(2);
-        document.getElementById('calc-total-expenses').innerText = totalExpensesCalculated.toFixed(2);
-        let netDayProfit = targetDayRevenue - targetDayExpenses;
-        document.getElementById('calc-daily-profit').innerText = netDayProfit.toFixed(2) + " ج.م";
-        document.getElementById('calc-dr-share').innerText = (netDayProfit > 0 ? netDayProfit * 0.70 : 0).toFixed(2) + " ج.م";
-        document.getElementById('calc-clinic-share').innerText = (netDayProfit > 0 ? netDayProfit * 0.30 : 0).toFixed(2) + " ج.م";
-        let netProfit = totalRevenuesCollected - totalExpensesCalculated;
-        document.getElementById('calc-net-profit').innerText = netProfit.toFixed(2) + " ج.م";
+        // عرض الإحصائيات في كروت صفحة الأرباح والنسب
+        document.getElementById('calc-total-revenues').innerText = targetDayRevenue.toFixed(2);
+        document.getElementById('calc-total-expenses').innerText = targetDayExpenses.toFixed(2);
+        
+        // ⚡ تعديل الحسبة لليوم المختار: خصم المصروف بالكامل من حصة العيادة (30%)
+        let drDayShare = targetDayRevenue * 0.70;
+        let clinicDayShare = (targetDayRevenue * 0.30) - targetDayExpenses; 
+        let netDayProfit = drDayShare + clinicDayShare; // أو يساوي عملياً (الدخل الكلي - المصروف)
 
+        document.getElementById('calc-daily-profit').innerText = netDayProfit.toFixed(2) + " ج.م";
+        document.getElementById('calc-dr-share').innerText = drDayShare.toFixed(2) + " ج.م";
+        document.getElementById('calc-clinic-share').innerText = clinicDayShare.toFixed(2) + " ج.م";
+        
+        // الأرباح التراكمية الكلية الكبرى في البرنامج
+        let totalNetProfit = totalRevenuesCollected - totalExpensesCalculated;
+        document.getElementById('calc-net-profit').innerText = totalNetProfit.toFixed(2) + " ج.م";
+
+        // بناء جدول التقارير السنوية المجمعة طبقاً للنظام الجديد
         const summaryTableBody = document.getElementById('monthly-summary-table-body'); summaryTableBody.innerHTML = '';
         for (let i = 0; i < 12; i++) {
-            let rev = mRev[i]; let exp = mExp[i]; let net = rev - exp;
-            summaryTableBody.innerHTML += `<tr><td><strong>${monthNamesAr[i]}</strong></td><td style="color:#2ecc71; font-weight:bold;">${rev.toFixed(2)} ج.م</td><td style="color:#e74c3c;">${exp.toFixed(2)} ج.م</td><td style="color:${net >= 0 ? '#1565c0' : '#c62828'}; font-weight:bold;">${net.toFixed(2)} ج.م</td><td style="color:#117a65; font-weight:bold;">${(net > 0 ? net*0.7 : 0).toFixed(2)} ج.م</td><td style="color:#b7950b; font-weight:bold;">${(net > 0 ? net*0.3 : 0).toFixed(2)} ج.م</td></tr>`;
+            let rev = mRev[i]; let exp = mExp[i]; 
+            let drMonthShare = rev * 0.70;
+            let clinicMonthShare = (rev * 0.30) - exp;
+            let netMonthProfit = drMonthShare + clinicMonthShare;
+            
+            summaryTableBody.innerHTML += `<tr><td><strong>${monthNamesAr[i]}</strong></td><td style="color:#2ecc71; font-weight:bold;">${rev.toFixed(2)} ج.م</td><td style="color:#e74c3c;">${exp.toFixed(2)} ج.م</td><td style="color:#117a65; font-weight:bold;">${drMonthShare.toFixed(2)} ج.م</td><td style="color:#b7950b; font-weight:bold;">${clinicMonthShare.toFixed(2)} ج.م</td><td style="color:${netMonthProfit >= 0 ? '#1565c0' : '#c62828'}; font-weight:bold;">${netMonthProfit.toFixed(2)} ج.م</td></tr>`;
         }
     }
 
@@ -774,8 +786,6 @@
         document.getElementById('modal-p-service').value = p.service || '';
         
         tempPaymentsList = p.payments ? (Array.isArray(p.payments) ? [...p.payments] : Object.values(p.payments)) : [];
-        
-        // ✨ الميزة الذكية: اقتراح رقم الجلسة الجديدة تلقائياً بناءً على عدد الدفعات السابقة
         document.getElementById('new-payment-session').value = tempPaymentsList.length + 1;
         
         renderModalPayments(); calculateFinancials(); document.getElementById('patient-modal').style.display = 'flex';
@@ -800,7 +810,6 @@
         });
         
         amtInput.value = ''; 
-        // تحديث رقم الجلسة المقترح للجلسة اللي بعدها تلقائياً
         sessionInput.value = tempPaymentsList.length + 1;
         
         renderModalPayments(); calculateFinancials();
