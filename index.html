@@ -70,7 +70,6 @@
         .chart-jaw-block { display: flex; justify-content: center; gap: 20px; margin-bottom: 15px; }
         .chart-quadrant { display: flex; gap: 3px; background: #fff; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); min-height: 52px; }
         
-        /* جعل الأرباع تترتب دائماً من المنتصف (السنترال) إلى الخارج هندسياً */
         .quadrant-ur { flex-direction: row-reverse; }
         .quadrant-ul { flex-direction: row; }
         .quadrant-lr { flex-direction: row-reverse; }
@@ -86,7 +85,6 @@
         .chart-title { font-size: 14px; font-weight: bold; color: #0284c7; margin-bottom: 12px; display: flex; justify-content: center; align-items: center; gap: 6px; }
         .jaw-label { font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 5px; text-align: center; background: #e2e8f0; padding: 2px; border-radius: 4px; }
         
-        /* أزرار اختيار نوع المريض */
         .patient-type-selector { display: flex; gap: 10px; margin-bottom: 15px; }
         .type-radio-btn { flex: 1; padding: 10px; text-align: center; background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s ease; }
         .type-radio-btn.selected-adult { background: #e0f2fe; border-color: #3498db; color: #0369a1; }
@@ -443,9 +441,18 @@
             </div>
         </div>
 
+        <div class="form-group">
+            <label>📝 ملاحظات وتاريخ العلاج الطبي (الأرشيف):</label>
+            <textarea id="modal-p-notes" placeholder="اكتب التاريخ المرضي، أو الحالات السابقة التي انتهت مع المريض..." rows="3" style="width:100%; border-radius:6px; padding:10px; border:1px solid #bdc3c7; font-family:inherit; font-size:14px; box-sizing:border-box; resize:vertical;"></textarea>
+        </div>
+
         <div class="box" style="border-top: 3px solid #2ecc71; background: #fcfdfe; padding: 15px; margin-bottom: 15px;">
-            <h3 style="margin-top: 0; font-size: 15px; color: #27ae60;">💸 الحسابات والمدفوعات للجلسات</h3>
-            <div class="form-group"><label>المبلغ الإجمالي الكلي المطلوب (ج.م):</label><input type="number" step="0.01" id="modal-p-total-amount" oninput="calculateFinancials()"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="margin: 0; font-size: 15px; color: #27ae60;">💸 الحسابات والمدفوعات للجلسات</h3>
+                <button type="button" onclick="startNewTreatmentCycle()" style="background-color: #34495e; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 4px;">🔄 تصفير لخدمة جديدة</button>
+            </div>
+            
+            <div class="form-group"><label>المبلغ الإجمالي للدورة الحالية (ج.م):</label><input type="number" step="0.01" id="modal-p-total-amount" oninput="calculateFinancials()"></div>
             
             <div style="background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px dashed #2ecc71; margin-bottom: 12px;">
                 <label style="color: #166534; font-weight: bold;">➕ تسجيل مبلغ مدفوع لجلسة جديدة:</label>
@@ -457,16 +464,16 @@
                 </div>
             </div>
             
-            <label>📋 سجل دفعات الجلسات:</label>
+            <label>📋 سجل دفعات الجلسات (العام):</label>
             <div id="modal-payments-history-list" style="max-height: 150px; overflow-y: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;"></div>
             <div style="display: flex; gap: 10px; margin-top: 12px; background: #e8f2f9; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold;">
                 <div style="flex: 1; color: #1e7e34; text-align: center;">تم دفع: <span id="lbl-total-paid">0.00</span> ج.م</div>
-                <div style="flex: 1; color: #bd2130; text-align: center;">المتبقي: <span id="lbl-total-remaining">0.00</span> ج.م</div>
+                <div style="flex: 1; color: #bd2130; text-align: center;">المتبقي حالياً: <span id="lbl-total-remaining">0.00</span> ج.م</div>
             </div>
         </div>
 
         <div class="form-group">
-            <label>الخدمة الطبية للأسنان:</label>
+            <label>الخدمة الطبية الحالية:</label>
             <div style="display: flex; width: 100%;"><input type="text" id="modal-p-service" placeholder="اكتب الخدمة أو اختر..." style="border-radius: 0 6px 6px 0; border-left: none; flex: 1;"><button type="button" onclick="toggleServicesDropdown(event)" style="background: #e8f2f9; border: 1px solid #bdc3c7; border-radius: 6px 0 0 6px; width: 45px; cursor: pointer; color: #2980b9;">▼</button></div>
             <div id="services-dropdown-menu" class="dropdown-menu">
                 <div class="dropdown-item" onclick="selectServiceItem('تركيبات تجميلية')">تركيبات تجميلية</div>
@@ -536,7 +543,6 @@
     let currentModalPatientAgeType = 'adult'; 
     let selectedTeethTemp = []; 
 
-    // دالة بناء الخريطة هندسياً لتبدأ دائماً برقم 1 من السنترال في المنتصف وتخرج لـ 8 أو 5 في الأطراف
     function buildDentalChartUI(ageType) {
         currentModalPatientAgeType = ageType;
         let quadUrHtml = ''; let quadUlHtml = ''; let quadLrHtml = ''; let quadLlHtml = '';
@@ -546,7 +552,6 @@
             document.getElementById('upper-jaw-label').innerText = "الفك العلوي اللبني (Upper Primary Arch)";
             document.getElementById('lower-jaw-label').innerText = "الفك السفلي اللبني (Lower Primary Arch)";
 
-            // الترقيم يبدأ من 1 (السنترال) تصاعدياً للأطراف
             for(let i=1; i<=5; i++) quadUrHtml += `<div class="tooth-box" id="tooth-5${i}" onclick="toggleToothSelection(5${i})"><span class="tooth-number">${i}</span>${TOOTH_SVG_PATH}</div>`;
             for(let i=1; i<=5; i++) quadUlHtml += `<div class="tooth-box" id="tooth-6${i}" onclick="toggleToothSelection(6${i})"><span class="tooth-number">${i}</span>${TOOTH_SVG_PATH}</div>`;
             for(let i=1; i<=5; i++) quadLrHtml += `<div class="tooth-box" id="tooth-8${i}" onclick="toggleToothSelection(8${i})"><span class="tooth-number">${i}</span>${TOOTH_SVG_PATH}</div>`;
@@ -556,7 +561,6 @@
             document.getElementById('upper-jaw-label').innerText = "الفك العلوي (Upper Arch)";
             document.getElementById('lower-jaw-label').innerText = "الفك السفلي (Lower Arch)";
 
-            // الترقيم يبدأ من 1 (السنترال) تصاعدياً حتى 8 (ضرس العقل) في الأطراف الخرجية
             for(let i=1; i<=8; i++) quadUrHtml += `<div class="tooth-box" id="tooth-1${i}" onclick="toggleToothSelection(1${i})"><span class="tooth-number">${i}</span>${TOOTH_SVG_PATH}</div>`;
             for(let i=1; i<=8; i++) quadUlHtml += `<div class="tooth-box" id="tooth-2${i}" onclick="toggleToothSelection(2${i})"><span class="tooth-number">${i}</span>${TOOTH_SVG_PATH}</div>`;
             for(let i=1; i<=8; i++) quadLrHtml += `<div class="tooth-box" id="tooth-4${i}" onclick="toggleToothSelection(4${i})"><span class="tooth-number">${i}</span>${TOOTH_SVG_PATH}</div>`;
@@ -568,7 +572,6 @@
         document.getElementById('quad-lr').innerHTML = quadLrHtml;
         document.getElementById('quad-ll').innerHTML = quadLlHtml;
 
-        // إعادة إضاءة الأسنان النشطة المحددة مسبقاً
         selectedTeethTemp.forEach(num => {
             const box = document.getElementById(`tooth-${num}`);
             if(box) box.classList.add('active');
@@ -739,7 +742,7 @@
 
     function saveOldPatient(e) {
         e.preventDefault(); const id = 'p_' + Date.now();
-        globalPatients[id] = { id: id, name: document.getElementById('old-p-name').value, phone: document.getElementById('old-p-phone').value, date: document.getElementById('old-p-date').value, totalAmount: 0, service: "", nextVisit: "", ageType: "adult", payments: [], treatedTeeth: [] };
+        globalPatients[id] = { id: id, name: document.getElementById('old-p-name').value, phone: document.getElementById('old-p-phone').value, date: document.getElementById('old-p-date').value, totalAmount: 0, service: "", nextVisit: "", ageType: "adult", payments: [], treatedTeeth: [], notes: "" };
         document.getElementById('old-patient-form').reset(); syncDefaultDates(); pushDataToCloud();
     }
 
@@ -763,7 +766,7 @@
 
     function transferToPatient(id) {
         const res = globalReservations[id]; if(!res) return; const pId = 'p_' + Date.now();
-        globalPatients[pId] = { id: pId, name: res.name, phone: res.phone, date: res.date, totalAmount: 0, service: "", nextVisit: "", ageType: "adult", payments: [], treatedTeeth: [] };
+        globalPatients[pId] = { id: pId, name: res.name, phone: res.phone, date: res.date, totalAmount: 0, service: "", nextVisit: "", ageType: "adult", payments: [], treatedTeeth: [], notes: "" };
         delete globalReservations[id]; pushDataToCloud();
     }
 
@@ -930,7 +933,7 @@
             let drMonthShare = rev * 0.70;
             let clinicMonthShare = (rev * 0.30) - exp;
             let netMonthProfit = drMonthShare + clinicMonthShare;
-            summaryRowsHTML += `<tr><td><strong>${monthNamesAr[i]}</strong></td><td style="color:#2ecc71; font-weight:bold;">${rev.toFixed(2)} ج.م</td><td style="color:#e74c3c;">${exp.toFixed(2)} ج.م</td><td style="color:#117a65; font-weight:bold;">${drMonthShare.toFixed(2)} ج.م</td><td style="color:#b7950b; font-weight:bold;">${clinicMonthShare.toFixed(2)} ج.م</td><td style="color:${netMonthProfit >= 0 ? '#1565c0' : '#c62828'}; font-weight:bold;">${netMonthProfit.toFixed(2)} ج.م</td></tr>`;
+            summaryRowsHTML += `<tr><td><strong>${monthNamesAr[i]}</strong></td><td style="color:#2ecc71; font-weight:bold;">${rev.toFixed(2)} ج.م</td><td style="color:#e74c3c;">${exp.toFixed(2)} ج.m</td><td style="color:#117a65; font-weight:bold;">${drMonthShare.toFixed(2)} ج.م</td><td style="color:#b7950b; font-weight:bold;">${clinicMonthShare.toFixed(2)} ج.م</td><td style="color:${netMonthProfit >= 0 ? '#1565c0' : '#c62828'}; font-weight:bold;">${netMonthProfit.toFixed(2)} ج.م</td></tr>`;
         }
         summaryTableBody.innerHTML = summaryRowsHTML;
     }
@@ -943,6 +946,7 @@
         document.getElementById('modal-p-phone').value = p.phone || ''; document.getElementById('modal-p-date').value = p.date || '';
         document.getElementById('modal-p-next-visit').value = p.nextVisit || ''; document.getElementById('modal-p-total-amount').value = p.totalAmount || 0;
         document.getElementById('modal-p-service').value = p.service || '';
+        document.getElementById('modal-p-notes').value = p.notes || '';
         
         const ageType = p.ageType || 'adult';
         selectedTeethTemp = p.treatedTeeth ? [...p.treatedTeeth] : [];
@@ -960,6 +964,44 @@
         const total = parseFloat(document.getElementById('modal-p-total-amount').value || 0);
         const paid = tempPaymentsList.reduce((sum, p) => sum + parseFloat(p ? p.amount || 0 : 0), 0);
         document.getElementById('lbl-total-paid').innerText = paid.toFixed(2); document.getElementById('lbl-total-remaining').innerText = (total - paid).toFixed(2);
+    }
+
+    // دالة بدء دورة علاجية جديدة للمريض لتصفير الحساب الحالي مع الاحتفاظ بالبيانات القديمة بالأرشيف
+    function startNewTreatmentCycle() {
+        const total = parseFloat(document.getElementById('modal-p-total-amount').value || 0);
+        const paid = tempPaymentsList.reduce((sum, p) => sum + parseFloat(p ? p.amount || 0 : 0), 0);
+        const currentService = document.getElementById('modal-p-service').value || 'علاج أسنان';
+        
+        if (total > paid) {
+            if (!confirm(`⚠️ تنبيه: المريض لسه عليه متبقي مالي بقيمة (${(total - paid).toFixed(2)} ج.م) من الشغل القديم.\nهل تريد تصفير الدورة الحالية وتأجيل أو ترحيل هذا الحساب يدوياً؟`)) {
+                return;
+            }
+        } else {
+            if (!confirm("🔄 هل أنت متأكد من تصفير الدورة الحالية لبدء شغل جديد؟\n(السيستم هيحفظ البيانات الحالية في الملاحظات الطبية للمريض تلقائياً ولن تضيع).")) {
+                return;
+            }
+        }
+
+        // نقل الخدمة الحالية والأسنان والماليات المسجلة إلى صندوق الملاحظات والأرشيف الطبي للتوثيق
+        let archiveText = `[دورة منتهية بتاريخ ${getLocalDateString()}]: خدمة: (${currentService})`;
+        if (selectedTeethTemp.length > 0) {
+            archiveText += ` - الأسنان المعالجة: [${selectedTeethTemp.sort().join(', ')}]`;
+        }
+        archiveText += ` - حسابها الكلي: (${total.toFixed(2)} ج.م).\n`;
+
+        let currentNotes = document.getElementById('modal-p-notes').value;
+        document.getElementById('modal-p-notes').value = archiveText + currentNotes;
+
+        // تصفير الواجهة الحالية لاستقبال المدفوعات والشغل الجديد فوراً
+        document.getElementById('modal-p-total-amount').value = 0;
+        document.getElementById('modal-p-service').value = '';
+        selectedTeethTemp = [];
+        
+        // إعادة بناء الخريطة لتصبح بيضاء من جديد للدورة القادمة
+        buildDentalChartUI(currentModalPatientAgeType);
+        calculateFinancials();
+        
+        alert("⚡ تم تصفير الحساب والأسنان ونقل الدورة السابقة للأرشيف بنجاح! يمكنك الآن كتابة الخدمة الجديدة والمبلغ الجديد للمريض في نفس الملف.");
     }
 
     function addPaymentToTempList() {
@@ -1035,11 +1077,9 @@
         const id = document.getElementById('modal-patient-id').value; if(!id) return;
         globalPatients[id].name = document.getElementById('modal-p-name').value; globalPatients[id].phone = document.getElementById('modal-p-phone').value;
         globalPatients[id].date = document.getElementById('modal-p-date').value; globalPatients[id].nextVisit = document.getElementById('modal-p-next-visit').value;
-        
-        /* [تم الإصلاح هنا] تعديل الـ ID ليتطابق تماماً مع الـ Input الموجود في الـ HTML */
         globalPatients[id].totalAmount = parseFloat(document.getElementById('modal-p-total-amount').value || 0); 
-        
         globalPatients[id].service = document.getElementById('modal-p-service').value;
+        globalPatients[id].notes = document.getElementById('modal-p-notes').value;
         globalPatients[id].payments = tempPaymentsList;
         globalPatients[id].ageType = currentModalPatientAgeType;
         globalPatients[id].treatedTeeth = selectedTeethTemp;
