@@ -441,15 +441,15 @@
             </div>
         </div>
 
-        <div class="form-group">
-            <label>📝 ملاحظات وتاريخ العلاج الطبي (الأرشيف):</label>
-            <textarea id="modal-p-notes" placeholder="اكتب التاريخ المرضي، أو الحالات السابقة التي انتهت مع المريض..." rows="3" style="width:100%; border-radius:6px; padding:10px; border:1px solid #bdc3c7; font-family:inherit; font-size:14px; box-sizing:border-box; resize:vertical;"></textarea>
+        <div class="form-group" style="background-color: #fcf8e3; padding: 12px; border-radius: 8px; border: 1px solid #faebcc;">
+            <label style="color: #8a6d3b; font-weight: bold;">📝 ملاحظات وتاريخ العلاج الطبي (الأرشيف):</label>
+            <textarea id="modal-p-notes" placeholder="هنا تظهر الداتا القديمة تلقائياً بعد التصفير، ويمكنك كتابة التاريخ المرضي للحالة..." rows="4" style="width:100%; border-radius:6px; padding:10px; border:1px solid #cbd5e1; font-family:inherit; font-size:14px; box-sizing:border-box; resize:vertical; background-color: #fff;"></textarea>
         </div>
 
-        <div class="box" style="border-top: 3px solid #2ecc71; background: #fcfdfe; padding: 15px; margin-bottom: 15px;">
+        <div class="box" style="border-top: 3px solid #2ecc71; background: #fcfdfe; padding: 15px; margin-bottom: 15px; margin-top: 15px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
                 <h3 style="margin: 0; font-size: 15px; color: #27ae60;">💸 الحسابات والمدفوعات للجلسات</h3>
-                <button type="button" onclick="startNewTreatmentCycle()" style="background-color: #34495e; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 4px;">🔄 تصفير لخدمة جديدة</button>
+                <button type="button" onclick="startNewTreatmentCycle()" style="background-color: #d9534f; color: white; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🔄 تصفير لخدمة جديدة (حفظ فوري)</button>
             </div>
             
             <div class="form-group"><label>المبلغ الإجمالي للدورة الحالية (ج.م):</label><input type="number" step="0.01" id="modal-p-total-amount" oninput="calculateFinancials()"></div>
@@ -777,7 +777,7 @@
 
     function saveExpense(e) {
         e.preventDefault(); const id = 'exp_' + Date.now();
-        globalExpenses[id] = { id: id, title: document.getElementById('e-title').value, amount: parseFloat(document.getElementById('e-amount').value || 0), date: document.getElementById('e-date').value || getLocalDateString() };
+        globalExpenses[id] = { id: id, title: document.getElementById('e-title').value, amount: parseFloat(e.amount || 0), date: document.getElementById('e-date').value || getLocalDateString() };
         document.getElementById('expense-form').reset(); syncDefaultDates(); pushDataToCloud();
     }
     function deleteExpense(id) { if(confirm("هل تريد حذف بند المصروف هذا?")) { delete globalExpenses[id]; pushDataToCloud(); } }
@@ -966,42 +966,56 @@
         document.getElementById('lbl-total-paid').innerText = paid.toFixed(2); document.getElementById('lbl-total-remaining').innerText = (total - paid).toFixed(2);
     }
 
-    // دالة بدء دورة علاجية جديدة للمريض لتصفير الحساب الحالي مع الاحتفاظ بالبيانات القديمة بالأرشيف
+    // تعديل الدالة لتقوم بالحفظ الفوري والتسميع المباشر بدون مشاكل
     function startNewTreatmentCycle() {
+        const id = document.getElementById('modal-patient-id').value;
+        if (!id || !globalPatients[id]) return;
+
         const total = parseFloat(document.getElementById('modal-p-total-amount').value || 0);
         const paid = tempPaymentsList.reduce((sum, p) => sum + parseFloat(p ? p.amount || 0 : 0), 0);
         const currentService = document.getElementById('modal-p-service').value || 'علاج أسنان';
         
         if (total > paid) {
-            if (!confirm(`⚠️ تنبيه: المريض لسه عليه متبقي مالي بقيمة (${(total - paid).toFixed(2)} ج.م) من الشغل القديم.\nهل تريد تصفير الدورة الحالية وتأجيل أو ترحيل هذا الحساب يدوياً؟`)) {
+            if (!confirm(`⚠️ تنبيه: المريض لسه عليه متبقي مالي بقيمة (${(total - paid).toFixed(2)} ج.م) من الشغل القديم.\nهل تريد تصفير الدورة الحالية وتأجيل هذا الحساب يدوياً؟`)) {
                 return;
             }
         } else {
-            if (!confirm("🔄 هل أنت متأكد من تصفير الدورة الحالية لبدء شغل جديد؟\n(السيستم هيحفظ البيانات الحالية في الملاحظات الطبية للمريض تلقائياً ولن تضيع).")) {
+            if (!confirm("🔄 هل أنت متأكد من تصفير الدورة الحالية لبدء شغل جديد؟\n(السيستم هيحفظ البيانات الحالية في صندوق الملاحظات تلقائياً).")) {
                 return;
             }
         }
 
-        // نقل الخدمة الحالية والأسنان والماليات المسجلة إلى صندوق الملاحظات والأرشيف الطبي للتوثيق
+        // 1. صياغة نص الأرشيف القديم
         let archiveText = `[دورة منتهية بتاريخ ${getLocalDateString()}]: خدمة: (${currentService})`;
         if (selectedTeethTemp.length > 0) {
             archiveText += ` - الأسنان المعالجة: [${selectedTeethTemp.sort().join(', ')}]`;
         }
         archiveText += ` - حسابها الكلي: (${total.toFixed(2)} ج.م).\n`;
 
+        // 2. دمج الأرشيف في الملاحظات الحالية
         let currentNotes = document.getElementById('modal-p-notes').value;
-        document.getElementById('modal-p-notes').value = archiveText + currentNotes;
+        let updatedNotes = archiveText + currentNotes;
 
-        // تصفير الواجهة الحالية لاستقبال المدفوعات والشغل الجديد فوراً
+        // 3. تحديث الواجهة فوراً
+        document.getElementById('modal-p-notes').value = updatedNotes;
         document.getElementById('modal-p-total-amount').value = 0;
         document.getElementById('modal-p-service').value = '';
         selectedTeethTemp = [];
         
-        // إعادة بناء الخريطة لتصبح بيضاء من جديد للدورة القادمة
+        // 4. تصفير خريطة الأسنان بصرياً
         buildDentalChartUI(currentModalPatientAgeType);
         calculateFinancials();
+
+        // 5. الحفظ الفوري المباشر داخل قاعدة البيانات (Cloud & Local) لضمان عدم الضياع
+        globalPatients[id].totalAmount = 0;
+        globalPatients[id].service = "";
+        globalPatients[id].notes = updatedNotes;
+        globalPatients[id].treatedTeeth = [];
+        globalPatients[id].payments = tempPaymentsList; // تبقى الدفعات القديمة محفوظة في السجل المالي
+
+        pushDataToCloud();
         
-        alert("⚡ تم تصفير الحساب والأسنان ونقل الدورة السابقة للأرشيف بنجاح! يمكنك الآن كتابة الخدمة الجديدة والمبلغ الجديد للمريض في نفس الملف.");
+        alert("⚡ تم التصفير والحفظ اللحظي بنجاح! الأرقام والأسنان اتصفرت، والبيانات القديمة نزلت فوراً في مربع الأرشيف الأصفر بالأسفل.");
     }
 
     function addPaymentToTempList() {
