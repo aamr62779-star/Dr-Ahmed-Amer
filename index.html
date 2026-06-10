@@ -1035,9 +1035,12 @@
         const id = document.getElementById('modal-patient-id').value; if(!id) return;
         globalPatients[id].name = document.getElementById('modal-p-name').value; globalPatients[id].phone = document.getElementById('modal-p-phone').value;
         globalPatients[id].date = document.getElementById('modal-p-date').value; globalPatients[id].nextVisit = document.getElementById('modal-p-next-visit').value;
-        globalPatients[id].totalAmount = parseFloat(document.getElementById('modal-patient-total-amount').value || 0); globalPatients[id].service = document.getElementById('modal-p-service').value;
-        globalPatients[id].payments = tempPaymentsList;
         
+        /* [تم الإصلاح هنا] تعديل الـ ID ليتطابق تماماً مع الـ Input الموجود في الـ HTML */
+        globalPatients[id].totalAmount = parseFloat(document.getElementById('modal-p-total-amount').value || 0); 
+        
+        globalPatients[id].service = document.getElementById('modal-p-service').value;
+        globalPatients[id].payments = tempPaymentsList;
         globalPatients[id].ageType = currentModalPatientAgeType;
         globalPatients[id].treatedTeeth = selectedTeethTemp;
         
