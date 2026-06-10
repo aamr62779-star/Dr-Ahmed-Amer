@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -777,7 +777,7 @@
 
     function saveExpense(e) {
         e.preventDefault(); const id = 'exp_' + Date.now();
-        globalExpenses[id] = { id: id, title: document.getElementById('e-title').value, amount: parseFloat(e.amount || 0), date: document.getElementById('e-date').value || getLocalDateString() };
+        globalExpenses[id] = { id: id, title: document.getElementById('e-title').value, amount: parseFloat(document.getElementById('e-amount').value || 0), date: document.getElementById('e-date').value || getLocalDateString() };
         document.getElementById('expense-form').reset(); syncDefaultDates(); pushDataToCloud();
     }
     function deleteExpense(id) { if(confirm("هل تريد حذف بند المصروف هذا?")) { delete globalExpenses[id]; pushDataToCloud(); } }
@@ -966,7 +966,6 @@
         document.getElementById('lbl-total-paid').innerText = paid.toFixed(2); document.getElementById('lbl-total-remaining').innerText = (total - paid).toFixed(2);
     }
 
-    // تعديل الدالة لتقوم بالحفظ الفوري والتسميع المباشر بدون مشاكل
     function startNewTreatmentCycle() {
         const id = document.getElementById('modal-patient-id').value;
         if (!id || !globalPatients[id]) return;
@@ -985,37 +984,38 @@
             }
         }
 
-        // 1. صياغة نص الأرشيف القديم
         let archiveText = `[دورة منتهية بتاريخ ${getLocalDateString()}]: خدمة: (${currentService})`;
         if (selectedTeethTemp.length > 0) {
             archiveText += ` - الأسنان المعالجة: [${selectedTeethTemp.sort().join(', ')}]`;
         }
         archiveText += ` - حسابها الكلي: (${total.toFixed(2)} ج.م).\n`;
 
-        // 2. دمج الأرشيف في الملاحظات الحالية
         let currentNotes = document.getElementById('modal-p-notes').value;
         let updatedNotes = archiveText + currentNotes;
 
-        // 3. تحديث الواجهة فوراً
+        // تحديث مدخلات الواجهة
         document.getElementById('modal-p-notes').value = updatedNotes;
         document.getElementById('modal-p-total-amount').value = 0;
         document.getElementById('modal-p-service').value = '';
         selectedTeethTemp = [];
         
-        // 4. تصفير خريطة الأسنان بصرياً
+        // مسح قائمة الدفعات من شاشة المودال منعا لظهور المتبقي بالسالب
+        tempPaymentsList = []; 
+        renderModalPayments();
+        
         buildDentalChartUI(currentModalPatientAgeType);
         calculateFinancials();
 
-        // 5. الحفظ الفوري المباشر داخل قاعدة البيانات (Cloud & Local) لضمان عدم الضياع
+        // الحفظ الفوري المباشر داخل قاعدة البيانات (Cloud & Local)
         globalPatients[id].totalAmount = 0;
         globalPatients[id].service = "";
         globalPatients[id].notes = updatedNotes;
         globalPatients[id].treatedTeeth = [];
-        globalPatients[id].payments = tempPaymentsList; // تبقى الدفعات القديمة محفوظة في السجل المالي
+        globalPatients[id].payments = []; // تصفير مصفوفة الجلسات الحالية لبدء حساب جديد تماما من الصفر
 
         pushDataToCloud();
         
-        alert("⚡ تم التصفير والحفظ اللحظي بنجاح! الأرقام والأسنان اتصفرت، والبيانات القديمة نزلت فوراً في مربع الأرشيف الأصفر بالأسفل.");
+        alert("⚡ تم التصفير والحفظ بنجاح! الأرقام والأسنان والمتبقي اتصفروا تماماً وبدون أي قيم سالبة.");
     }
 
     function addPaymentToTempList() {
