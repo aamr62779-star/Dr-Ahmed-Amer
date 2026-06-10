@@ -47,7 +47,7 @@
         .page-content { display: none; }
         .page-content.active-page { display: block; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); justify-content: center; align-items: center; z-index: 9999; padding: 10px; box-sizing: border-box; }
-        .modal-content { background: #fff; width: 100%; max-width: 550px; border-radius: 8px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid #3498db; max-height: 95vh; overflow-y: auto; }
+        .modal-content { background: #fff; width: 100%; max-width: 650px; border-radius: 8px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid #3498db; max-height: 95vh; overflow-y: auto; }
         .dropdown-menu { display: none; position: absolute; top: 100%; right: 0; left: 0; background: #fff; border: 1px solid #bdc3c7; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10005; max-height: 220px; overflow-y: auto; margin-top: 2px; }
         .dropdown-item { padding: 11px 15px; cursor: pointer; text-align: right; font-size: 14px; }
         .dropdown-item:hover { background-color: #e8f2f9; color: #2980b9; font-weight: bold; }
@@ -64,6 +64,18 @@
         .ratio-card .percentage-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; font-size: 12px; margin-top: 5px; }
         .sync-indicator { font-size: 12px; padding: 4px 12px; border-radius: 20px; background: #e67e22; color: white; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
         .login-logo { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; margin: 0 auto 20px auto; display: block; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 3px solid #3498db; }
+        
+        /* تصميم خريطة الأسنان التفاعلية المدمجة */
+        .dental-chart-container { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center; }
+        .dental-arch { display: flex; justify-content: center; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+        .tooth-box { width: 32px; height: 44px; border: 2px solid #7dd3fc; background-color: #ffffff; border-radius: 4px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 4px 0; user-select: none; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+        .tooth-box:hover { border-color: #3498db; transform: translateY(-2px); }
+        .tooth-box.active { background-color: #ef4444; border-color: #b91c1c; color: white; }
+        .tooth-box .tooth-number { font-size: 11px; font-weight: bold; color: #64748b; }
+        .tooth-box.active .tooth-number { color: #fecaca; }
+        .tooth-icon-svg { width: 18px; height: 18px; fill: #cbd5e1; }
+        .tooth-box.active .tooth-icon-svg { fill: #ffffff; }
+        .chart-title { font-size: 14px; font-weight: bold; color: #0284c7; margin-bottom: 8px; display: flex; justify-content: center; align-items: center; gap: 6px; }
     </style>
 </head>
 <body>
@@ -387,6 +399,19 @@
         <div class="form-group"><label>تاريخ أول زيارة:</label><input type="date" id="modal-p-date"></div>
         <div class="form-group" style="background-color: #eef9ff; padding: 12px; border-radius: 6px; border: 1px solid #7dd3fc; margin-bottom: 15px;"><label style="color: #0369a1; font-weight: bold;">🗓️ موعد الجلسة القادمة:</label><input type="date" id="modal-p-next-visit"></div>
         
+        <div class="dental-chart-container">
+            <div class="chart-title">🦷 خريطة الأسنان التفاعلية لعيادة د. أحمد حسن (اضغط لتلوين السن المستهدف)</div>
+            
+            <div style="font-size: 11px; font-weight: bold; color: #0284c7; margin-bottom: 4px;">الفك العلوي (Upper Arch)</div>
+            <div class="dental-arch" id="upper-dental-arch">
+                </div>
+
+            <div style="font-size: 11px; font-weight: bold; color: #0284c7; margin-top: 10px; margin-bottom: 4px;">الفك السفلي (Lower Arch)</div>
+            <div class="dental-arch" id="lower-dental-arch">
+                </div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 5px;">* الأسنان الملونة باللون <span style="color: #ef4444; font-weight: bold;">الأحمر</span> هي التي تخضع للعلاج التجميلي الحالي.</div>
+        </div>
+
         <div class="box" style="border-top: 3px solid #2ecc71; background: #fcfdfe; padding: 15px; margin-bottom: 15px;">
             <h3 style="margin-top: 0; font-size: 15px; color: #27ae60;">💸 الحسابات والمدفوعات للجلسات</h3>
             <div class="form-group"><label>المبلغ الإجمالي الكلي المطلوب (ج.م):</label><input type="number" step="0.01" id="modal-p-total-amount" oninput="calculateFinancials()"></div>
@@ -457,7 +482,6 @@
 </div>
 
 <script>
-    // تضمين اللوجو الأزرق الأصلي ككود SVG مدمج لضمان الاستقرار التام وعرضه بدقة عالية
     const AMER_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" style="width:100%; height:100%;">
         <circle cx="250" cy="250" r="230" fill="#0c1d33" stroke="#cca43b" stroke-width="8"/>
         <circle cx="250" cy="250" r="210" fill="none" stroke="#ffffff" stroke-width="2" stroke-dasharray="8 6"/>
@@ -475,6 +499,32 @@
 
     document.getElementById('login-logo-container').innerHTML = `<div class="login-logo">${AMER_LOGO_SVG}</div>`;
     document.getElementById('header-logo-container').innerHTML = `<div class="header-logo" style="width:38px; height:38px; padding:2px;">${AMER_LOGO_SVG}</div>`;
+
+    // رسم مجسم الأسنان التفاعلي برمجياً داخل المودال
+    const TOOTH_SVG_PATH = `<svg viewBox="0 0 24 24" class="tooth-icon-svg"><path d="M12,2C10.5,2 8.5,3.5 8,6C7.5,8.5 6,10 6,13C6,17.5 9,22 10.5,22C11.5,22 12,21 12,20C12,21 12.5,22 13.5,22C15,22 18,17.5 18,13C18,10 16.5,8.5 16,6C15.5,3.5 13.5,2 12,2Z"/></svg>`;
+    
+    let upperHtml = ''; let lowerHtml = '';
+    for(let i=1; i<=16; i++) {
+        upperHtml += `<div class="tooth-box" id="tooth-${i}" onclick="toggleToothSelection(${i})"><span class="tooth-number">${i}</span>${TOOTH_SVG_PATH}</div>`;
+    }
+    for(let i=17; i<=32; i++) {
+        lowerHtml += `<div class="tooth-box" id="tooth-${i}" onclick="toggleToothSelection(${i})"><span class="tooth-number">${i}</span>${TOOTH_SVG_PATH}</div>`;
+    }
+    document.getElementById('upper-dental-arch').innerHTML = upperHtml;
+    document.getElementById('lower-dental-arch').innerHTML = lowerHtml;
+
+    let selectedTeethTemp = []; // مصفوفة مؤقتة لتخزين الأسنان الملونة للحالة النشطة
+
+    function toggleToothSelection(toothNum) {
+        const tBox = document.getElementById(`tooth-${toothNum}`);
+        if(tBox.classList.contains('active')) {
+            tBox.classList.remove('active');
+            selectedTeethTemp = selectedTeethTemp.filter(num => num !== toothNum);
+        } else {
+            tBox.classList.add('active');
+            selectedTeethTemp.push(toothNum);
+        }
+    }
 
     let globalPatients = {}; let globalReservations = {}; let globalExpenses = {}; let globalLabs = {}; let globalNotebook = {};
     let tempPaymentsList = []; let tempLabPaymentsList = []; 
@@ -617,7 +667,7 @@
 
     function saveOldPatient(e) {
         e.preventDefault(); const id = 'p_' + Date.now();
-        globalPatients[id] = { id: id, name: document.getElementById('old-p-name').value, phone: document.getElementById('old-p-phone').value, date: document.getElementById('old-p-date').value, totalAmount: 0, service: "", nextVisit: "", payments: [] };
+        globalPatients[id] = { id: id, name: document.getElementById('old-p-name').value, phone: document.getElementById('old-p-phone').value, date: document.getElementById('old-p-date').value, totalAmount: 0, service: "", nextVisit: "", payments: [], treatedTeeth: [] };
         document.getElementById('old-patient-form').reset(); syncDefaultDates(); pushDataToCloud();
     }
 
@@ -641,7 +691,7 @@
 
     function transferToPatient(id) {
         const res = globalReservations[id]; if(!res) return; const pId = 'p_' + Date.now();
-        globalPatients[pId] = { id: pId, name: res.name, phone: res.phone, date: res.date, totalAmount: 0, service: "", nextVisit: "", payments: [] };
+        globalPatients[pId] = { id: pId, name: res.name, phone: res.phone, date: res.date, totalAmount: 0, service: "", nextVisit: "", payments: [], treatedTeeth: [] };
         delete globalReservations[id]; pushDataToCloud();
     }
 
@@ -694,7 +744,11 @@
             
             const remaining = (p.totalAmount || 0) - patientPaidTotal;
             if (p.name.toLowerCase().includes(searchTerm) && (!showDebtsOnly || remaining > 0)) {
-                patientRowsHTML += `<tr><td><span class="patient-clickable-name" onclick="openPatientModal('${id}')">${p.name}</span><br><small>📞 ${p.phone || 'بدون رقم'}</small></td><td>${p.date || '---'}</td><td>${patientPaidTotal.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span><span class="trash-icon" onclick="deletePatient('${id}')">🗑️</span></div></td></tr>`;
+                let teethBadges = '';
+                if(p.treatedTeeth && p.treatedTeeth.length > 0) {
+                    teethBadges = `<br><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold;">🦷 الأسنان: ${p.treatedTeeth.join(', ')}</span>`;
+                }
+                patientRowsHTML += `<tr><td><span class="patient-clickable-name" onclick="openPatientModal('${id}')">${p.name}</span>${teethBadges}<br><small>📞 ${p.phone || 'بدون رقم'}</small></td><td>${p.date || '---'}</td><td>${patientPaidTotal.toFixed(2)} ج.م</td><td style="color:${remaining > 0 ? '#e74c3c' : '#2ecc71'}; font-weight:bold;">${remaining.toFixed(2)} ج.م</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openPatientModal('${id}')">👁️</span><span class="trash-icon" onclick="deletePatient('${id}')">🗑️</span></div></td></tr>`;
             }
 
             if (phonebookTableBody) {
@@ -815,6 +869,14 @@
         document.getElementById('modal-p-next-visit').value = p.nextVisit || ''; document.getElementById('modal-p-total-amount').value = p.totalAmount || 0;
         document.getElementById('modal-p-service').value = p.service || '';
         
+        // إعادة قراءة وتلوين الأسنان المحفوظة لملف المريض الحالي
+        selectedTeethTemp = p.treatedTeeth ? [...p.treatedTeeth] : [];
+        document.querySelectorAll('.tooth-box').forEach(box => box.classList.remove('active'));
+        selectedTeethTemp.forEach(num => {
+            const box = document.getElementById(`tooth-${num}`);
+            if(box) box.classList.add('active');
+        });
+
         tempPaymentsList = p.payments ? (Array.isArray(p.payments) ? [...p.payments] : Object.values(p.payments)) : [];
         document.getElementById('new-payment-session').value = tempPaymentsList.length + 1;
         
@@ -903,6 +965,10 @@
         globalPatients[id].date = document.getElementById('modal-p-date').value; globalPatients[id].nextVisit = document.getElementById('modal-p-next-visit').value;
         globalPatients[id].totalAmount = parseFloat(document.getElementById('modal-p-total-amount').value || 0); globalPatients[id].service = document.getElementById('modal-p-service').value;
         globalPatients[id].payments = tempPaymentsList;
+        
+        // حفظ أرقام الأسنان التي تم اختيارها وتلوينها للمريض
+        globalPatients[id].treatedTeeth = selectedTeethTemp;
+        
         closePatientModal(); pushDataToCloud();
     }
 
