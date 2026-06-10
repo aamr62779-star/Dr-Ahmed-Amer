@@ -409,7 +409,7 @@
         <input type="hidden" id="modal-patient-id">
         <div class="form-group"><label>اسم المريض:</label><input type="text" id="modal-p-name"></div>
         <div class="form-group"><label>رقم الهاتف:</label><input type="text" id="modal-p-phone"></div>
-        <div class="form-group"><label>تاريخ أول زيارة / الزيارة الحالية:</label><input type="date" id="modal-p-date"></div>
+        <div class="form-group"><label>تاريخ أول زيارة للعيادة:</label><input type="date" id="modal-p-date"></div>
         <div class="form-group" style="background-color: #eef9ff; padding: 12px; border-radius: 6px; border: 1px solid #7dd3fc; margin-bottom: 15px;"><label style="color: #0369a1; font-weight: bold;">🗓️ موعد الجلسة القادمة:</label><input type="date" id="modal-p-next-visit"></div>
         
         <div class="form-group">
@@ -455,7 +455,7 @@
             <div class="form-group"><label>المبلغ الإجمالي للدورة الحالية (ج.م):</label><input type="number" step="0.01" id="modal-p-total-amount" oninput="calculateFinancials()"></div>
             
             <div style="background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px dashed #2ecc71; margin-bottom: 12px;">
-                <label style="color: #166534; font-weight: bold;">➕ تسجيل مبلغ مدفوع لجلسة جديدة:</label>
+                <label style="color: #166534; font-weight: bold;">➕ تسجيل مبلغ مدفوع لجلسة جديدة (آخر زيارة):</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
                     <input type="number" step="0.01" id="new-payment-amount" placeholder="المبلغ" style="flex: 1; min-width: 80px;">
                     <input type="text" id="new-payment-session" placeholder="رقم/اسم الجلسة" style="flex: 1; min-width: 100px;">
@@ -970,8 +970,17 @@
         const id = document.getElementById('modal-patient-id').value;
         if (!id || !globalPatients[id]) return;
 
-        // جلب التاريخ المحدد حالياً في خانة المودال
-        let selectedCycleDate = document.getElementById('modal-p-date').value || getLocalDateString();
+        // 🟢 جلب التاريخ المكتوب حالياً في خانة الحساب (آخر زيارة)
+        let selectedCycleDate = document.getElementById('new-payment-date').value;
+
+        // منطق أمان احتياطي: لو الخانة لسبب ما فارغة، ياخد تاريخ آخر دفعة موجودة في الجدول، لو مفيش خالص ياخد تاريخ اليوم
+        if (!selectedCycleDate) {
+            if (tempPaymentsList.length > 0) {
+                selectedCycleDate = tempPaymentsList[tempPaymentsList.length - 1].date;
+            } else {
+                selectedCycleDate = getLocalDateString();
+            }
+        }
 
         const total = parseFloat(document.getElementById('modal-p-total-amount').value || 0);
         const paid = tempPaymentsList.reduce((sum, p) => sum + parseFloat(p ? p.amount || 0 : 0), 0);
@@ -987,7 +996,7 @@
             }
         }
 
-        // استخدام التاريخ المحدد في خانة المودال للأرشفة بالتاريخ المختار
+        // استخدام تاريخ آخر زيارة المختار للأرشفة
         let archiveText = `[دورة منتهية بتاريخ ${selectedCycleDate}]: خدمة: (${currentService})`;
         if (selectedTeethTemp.length > 0) {
             archiveText += ` - الأسنان المعالجة: [${selectedTeethTemp.sort().join(', ')}]`;
@@ -997,29 +1006,30 @@
         let currentNotes = document.getElementById('modal-p-notes').value;
         let updatedNotes = archiveText + currentNotes;
 
-        // 1. تصفير وتحديث مدخلات واجهة المستخدم (تصفير حتمي وشامل)
+        // 1. تصفير وتحديث مدخلات واجهة المستخدم 
         document.getElementById('modal-p-notes').value = updatedNotes;
         document.getElementById('modal-p-total-amount').value = 0;
         document.getElementById('modal-p-service').value = '';
         document.getElementById('new-payment-amount').value = '';
-        selectedTeethTemp = []; // تفريغ الأسنان المتحددة
-        tempPaymentsList = []; // تفريغ مصفوفة دفعات المودال فوراً
+        selectedTeethTemp = []; 
+        tempPaymentsList = []; 
         
         // إعادة بناء وعرض خريطة الأسنان وسجل الحسابات مصفراً تماماً بالواجهة
         renderModalPayments();
         buildDentalChartUI(currentModalPatientAgeType);
         calculateFinancials();
+        syncDefaultDates(); // لإعادة تعيين خانة تاريخ الحساب لتاريخ اليوم بعد التصفير
 
         // 2. تحديث وتصفير الداتا في الكائن الرئيسي (Cloud & Local)
         globalPatients[id].totalAmount = 0;
         globalPatients[id].service = "";
         globalPatients[id].notes = updatedNotes;
         globalPatients[id].treatedTeeth = [];
-        globalPatients[id].payments = []; // مسح كامل لسجل الجلسات الحالي لبدء صفحة حساب بيضاء تماماً
+        globalPatients[id].payments = []; 
 
         pushDataToCloud();
         
-        alert(`⚡ تم التصفير والأرشفة بنجاح بتاريخ الدورة المختار (${selectedCycleDate})! وكل خانات سجل الحساب والأسنان اتصفرت بالكامل.`);
+        alert(`⚡ تم التصفير والأرشفة بنجاح بناءً على تاريخ آخر زيارة (${selectedCycleDate})! وكل خانات السجل تصفّرت بالكامل.`);
     }
 
     function addPaymentToTempList() {
