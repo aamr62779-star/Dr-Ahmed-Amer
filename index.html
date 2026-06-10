@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -409,7 +409,7 @@
         <input type="hidden" id="modal-patient-id">
         <div class="form-group"><label>اسم المريض:</label><input type="text" id="modal-p-name"></div>
         <div class="form-group"><label>رقم الهاتف:</label><input type="text" id="modal-p-phone"></div>
-        <div class="form-group"><label>تاريخ أول زيارة:</label><input type="date" id="modal-p-date"></div>
+        <div class="form-group"><label>تاريخ أول زيارة / الزيارة الحالية:</label><input type="date" id="modal-p-date"></div>
         <div class="form-group" style="background-color: #eef9ff; padding: 12px; border-radius: 6px; border: 1px solid #7dd3fc; margin-bottom: 15px;"><label style="color: #0369a1; font-weight: bold;">🗓️ موعد الجلسة القادمة:</label><input type="date" id="modal-p-next-visit"></div>
         
         <div class="form-group">
@@ -970,6 +970,9 @@
         const id = document.getElementById('modal-patient-id').value;
         if (!id || !globalPatients[id]) return;
 
+        // جلب التاريخ المحدد حالياً في خانة المودال
+        let selectedCycleDate = document.getElementById('modal-p-date').value || getLocalDateString();
+
         const total = parseFloat(document.getElementById('modal-p-total-amount').value || 0);
         const paid = tempPaymentsList.reduce((sum, p) => sum + parseFloat(p ? p.amount || 0 : 0), 0);
         const currentService = document.getElementById('modal-p-service').value || 'علاج أسنان';
@@ -984,7 +987,8 @@
             }
         }
 
-        let archiveText = `[دورة منتهية بتاريخ ${getLocalDateString()}]: خدمة: (${currentService})`;
+        // استخدام التاريخ المحدد في خانة المودال للأرشفة بالتاريخ المختار
+        let archiveText = `[دورة منتهية بتاريخ ${selectedCycleDate}]: خدمة: (${currentService})`;
         if (selectedTeethTemp.length > 0) {
             archiveText += ` - الأسنان المعالجة: [${selectedTeethTemp.sort().join(', ')}]`;
         }
@@ -993,29 +997,29 @@
         let currentNotes = document.getElementById('modal-p-notes').value;
         let updatedNotes = archiveText + currentNotes;
 
-        // تحديث مدخلات الواجهة
+        // 1. تصفير وتحديث مدخلات واجهة المستخدم (تصفير حتمي وشامل)
         document.getElementById('modal-p-notes').value = updatedNotes;
         document.getElementById('modal-p-total-amount').value = 0;
         document.getElementById('modal-p-service').value = '';
-        selectedTeethTemp = [];
+        document.getElementById('new-payment-amount').value = '';
+        selectedTeethTemp = []; // تفريغ الأسنان المتحددة
+        tempPaymentsList = []; // تفريغ مصفوفة دفعات المودال فوراً
         
-        // مسح قائمة الدفعات من شاشة المودال منعا لظهور المتبقي بالسالب
-        tempPaymentsList = []; 
+        // إعادة بناء وعرض خريطة الأسنان وسجل الحسابات مصفراً تماماً بالواجهة
         renderModalPayments();
-        
         buildDentalChartUI(currentModalPatientAgeType);
         calculateFinancials();
 
-        // الحفظ الفوري المباشر داخل قاعدة البيانات (Cloud & Local)
+        // 2. تحديث وتصفير الداتا في الكائن الرئيسي (Cloud & Local)
         globalPatients[id].totalAmount = 0;
         globalPatients[id].service = "";
         globalPatients[id].notes = updatedNotes;
         globalPatients[id].treatedTeeth = [];
-        globalPatients[id].payments = []; // تصفير مصفوفة الجلسات الحالية لبدء حساب جديد تماما من الصفر
+        globalPatients[id].payments = []; // مسح كامل لسجل الجلسات الحالي لبدء صفحة حساب بيضاء تماماً
 
         pushDataToCloud();
         
-        alert("⚡ تم التصفير والحفظ بنجاح! الأرقام والأسنان والمتبقي اتصفروا تماماً وبدون أي قيم سالبة.");
+        alert(`⚡ تم التصفير والأرشفة بنجاح بتاريخ الدورة المختار (${selectedCycleDate})! وكل خانات سجل الحساب والأسنان اتصفرت بالكامل.`);
     }
 
     function addPaymentToTempList() {
