@@ -970,10 +970,10 @@
         const id = document.getElementById('modal-patient-id').value;
         if (!id || !globalPatients[id]) return;
 
-        // 🟢 جلب التاريخ المكتوب حالياً في خانة الحساب (آخر زيارة)
+        // 1. جلب التاريخ المكتوب حالياً في خانة الحساب (آخر زيارة)
         let selectedCycleDate = document.getElementById('new-payment-date').value;
 
-        // منطق أمان احتياطي: لو الخانة لسبب ما فارغة، ياخد تاريخ آخر دفعة موجودة في الجدول، لو مفيش خالص ياخد تاريخ اليوم
+        // منطق أمان احتياطي: لو الخانة فارغة، بياخد تاريخ آخر دفعة موجودة في الجدول، لو مفيش خالص بياخد تاريخ اليوم
         if (!selectedCycleDate) {
             if (tempPaymentsList.length > 0) {
                 selectedCycleDate = tempPaymentsList[tempPaymentsList.length - 1].date;
@@ -996,7 +996,7 @@
             }
         }
 
-        // استخدام تاريخ آخر زيارة المختار للأرشفة
+        // بناء نص الأرشفة بناءً على تاريخ آخر زيارة المختار
         let archiveText = `[دورة منتهية بتاريخ ${selectedCycleDate}]: خدمة: (${currentService})`;
         if (selectedTeethTemp.length > 0) {
             archiveText += ` - الأسنان المعالجة: [${selectedTeethTemp.sort().join(', ')}]`;
@@ -1006,30 +1006,32 @@
         let currentNotes = document.getElementById('modal-p-notes').value;
         let updatedNotes = archiveText + currentNotes;
 
-        // 1. تصفير وتحديث مدخلات واجهة المستخدم 
+        // 🌟 تصفير مدخلات واجهة المستخدم بالكامل (ما عدا الإسم، التليفون، وتاريخ أول زيارة)
         document.getElementById('modal-p-notes').value = updatedNotes;
         document.getElementById('modal-p-total-amount').value = 0;
         document.getElementById('modal-p-service').value = '';
+        document.getElementById('modal-p-next-visit').value = ''; // تصفير موعد الجلسة القادمة بالواجهة
         document.getElementById('new-payment-amount').value = '';
-        selectedTeethTemp = []; 
-        tempPaymentsList = []; 
+        selectedTeethTemp = []; // تصفير الأسنان المحددة
+        tempPaymentsList = []; // تصفير مصفوفة الدفعات المؤقتة
         
-        // إعادة بناء وعرض خريطة الأسنان وسجل الحسابات مصفراً تماماً بالواجهة
+        // إعادة بناء وتحديث عناصر الواجهة
         renderModalPayments();
         buildDentalChartUI(currentModalPatientAgeType);
         calculateFinancials();
-        syncDefaultDates(); // لإعادة تعيين خانة تاريخ الحساب لتاريخ اليوم بعد التصفير
+        syncDefaultDates(); 
 
-        // 2. تحديث وتصفير الداتا في الكائن الرئيسي (Cloud & Local)
+        // 🌟 تحديث قاعدة البيانات وتصفيرها بالكامل للحالة المحددة (ما عدا الإسم، الهاتف، وتاريخ أول زيارة)
         globalPatients[id].totalAmount = 0;
         globalPatients[id].service = "";
-        globalPatients[id].notes = updatedNotes;
-        globalPatients[id].treatedTeeth = [];
-        globalPatients[id].payments = []; 
+        globalPatients[id].nextVisit = ""; // تصفير موعد الجلسة القادمة في قاعدة البيانات
+        globalPatients[id].treatedTeeth = []; // مسح الأسنان من قاعدة البيانات
+        globalPatients[id].payments = []; // مسح سجل المدفوعات القديم من قاعدة البيانات
+        globalPatients[id].notes = updatedNotes; // حفظ النص المؤرشف الجديد في الملاحظات
 
         pushDataToCloud();
         
-        alert(`⚡ تم التصفير والأرشفة بنجاح بناءً على تاريخ آخر زيارة (${selectedCycleDate})! وكل خانات السجل تصفّرت بالكامل.`);
+        alert(`⚡ تم التصفير الشامل بنجاح! تم أرشفة الدورة المنتهية بتاريخ (${selectedCycleDate})، ومُسحت كل تفاصيل العلاج والمدفوعات والمتابعة السابقة لبدء دورة جديدة.`);
     }
 
     function addPaymentToTempList() {
