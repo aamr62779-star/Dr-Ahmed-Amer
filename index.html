@@ -135,7 +135,7 @@
     <div id="app-sidebar" class="sidebar">
         <div class="sidebar-header"><span>صفحات النظام</span><button class="close-sidebar-btn" onclick="toggleSidebar()">✕</button></div>
         <button class="sidebar-btn active" id="sidebar-btn-patients" onclick="switchPage('patients')">👥 صفحة المرضى والتسجيل</button>
-        <button class="sidebar-btn" id="sidebar-btn-notebook" onclick="switchPage('notebook')">📔 كشكول الحالات الجديد</button>
+        <button class="sidebar-btn" id="sidebar-btn-notebook" onclick="switchPage('notebook')">📔 كشكول الحالات الخاص</button>
         <button class="sidebar-btn" id="sidebar-btn-phonebook" onclick="switchPage('phonebook')">📱 دليل هواتف المرضى</button>
         <button class="sidebar-btn" id="sidebar-btn-reservations" onclick="switchPage('reservations')">📅 قائمة الحجوزات</button>
         <button class="sidebar-btn" id="sidebar-btn-followups" onclick="switchPage('followups')">📋 جدول متابعات الحالات</button>
@@ -180,23 +180,24 @@
     <div id="page-notebook" class="page-content">
         <div class="row">
             <div class="col-12">
-                <div class="box notebook-box">
-                    <h2>📔 تسجيل حالة قديمة / سريعة في الكشكول</h2>
+                <div class="box notebook-box" style="border-top-color: #7209b7;">
+                    <h2>📔 كشكول الملاحظات الخاص (سجل شخصي مستقل)</h2>
+                    <p style="font-size: 13px; color: #7209b7; margin-top: -10px; margin-bottom: 20px;">⚠️ ملحوظة: البيانات والأرقام هنا منفصلة تماماً وخاصة بك، لا تظهر ولا تؤثر في أرباح أو تقارير العيادة.</p>
                     <form id="notebook-form" onsubmit="saveNotebookEntry(event)">
                         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                            <div class="form-group" style="flex: 1.5; min-width: 220px;"><label>اسم الحالة / المريض:</label><input type="text" id="note-p-name" required placeholder="اكتب الاسم هنا"></div>
-                            <div class="form-group" style="flex: 1; min-width: 130px;"><label>المبلغ المدفوع (ج.م):</label><input type="number" step="0.01" id="note-p-amount" required placeholder="0.00"></div>
-                            <div class="form-group" style="flex: 1; min-width: 180px;"><label>تاريخ الحالة:</label><input type="date" id="note-p-date" required></div>
+                            <div class="form-group" style="flex: 1.5; min-width: 220px;"><label>اسم الحالة / الملاحظة الشخصية:</label><input type="text" id="note-p-name" required placeholder="اكتب الاسم أو الملاحظة هنا"></div>
+                            <div class="form-group" style="flex: 1; min-width: 130px;"><label>القيمة (اختياري):</label><input type="number" step="0.01" id="note-p-amount" placeholder="0.00"></div>
+                            <div class="form-group" style="flex: 1; min-width: 180px;"><label>التاريخ:</label><input type="date" id="note-p-date" required></div>
                         </div>
-                        <button type="submit" style="background: linear-gradient(135deg, #7209b7, #560bad); color: white; border: none; padding: 13px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; box-shadow: 0 4px 10px rgba(114,9,183,0.15);">حفظ وتسجيل في الكشكول 📔</button>
+                        <button type="submit" style="background: linear-gradient(135deg, #7209b7, #560bad); color: white; border: none; padding: 13px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; box-shadow: 0 4px 10px rgba(114,9,183,0.15);">حفظ في الكشكول الشخصي 📔</button>
                     </form>
                 </div>
                 <div class="box" style="border-top-color: #7209b7;">
-                    <h2>📋 الحالات المسجلة بكشكول العيادة</h2>
-                    <div style="margin-bottom: 15px;"><input type="text" id="notebook-search-input" oninput="updateApp()" placeholder="🔍 ابحث بالاسم داخل الكشكول..."></div>
+                    <h2>📋 أرشيف الكشكول الشخصي والملاحظات</h2>
+                    <div style="margin-bottom: 15px;"><input type="text" id="notebook-search-input" oninput="updateApp()" placeholder="🔍 ابحث بالاسم أو الملاحظة داخل الكشكول الخاص..."></div>
                     <div style="overflow-x:auto;">
                         <table>
-                            <thead><tr style="background-color: #7209b7; color: white;"><th>اسم الحالة</th><th>المبلغ المدفوع</th><th>التاريخ المسجل</th><th>تحكم</th></tr></thead>
+                            <thead><tr style="background-color: #7209b7; color: white;"><th>الملاحظة / الحالة</th><th>القيمة المالية</th><th>التاريخ المسجل</th><th>تحكم</th></tr></thead>
                             <tbody id="notebook-table-body"></tbody>
                         </table>
                     </div>
@@ -362,7 +363,7 @@
                         </div>
                     </div>
                     <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 2px dashed #52b788; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-                        • 📥 <b>إجمالي الإيرادات المحصلة اليوم (الحالية + المؤرشفة):</b> <span id="calc-total-revenues" style="font-weight: bold; color: #52b788; font-size: 15px;">0.00</span> ج.م<br>
+                        • 📥 <b>إجمالي الإيرادات المحصلة اليوم (الحالية + المؤرشفة):</b> <span id="calc-total-revenues" style="font-weight: bold; color: #52b788; font-size: 15px;">0.00</span> ج.م <small style="color: #7209b7;">(لا تشمل الكشكول الشخصي)</small><br>
                         • 📤 <b>مصروفات اليوم (تخصم من العيادة):</b> <span id="calc-total-expenses" style="font-weight: bold; color: #ff4d6d; font-size: 15px;">0.00</span> ج.م
                     </div>
                     <div class="ratio-cards-container">
@@ -776,7 +777,7 @@
     function deleteReservation(id) { if(confirm("هل تريد إلغاء هذا الحجز؟")) { delete globalReservations[id]; pushDataToCloud(); } }
     function deletePatient(id) { if(confirm("تحذير: سيتم مسح ملف المريض بالكامل؟")) { delete globalPatients[id]; pushDataToCloud(); } }
     function deleteLab(id) { if(confirm("هل تود مسح حساب هذا المعمل نهائياً؟")) { delete globalLabs[id]; pushDataToCloud(); } }
-    function deleteNotebookEntry(id) { if(confirm("هل تود مسح هذه الحالة من الكشكول؟")) { delete globalNotebook[id]; pushDataToCloud(); } }
+    function deleteNotebookEntry(id) { if(confirm("هل تود مسح هذه الملاحظة من الكشكول الخاص؟")) { delete globalNotebook[id]; pushDataToCloud(); } }
 
     function saveExpense(e) {
         e.preventDefault(); const id = 'exp_' + Date.now();
@@ -805,6 +806,7 @@
         let phonebookRowsHTML = '';
         let dailyPaymentsHTML = '';
 
+        // 1. حساب الإيرادات المأرشفة للعيادة (تخص أرباح العيادة فقط)
         Object.keys(globalFinancialArchive).forEach(archiveId => {
             const pay = globalFinancialArchive[archiveId]; if(!pay) return;
             const amt = parseFloat(pay.amount || 0); totalRevenuesCollected += amt;
@@ -819,6 +821,7 @@
             }
         });
 
+        // 2. حساب إيرادات المرضى الحاليين بالعيادة (تخص أرباح العيادة فقط)
         Object.keys(globalPatients).forEach(id => {
             const p = globalPatients[id]; if (!p || !p.name) return; 
             let payments = p.payments ? (Array.isArray(p.payments) ? p.payments : Object.values(p.payments)) : [];
@@ -856,28 +859,21 @@
         tableBody.innerHTML = patientRowsHTML;
         if(phonebookTableBody) phonebookTableBody.innerHTML = phonebookRowsHTML;
 
+        // 3. عرض كشكول الحالات (معزول تماماً ومستقل عن أي عمليات حسابية أو تراكمية للبرنامج)
         let notebookRowsHTML = '';
         Object.keys(globalNotebook).forEach(id => {
             const e = globalNotebook[id]; if(!e || !e.name) return;
             const amt = parseFloat(e.amount || 0);
-            totalRevenuesCollected += amt;
-
-            if (e.date) {
-                const nDateObj = new Date(e.date);
-                if (nDateObj.getFullYear() === reportYearSelected) mRev[nDateObj.getMonth()] += amt;
-                if (e.date === selectedTargetDate) {
-                    targetDayRevenue += amt;
-                    dailyPaymentsHTML += `<tr><td><strong>${e.name}</strong><br><small>📔 (كشكول)</small></td><td><span style="color:#7209b7; font-weight:bold;">دفعة سريعة</span></td><td style="color:#52b788; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td>---</td></tr>`;
-                }
-            }
-
+            
+            // يتم العرض فقط داخل صفحة الكشكول دون إضافة amt لـ totalRevenuesCollected أو لتاريخ الأرباح اليومية
             if (e.name.toLowerCase().includes(notebookSearchTerm)) {
-                notebookRowsHTML += `<tr><td><b>${e.name}</b></td><td style="color:#52b788; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td style="color:#7209b7; font-weight:bold;">📅 ${e.date || '---'}</td><td><span class="trash-icon" onclick="deleteNotebookEntry('${id}')">🗑️ مسح</span></td></tr>`;
+                notebookRowsHTML += `<tr><td><b>${e.name}</b></td><td style="color:#7209b7; font-weight:bold;">${amt.toFixed(2)} ج.م</td><td style="color:#7209b7; font-weight:bold;">📅 ${e.date || '---'}</td><td><span class="trash-icon" onclick="deleteNotebookEntry('${id}')">🗑️ مسح</span></td></tr>`;
             }
         });
         if(notebookTableBody) notebookTableBody.innerHTML = notebookRowsHTML;
         dailyTableBody.innerHTML = dailyPaymentsHTML;
 
+        // 4. عرض حسابات المعامل
         const labsTableBody = document.getElementById('labs-table-body');
         if (labsTableBody) {
             let labsRowsHTML = '';
@@ -890,12 +886,14 @@
             labsTableBody.innerHTML = labsRowsHTML;
         }
 
+        // 5. عرض الحجوزات
         const resTableBody = document.getElementById('reservations-table-body'); let resRowsHTML = '';
         Object.keys(globalReservations).forEach(id => {
             const r = globalReservations[id]; if(r && r.name) resRowsHTML += `<tr><td><strong>${r.name}</strong><br><small>📞 ${r.phone || '---'}</small></td><td>${r.date || '---'}</td><td><button onclick="transferToPatient('${id}')" style="background:#52b788; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">حضر</button> <button onclick="deleteReservation('${id}')" style="background:#ff4d6d; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">إلغاء</button></td></tr>`;
         });
         resTableBody.innerHTML = resRowsHTML;
 
+        // 6. عرض المتابعات
         const followupBody = document.getElementById('followups-table-body'); let followupRowsHTML = ''; let fCount = 0;
         const selectedFilterDate = document.getElementById('followup-filter-date').value;
         Object.keys(globalPatients).forEach(id => {
@@ -904,6 +902,7 @@
         followupBody.innerHTML = followupRowsHTML;
         document.getElementById('followups-count-badge').innerText = `💡 حالات المتابعة لهذا اليوم: ${fCount} مريض`;
 
+        // 7. عرض السجل الشهري للمرضى
         const mMonth = parseInt(document.getElementById('monthly-month-select').value); const mYear = parseInt(document.getElementById('monthly-year-select').value || currentToday.getFullYear());
         const monthlyBody = document.getElementById('monthly-patients-table-body'); let monthlyRowsHTML = '';
         Object.keys(globalPatients).forEach(id => {
@@ -917,6 +916,7 @@
         });
         monthlyBody.innerHTML = monthlyRowsHTML;
 
+        // 8. حساب وعرض المصروفات
         let totalExpensesCalculated = 0; let targetDayExpenses = 0; 
         const expenseBody = document.getElementById('expenses-table-body'); let expenseRowsHTML = '';
         Object.keys(globalExpenses).forEach(id => {
@@ -930,6 +930,7 @@
         });
         expenseBody.innerHTML = expenseRowsHTML;
 
+        // 9. تطبيق التوزيع المالي والنسب (70% للدكتور و 30% للعيادة بعد المصروفات)
         document.getElementById('calc-total-revenues').innerText = targetDayRevenue.toFixed(2);
         document.getElementById('calc-total-expenses').innerText = targetDayExpenses.toFixed(2);
         
@@ -944,6 +945,7 @@
         let totalNetProfit = totalRevenuesCollected - totalExpensesCalculated;
         document.getElementById('calc-net-profit').innerText = totalNetProfit.toFixed(2) + " ج.م";
 
+        // 10. عرض جدول التقارير السنوية الشهرية المجمعة
         const summaryTableBody = document.getElementById('monthly-summary-table-body'); let summaryRowsHTML = '';
         for (let i = 0; i < 12; i++) {
             let rev = mRev[i]; let exp = mExp[i]; 
