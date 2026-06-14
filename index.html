@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -45,6 +45,14 @@
         tr:hover { background-color: #f8fbfd; }
         .patient-clickable-name { color: #0077b6; cursor: pointer; display: inline-block; font-weight: bold; }
         .patient-clickable-name:hover { color: #00b4d8; text-decoration: underline; }
+        
+        /* استايل كروت المعامل المصممة حديثاً */
+        .lab-cards-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-top: 15px; }
+        .lab-card-button { background: #ffffff; border: 1px solid #e2e8f0; border-top: 4px solid #f9844a; padding: 15px; border-radius: 10px; cursor: pointer; text-align: center; font-size: 16px; font-weight: bold; color: #233a50; box-shadow: 0 3px 6px rgba(0,0,0,0.02); transition: all 0.2s ease; display: flex; justify-content: space-between; align-items: center; }
+        .lab-card-button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(249,132,74,0.1); border-color: #f9844a; }
+        .lab-card-delete-btn { background: none; border: none; color: #ff4d6d; font-size: 18px; cursor: pointer; padding: 4px; border-radius: 4px; }
+        .lab-card-delete-btn:hover { background: #fff0f3; }
+
         .action-icons-container { display: flex; justify-content: center; align-items: center; gap: 14px; }
         .eye-icon { font-size: 15px; cursor: pointer; color: #00b4d8; font-weight: bold; background: #e0f2fe; padding: 4px 10px; border-radius: 6px; }
         .eye-icon:hover { background: #00b4d8; color: white; }
@@ -55,9 +63,7 @@
         .page-content { display: none; }
         .page-content.active-page { display: block; }
         
-        /* ------------------------------------------------------------------- */
-        /* التعديلات الجديدة: استايلات مصغرة وملمومة لملف المريض (Compact Patient Profile) */
-        /* ------------------------------------------------------------------- */
+        /* استايلات مصغرة لملف المريض والمعمل (Compact Micro-UI) */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 8, 20, 0.4); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 9999; padding: 10px; box-sizing: border-box; }
         .modal-content { background: #fff; width: 100%; max-width: 820px; border-radius: 12px; padding: 15px 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); border-top: 5px solid #00b4d8; max-height: 98vh; overflow-y: auto; animation: modalFade 0.25s ease; }
         @keyframes modalFade { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -89,12 +95,10 @@
         .dental-chart-container { background: #f8fafc; border: 1px dashed #00b4d8; border-radius: 10px; padding: 10px; margin-bottom: 10px; text-align: center; }
         .chart-jaw-block { display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; }
         .chart-quadrant { display: flex; gap: 3px; background: #fff; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0; min-height: 40px; }
-        
         .quadrant-ur { flex-direction: row-reverse; }
         .quadrant-ul { flex-direction: row; }
         .quadrant-lr { flex-direction: row-reverse; }
         .quadrant-ll { flex-direction: row; }
-        
         .tooth-box { width: 28px; height: 38px; border: 1px solid #90e0ef; background-color: #ffffff; border-radius: 4px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 2px 0; user-select: none; transition: all 0.15s ease; }
         .tooth-box:hover { border-color: #00b4d8; transform: translateY(-2px); }
         .tooth-box.active { background-color: #ff4d6d; border-color: #ff002b; color: white; }
@@ -321,13 +325,8 @@
                     </form>
                 </div>
                 <div class="box" style="border-top-color: #f9844a;">
-                    <h2>📋 كشف مديونيات المعامل والتركيبات التجميلية</h2>
-                    <div style="overflow-x:auto;">
-                        <table>
-                            <thead><tr><th>اسم المعمل</th><th>تاريخ التعامل</th><th>إجمالي المديونية</th><th>إجمالي المدفوع</th><th>المتبقي للمعمل</th><th>الملف والتحكم</th></tr></thead>
-                            <tbody id="labs-table-body"></tbody>
-                        </table>
-                    </div>
+                    <h2>📋 المعامل المسجلة بالنظام (اضغط على اسم المعمل لعرض تفاصيله وحسابه)</h2>
+                    <div id="labs-cards-container" class="lab-cards-list"></div>
                 </div>
             </div>
         </div>
@@ -519,30 +518,48 @@
 </div>
 
 <div id="lab-modal" class="modal-overlay">
-    <div class="modal-content" style="border-top-color: #f9844a;">
-        <h2 style="color: #f9844a; margin-top: 0; border: none;" id="modal-lab-header">حساب المعمل التفصيلي</h2>
+    <div class="modal-content" style="border-top-color: #f9844a; max-width: 550px;">
+        <h3 style="color: #f9844a; margin-top: 0; border-bottom: 2px solid #fff9f2; padding-bottom: 8px;" id="modal-lab-header">ملف حساب المعمل بالتفصيل</h3>
         <input type="hidden" id="modal-lab-id">
+        
         <div class="form-group"><label>اسم المعمل:</label><input type="text" id="modal-l-name"></div>
-        <div class="box" style="border-top: 4px solid #f9844a; background: #fffdfb; padding: 18px; border-radius: 10px;">
-            <div class="form-group"><label>إجمالي المديونية الكلية (ج.م):</label><input type="number" step="0.01" id="modal-l-total-debt" oninput="calculateLabFinancials()"></div>
-            <div style="background: #fff9f2; padding: 14px; border-radius: 8px; border: 1px dashed #f9844a; margin-bottom: 12px;">
-                <label style="color: #f3722c; font-weight: bold;">➕ تسجيل مبلـغ مدفوع للممعمل:</label>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
-                    <input type="number" step="0.01" id="new-lab-payment-amount" placeholder="المبلغ" style="flex: 1;">
-                    <input type="date" id="new-lab-payment-date" style="flex: 1.2;">
-                    <button type="button" onclick="addPaymentToLabList()" style="background: #f9844a; color: white; border: none; padding: 0 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">تسجيل</button>
+        
+        <div class="box" style="border-top: 4px solid #f9844a; background: #fffdfb; padding: 15px; border-radius: 10px;">
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 15px; background: white; border-radius: 6px; overflow:hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <thead>
+                    <tr style="background-color: #ffe8cc; color: #e67e22;">
+                        <th style="padding: 10px; font-size:14px;">المديونية السابقة</th>
+                        <th style="padding: 10px; font-size:14px;">إجمالي المدفوع</th>
+                        <th style="padding: 10px; font-size:14px;">المتبقي للمعمل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding:12px; font-size:16px; font-weight:bold; color:#ff4d6d; background: #fff5f5;"><span id="lbl-lab-total-debt">0.00</span> ج.م</td>
+                        <td style="padding:12px; font-size:16px; font-weight:bold; color:#2d6a4f; background: #f0fdf4;"><span id="lbl-lab-total-paid">0.00</span> ج.م</td>
+                        <td style="padding:12px; font-size:16px; font-weight:bold; color:#f3722c; background: #fffbf0;"><span id="lbl-lab-remaining">0.00</span> ج.م</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="form-group"><label>تعديل/تحديث المديونية السابقة الكلية (ج.م):</label><input type="number" step="0.01" id="modal-l-total-debt" oninput="calculateLabFinancials()"></div>
+            
+            <div style="background: #fff9f2; padding: 10px; border-radius: 8px; border: 1px dashed #f9844a; margin-bottom: 12px;">
+                <label style="color: #f3722c; font-weight: bold; font-size:13px;">➕ صرف دفعة مالية جديدة للمعمل:</label>
+                <div style="display: flex; gap: 6px; margin-top: 4px;">
+                    <input type="number" step="0.01" id="new-lab-payment-amount" placeholder="المبلغ" style="flex: 1; padding:6px; font-size:14px;">
+                    <input type="date" id="new-lab-payment-date" style="flex: 1.2; padding:6px; font-size:14px;">
+                    <button type="button" onclick="addPaymentToLabList()" style="background: #f9844a; color: white; border: none; padding: 0 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size:13px;">تسجيل</button>
                 </div>
             </div>
-            <label>📋 سجل المبالغ المدفوعة سابقاً:</label>
-            <div id="modal-lab-payments-list" style="max-height: 130px; overflow-y: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;"></div>
-            <div style="display: flex; gap: 10px; margin-top: 12px; background: #fff9f2; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold;">
-                <div style="flex: 1; color: #2d6a4f; text-align: center;">إجمالي المدفوع: <span id="lbl-lab-total-paid">0.00</span> ج.م</div>
-                <div style="flex: 1; color: #f3722c; text-align: center;">المتبقي عليك: <span id="lbl-lab-remaining">0.00</span> ج.م</div>
-            </div>
+            
+            <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">📋 كشف وصولات الدفع السابقة البينية:</label>
+            <div id="modal-lab-payments-list" style="max-height: 85px; overflow-y: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px;"></div>
         </div>
-        <div style="display: flex; gap: 10px; margin-top: 25px;">
-            <button onclick="saveLabFileChanges()" style="background: linear-gradient(135deg, #52b788, #40916c); color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; flex: 2; font-size:16px; font-weight:bold;">تحديث الحساب الحالي</button>
-            <button onclick="closeLabModal()" style="background: linear-gradient(135deg, #ff4d6d, #c9184a); color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; flex: 1; font-size:16px; font-weight:bold;">إغلاق</button>
+        
+        <div style="display: flex; gap: 8px; margin-top: 15px;">
+            <button onclick="saveLabFileChanges()" style="background: linear-gradient(135deg, #52b788, #40916c); color: white; border: none; padding: 11px; border-radius: 6px; cursor: pointer; flex: 2; font-size:14px; font-weight:bold;">حفظ وتحديث الحساب الحالي</button>
+            <button onclick="closeLabModal()" style="background: linear-gradient(135deg, #ff4d6d, #c9184a); color: white; border: none; padding: 11px; border-radius: 6px; cursor: pointer; flex: 1; font-size:14px; font-weight:bold;">إغلاق</button>
         </div>
     </div>
 </div>
@@ -799,7 +816,12 @@
 
     function deleteReservation(id) { if(confirm("هل تريد إلغاء هذا الحجز؟")) { delete globalReservations[id]; pushDataToCloud(); } }
     function deletePatient(id) { if(confirm("تحذير: سيتم مسح ملف المريض بالكامل؟")) { delete globalPatients[id]; pushDataToCloud(); } }
-    function deleteLab(id) { if(confirm("هل تود مسح حساب هذا المعمل نهائياً؟")) { delete globalLabs[id]; pushDataToCloud(); } }
+    
+    function deleteLab(id, event) { 
+        if(event) event.stopPropagation();
+        if(confirm("هل تود مسح حساب هذا المعمل نهائياً؟")) { delete globalLabs[id]; pushDataToCloud(); } 
+    }
+    
     function deleteNotebookEntry(id) { if(confirm("هل تود مسح هذه الملاحظة من الكشكول الخاص؟")) { delete globalNotebook[id]; pushDataToCloud(); } }
 
     function saveExpense(e) {
@@ -892,16 +914,19 @@
         if(notebookTableBody) notebookTableBody.innerHTML = notebookRowsHTML;
         dailyTableBody.innerHTML = dailyPaymentsHTML;
 
-        const labsTableBody = document.getElementById('labs-table-body');
-        if (labsTableBody) {
-            let labsRowsHTML = '';
+        /* تحديث طريقة عرض المعامل لتصبح كروت نظيفة تماماً بدون جداول معقدة */
+        const labsCardsContainer = document.getElementById('labs-cards-container');
+        if (labsCardsContainer) {
+            let labsCardsHTML = '';
             Object.keys(globalLabs).forEach(id => {
                 const l = globalLabs[id]; if(!l || !l.name) return;
-                let lPays = l.payments ? (Array.isArray(l.payments) ? l.payments : Object.values(l.payments)) : [];
-                const totalLabPaid = lPays.reduce((sum, lp) => sum + parseFloat(lp ? lp.amount || 0 : 0), 0); const labRemaining = (l.totalDebt || 0) - totalLabPaid;
-                labsRowsHTML += `<tr><td><span style="cursor:pointer; font-weight:bold; color: #f9844a;" onclick="openLabModal('${id}')">🔬 ${l.name}</span></td><td>${l.date || '---'}</td><td>${parseFloat(l.totalDebt || 0).toFixed(2)} ج.م</td><td>${totalLabPaid.toFixed(2)} ج.م</td><td style="color:${labRemaining > 0 ? '#f9844a' : '#7f8c8d'}; font-weight:bold;">${labRemaining.toFixed(2)} ج.م</td><td><div class="action-icons-container"><span class="eye-icon" onclick="openLabModal('${id}')">👁️</span><span class="trash-icon" onclick="deleteLab('${id}')">🗑️</span></div></td></tr>`;
+                labsCardsHTML += `
+                <div class="lab-card-button" onclick="openLabModal('${id}')">
+                    <span>🔬 ${l.name}</span>
+                    <button class="lab-card-delete-btn" onclick="deleteLab('${id}', event)">🗑️</button>
+                </div>`;
             });
-            labsTableBody.innerHTML = labsRowsHTML;
+            labsCardsContainer.innerHTML = labsCardsHTML || '<div style="color:#aaa; font-size:14px; padding:10px;">لا يوجد معامل مسجلة حالياً..</div>';
         }
 
         const resTableBody = document.getElementById('reservations-table-body'); let resRowsHTML = '';
@@ -981,7 +1006,6 @@
         
         const ageType = p.ageType || 'adult';
         selectedTeethTemp = p.treatedTeeth ? [...p.treatedTeeth] : [];
-        
         setPatientType(ageType);
 
         tempPaymentsList = p.payments ? (Array.isArray(p.payments) ? [...p.payments] : Object.values(p.payments)) : [];
@@ -1069,7 +1093,6 @@
         globalPatients[id].notes = updatedNotes; 
 
         pushDataToCloud();
-        
         alert(`🔒 تم التصفير بأمان كامل! الملف أصبح جاهزاً لدورة جديدة، وتم ترحيل وحفظ جميع المبالغ المالية المدفوعة سابقا (${paid.toFixed(2)} ج.م) في خزينة الأرباح والتقارير بنجاح.`);
     }
 
@@ -1086,7 +1109,6 @@
         
         amtInput.value = ''; 
         sessionInput.value = tempPaymentsList.length + 1;
-        
         renderModalPayments(); calculateFinancials();
     }
     function deleteTempPayment(idx) { tempPaymentsList.splice(idx, 1); renderModalPayments(); calculateFinancials(); }
@@ -1104,18 +1126,26 @@
         listDiv.innerHTML = historyHTML;
     }
 
+    /* دالات الـ Modal لمعامل الحسابات المحدثة */
     function openLabModal(id) {
         const l = globalLabs[id]; if(!l) return;
-        document.getElementById('modal-lab-id').value = id; document.getElementById('modal-l-name').value = l.name || '';
-        document.getElementById('modal-lab-total-debt').value = l.totalDebt || 0; tempLabPaymentsList = l.payments ? (Array.isArray(l.payments) ? [...l.payments] : Object.values(l.payments)) : [];
-        renderLabModalPayments(); calculateLabFinancials(); document.getElementById('lab-modal').style.display = 'flex';
+        document.getElementById('modal-lab-id').value = id; 
+        document.getElementById('modal-l-name').value = l.name || '';
+        document.getElementById('modal-l-total-debt').value = l.totalDebt || 0; 
+        tempLabPaymentsList = l.payments ? (Array.isArray(l.payments) ? [...l.payments] : Object.values(l.payments)) : [];
+        renderLabModalPayments(); 
+        calculateLabFinancials(); 
+        document.getElementById('lab-modal').style.display = 'flex';
     }
     function closeLabModal() { document.getElementById('lab-modal').style.display = 'none'; }
 
     function calculateLabFinancials() {
         const totalDebt = parseFloat(document.getElementById('modal-l-total-debt').value || 0);
         const paid = tempLabPaymentsList.reduce((sum, p) => sum + parseFloat(p ? p.amount || 0 : 0), 0);
-        document.getElementById('lbl-lab-total-paid').innerText = paid.toFixed(2); document.getElementById('lbl-lab-remaining').innerText = (totalDebt - paid).toFixed(2);
+        
+        document.getElementById('lbl-lab-total-debt').innerText = totalDebt.toFixed(2);
+        document.getElementById('lbl-lab-total-paid').innerText = paid.toFixed(2); 
+        document.getElementById('lbl-lab-remaining').innerText = (totalDebt - paid).toFixed(2);
     }
 
     function addPaymentToLabList() {
@@ -1125,6 +1155,7 @@
         amtInput.value = ''; renderLabModalPayments(); calculateLabFinancials();
     }
     function deleteTempLabPayment(idx) { tempLabPaymentsList.splice(idx, 1); renderLabModalPayments(); calculateLabFinancials(); }
+    
     function renderLabModalPayments() {
         const listDiv = document.getElementById('modal-lab-payments-list'); listDiv.innerHTML = '';
         if(tempLabPaymentsList.length === 0) { listDiv.innerHTML = '<span style="color:#aaa; font-size:12px;">لم يتم صرف دفعات.</span>'; return; }
